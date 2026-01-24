@@ -1,0 +1,201 @@
+{
+  "claude-desktop": {
+    "name": "Claude Desktop",
+    "description": "Configuration for Claude Desktop (macOS: ~/Library/Application Support/Claude/claude_desktop_config.json, Windows: %APPDATA%\\Claude\\claude_desktop_config.json)",
+    "config": {
+      "mcpServers": {
+        "Docsjays": {
+          "command": "npx",
+          "args": ["mcp-remote", "https://docsjays.com/api/mcp"],
+          "env": {
+            "MCP_AUTH_TOKEN": "your-api-key-here"
+          }
+        }
+      }
+    }
+  },
+  "claude-desktop-direct": {
+    "name": "Claude Desktop (Direct HTTP)",
+    "description": "Alternative configuration using direct HTTP connection",
+    "config": {
+      "mcpServers": {
+        "Docsjays": {
+          "url": "https://docsjays.com/api/mcp",
+          "headers": {
+            "Authorization": "Bearer your-api-key-here"
+          }
+        }
+      }
+    }
+  },
+  "cursor": {
+    "name": "Cursor",
+    "description": "Configuration for Cursor IDE (Settings > MCP Servers)",
+    "config": {
+      "mcpServers": {
+        "Docsjays": {
+          "url": "https://docsjays.com/api/mcp",
+          "headers": {
+            "Authorization": "Bearer ${DOCSJAYS_API_KEY}"
+          }
+        }
+      }
+    },
+    "envConfig": {
+      "env": {
+        "DOCSJAYS_API_KEY": "your-api-key-here"
+      }
+    },
+    "deeplink": "cursor://mcp/add?name=Docsjays&url=https://docsjays.com/api/mcp"
+  },
+  "windsurf": {
+    "name": "Windsurf",
+    "description": "Configuration for Windsurf IDE (MCP → Servers → Add Server)",
+    "config": {
+      "name": "Docsjays",
+      "command": "npx",
+      "args": ["mcp-remote", "https://docsjays.com/api/mcp"],
+      "env": {
+        "MCP_AUTH_TOKEN": "your-api-key-here"
+      }
+    }
+  },
+  "claude-code": {
+    "name": "Claude Code",
+    "description": "Configuration for Claude Code CLI (~/.config/claude-code/mcp.json)",
+    "config": {
+      "mcpServers": {
+        "Docsjays": {
+          "command": "npx",
+          "args": ["mcp-remote", "https://docsjays.com/api/mcp"],
+          "env": {
+            "MCP_AUTH_TOKEN": "your-api-key-here"
+          }
+        }
+      }
+    },
+    "cliCommand": "claude-code mcp add Docsjays --command \"npx\" --args \"mcp-remote,https://docsjays.com/api/mcp\" --env \"MCP_AUTH_TOKEN=your-api-key-here\""
+  },
+  "vscode-continue": {
+    "name": "VS Code (Continue)",
+    "description": "Configuration for Continue extension in VS Code",
+    "config": {
+      "mcpServers": [
+        {
+          "name": "Docsjays",
+          "url": "https://docsjays.com/api/mcp",
+          "headers": {
+            "Authorization": "Bearer your-api-key-here"
+          }
+        }
+      ]
+    }
+  },
+  "self-hosted": {
+    "name": "Self-Hosted Docsjays",
+    "description": "Configuration for self-hosted Docsjays instance",
+    "config": {
+      "mcpServers": {
+        "Docsjays": {
+          "command": "npx",
+          "args": ["mcp-remote", "https://your-domain.com/api/mcp"],
+          "env": {
+            "MCP_AUTH_TOKEN": "your-api-key-here"
+          }
+        }
+      }
+    }
+  },
+  "multi-project": {
+    "name": "Multiple Projects",
+    "description": "Configuration for accessing multiple Docsjays projects",
+    "config": {
+      "mcpServers": {
+        "Docsjays-ProjectA": {
+          "command": "npx",
+          "args": ["mcp-remote", "https://docsjays.com/api/mcp"],
+          "env": {
+            "MCP_AUTH_TOKEN": "key-for-project-a"
+          }
+        },
+        "Docsjays-ProjectB": {
+          "command": "npx",
+          "args": ["mcp-remote", "https://docsjays.com/api/mcp"],
+          "env": {
+            "MCP_AUTH_TOKEN": "key-for-project-b"
+          }
+        }
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "read_document",
+      "description": "Read the content of a specific document",
+      "parameters": {
+        "path": "string (required) - Path to the document (e.g., 'architecture.md', 'api/auth.md')"
+      },
+      "example": {
+        "path": "architecture.md"
+      }
+    },
+    {
+      "name": "search_documents",
+      "description": "Search across all documents by content or path",
+      "parameters": {
+        "query": "string (required) - Search query",
+        "limit": "number (optional) - Maximum number of results (default: 10)"
+      },
+      "example": {
+        "query": "authentication",
+        "limit": 10
+      }
+    },
+    {
+      "name": "list_documents",
+      "description": "List all documents in the project with metadata",
+      "parameters": {},
+      "example": {}
+    },
+    {
+      "name": "propose_change",
+      "description": "Propose a change to a document (creates a proposal for review)",
+      "parameters": {
+        "path": "string (required) - Path to the document to change",
+        "newContent": "string (required) - New content for the document",
+        "title": "string (required) - Title for the proposal",
+        "rationale": "string (required) - Explanation of why this change is needed"
+      },
+      "example": {
+        "path": "api/auth.md",
+        "newContent": "# Updated content...",
+        "title": "Update authentication docs",
+        "rationale": "Adding OAuth 2.0 flow documentation"
+      }
+    },
+    {
+      "name": "get_project_info",
+      "description": "Get project metadata (doc count, open proposals, etc.)",
+      "parameters": {},
+      "example": {}
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2026-01-24",
+    "supportedIDEs": [
+      "Claude Desktop",
+      "Cursor",
+      "Windsurf",
+      "Claude Code",
+      "VS Code (Continue extension)"
+    ],
+    "authenticationMethod": "Bearer token (project-scoped API key)",
+    "endpointUrl": "https://docsjays.com/api/mcp",
+    "documentationUrl": "https://docsjays.com/docs/mcp-integration",
+    "rateLimits": {
+      "requestsPerMinute": 100,
+      "requestsPerHour": 1000
+    }
+  }
+}

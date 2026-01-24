@@ -1,0 +1,291 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
+import { User } from '@supabase/supabase-js';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Plus, FileText, GitBranch } from 'lucide-react';
+
+interface Project {
+  id: string;
+  name: string;
+  slug: string;
+  createdAt: string;
+  _count?: {
+    docs: number;
+    proposals: number;
+  };
+}
+
+export default function Dashboard() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [formData, setFormData] = useState({ name: '', slug: '' });
+  const [user, setUser] = useState<User | null>(null);
+  const [loadingAuth, setLoadingAuth] = useState(true);
+
+  useEffect(() => {
+    checkAuth();
+    fetchProjects();
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    } catch (error) {
+      console.error('Failed to check auth:', error);
+    } finally {
+      setLoadingAuth(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      setUser(null);
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Failed to logout:', error);
+    }
+  };
+
+  const fetchProjects = async () => {
+    try {
+      const res = await fetch('/api/projects');
+      const data = await res.json();
+      setProjects(data);
+    } catch (error) {
+      console.error('Failed to fetch projects:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (res.ok) {
+        setFormData({ name: '', slug: '' });
+        setShowCreateForm(false);
+        fetchProjects();
+      } else {
+        const error = await res.json();
+        alert(error.error || 'Failed to create project');
+      }
+    } catch (error) {
+      console.error('Failed to create project:', error);
+      alert('Failed to create project');
+    }
+  };
+
+  const generateSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  };
+
+  return (
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+          <div className="flex items-center justify-between h-20">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="text-2xl font-light tracking-tight text-black dark:text-white">
+                Docs Jays
+              </div>
+              <Badge size="sm" variant="neutral">Beta</Badge>
+            </Link>
+
+            <div className="flex items-center gap-6">
+              <ThemeToggle />
+              {loadingAuth ? (
+                <div className="w-20 h-10 bg-neutral-100 dark:bg-neutral-900 rounded animate-pulse" />
+              ) : user ? (
+                <div className="flex items-center gap-4">
+                  <div className="text-right hidden md:block">
+                    <div className="text-sm font-medium text-black dark:text-white">
+                      {user.user_metadata?.name || user.email}
+                    </div>
+                    <div className="text-xs text-neutral-500 dark:text-neutral-500">
+                      {user.email}
+                    </div>
+                  </div>
+                  <Button variant="ghost" onClick={handleLogout}>
+                    Logout
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <Link href="/auth/login">
+                    <Button variant="ghost">Login</Button>
+                  </Link>
+                  <Link href="/auth/signup">
+                    <Button>Sign Up</Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-32 pb-16">
+        {/* Header */}
+        <div className="mb-12">
+          <h1 className="text-5xl md:text-6xl font-light tracking-tight text-black dark:text-white mb-4">
+            Projects
+          </h1>
+          <p className="text-lg text-neutral-600 dark:text-neutral-400 font-light max-w-2xl">
+            AI-Native documentation with conflict detection, freshness tracking, and version control
+          </p>
+        </div>
+
+        {/* Create Project Button */}
+        {user && (
+          <div className="mb-8">
+            <Button
+              onClick={() => setShowCreateForm(!showCreateForm)}
+              icon={!showCreateForm ? <Plus className="w-4 h-4" /> : undefined}
+            >
+              {showCreateForm ? 'Cancel' : 'New Project'}
+            </Button>
+          </div>
+        )}
+
+        {/* Create Form */}
+        {showCreateForm && (
+          <Card className="mb-8 p-6">
+            <form onSubmit={handleCreate} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-black dark:text-white mb-2">
+                  Project Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => {
+                    const name = e.target.value;
+                    setFormData({
+                      name,
+                      slug: generateSlug(name),
+                    });
+                  }}
+                  className="w-full px-4 py-2 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-md text-black dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-600 focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent"
+                  placeholder="My Documentation Project"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-black dark:text-white mb-2">
+                  Slug
+                </label>
+                <input
+                  type="text"
+                  value={formData.slug}
+                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                  className="w-full px-4 py-2 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-md text-black dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-600 focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent"
+                  placeholder="my-documentation-project"
+                  pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+                  required
+                />
+                <p className="text-sm text-neutral-500 dark:text-neutral-500 mt-2">
+                  Lowercase letters, numbers, and hyphens only
+                </p>
+              </div>
+              <Button type="submit" variant="primary">
+                Create Project
+              </Button>
+            </form>
+          </Card>
+        )}
+
+        {/* Projects Grid */}
+        {loading ? (
+          <div className="text-center py-16">
+            <div className="text-neutral-500 dark:text-neutral-500">Loading projects...</div>
+          </div>
+        ) : !user ? (
+          <Card className="p-12 text-center">
+            <h3 className="text-2xl font-light text-black dark:text-white mb-4">
+              Sign in to manage projects
+            </h3>
+            <p className="text-base text-neutral-600 dark:text-neutral-400 mb-6">
+              Create an account to start building your AI-native documentation
+            </p>
+            <div className="flex items-center justify-center gap-4">
+              <Link href="/auth/login">
+                <Button variant="ghost">Login</Button>
+              </Link>
+              <Link href="/auth/signup">
+                <Button>Get Started</Button>
+              </Link>
+            </div>
+          </Card>
+        ) : projects.length === 0 ? (
+          <Card className="p-12 text-center">
+            <div className="max-w-md mx-auto">
+              <div className="w-16 h-16 rounded-full bg-neutral-100 dark:bg-neutral-900 flex items-center justify-center mx-auto mb-6">
+                <FileText className="w-8 h-8 text-neutral-400 dark:text-neutral-600" />
+              </div>
+              <h3 className="text-2xl font-light text-black dark:text-white mb-4">
+                No projects yet
+              </h3>
+              <p className="text-base text-neutral-600 dark:text-neutral-400 mb-6">
+                Create your first project to start managing documentation with AI-powered governance
+              </p>
+              <Button onClick={() => setShowCreateForm(true)} icon={<Plus className="w-4 h-4" />}>
+                Create Project
+              </Button>
+            </div>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {projects.map((project) => (
+              <Link key={project.id} href={`/projects/${project.slug}`}>
+                <Card interactive className="p-6 h-full">
+                  <h3 className="text-xl font-normal text-black dark:text-white mb-2">
+                    {project.name}
+                  </h3>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-500 mb-4">
+                    /{project.slug}
+                  </p>
+                  {project._count && (
+                    <div className="flex items-center gap-4 text-sm">
+                      <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
+                        <FileText className="w-4 h-4" />
+                        <span>{project._count.docs} docs</span>
+                      </div>
+                      {project._count.proposals > 0 && (
+                        <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
+                          <GitBranch className="w-4 h-4" />
+                          <span>{project._count.proposals} proposals</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </Card>
+              </Link>
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
