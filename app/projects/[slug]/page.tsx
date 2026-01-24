@@ -53,15 +53,13 @@ export default function ProjectPage({
 
   const fetchProject = async () => {
     try {
-      // First get projects to find the one by slug
-      const projectsRes = await fetch('/api/projects');
-      const projects = await projectsRes.json();
-      const found = projects.find((p: Project) => p.slug === resolvedParams.slug);
+      const res = await fetch(`/api/projects/${resolvedParams.slug}`);
 
-      if (found) {
-        const res = await fetch(`/api/projects/${found.id}`);
+      if (res.ok) {
         const data = await res.json();
         setProject(data);
+      } else {
+        console.error('Failed to fetch project:', await res.text());
       }
     } catch (error) {
       console.error('Failed to fetch project:', error);

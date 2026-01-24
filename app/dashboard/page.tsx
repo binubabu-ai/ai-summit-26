@@ -8,7 +8,8 @@ import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, FileText, GitBranch } from 'lucide-react';
+import { Plus, FileText, GitBranch, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface Project {
   id: string;
@@ -22,12 +23,14 @@ interface Project {
 }
 
 export default function Dashboard() {
+  const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [formData, setFormData] = useState({ name: '', slug: '' });
   const [user, setUser] = useState<User | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -71,6 +74,8 @@ export default function Dashboard() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    setCreating(true);
+
     try {
       const res = await fetch('/api/projects', {
         method: 'POST',
@@ -79,9 +84,11 @@ export default function Dashboard() {
       });
 
       if (res.ok) {
+        const newProject = await res.json();
         setFormData({ name: '', slug: '' });
         setShowCreateForm(false);
-        fetchProjects();
+        // Redirect to the new project
+        router.push(`/projects/${newProject.slug}`);
       } else {
         const error = await res.json();
         alert(error.error || 'Failed to create project');
@@ -89,6 +96,8 @@ export default function Dashboard() {
     } catch (error) {
       console.error('Failed to create project:', error);
       alert('Failed to create project');
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -209,8 +218,19 @@ export default function Dashboard() {
                   Lowercase letters, numbers, and hyphens only
                 </p>
               </div>
-              <Button type="submit" variant="primary">
-                Create Project
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={creating || !formData.name || !formData.slug}
+              >
+                {creating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  'Create Project'
+                )}
               </Button>
             </form>
           </Card>

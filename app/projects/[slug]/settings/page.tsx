@@ -7,7 +7,8 @@ import { AppNav } from '@/components/layout/AppNav';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Copy, Eye, EyeOff, Trash2, Plus, Users, Key } from 'lucide-react';
+import { Copy, Eye, EyeOff, Trash2, Plus, Users, Key, AlertTriangle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { TeamMembersList } from '@/components/team/TeamMembersList';
 import { AddMemberDialog } from '@/components/team/AddMemberDialog';
 
@@ -64,11 +65,17 @@ export default function ProjectSettingsPage({
   const [showKey, setShowKey] = useState(false);
 
   // Team management state
-  const [activeTab, setActiveTab] = useState<'api-keys' | 'team'>('api-keys');
+  const [activeTab, setActiveTab] = useState<'api-keys' | 'team' | 'danger'>('api-keys');
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [currentUserRole, setCurrentUserRole] = useState<'OWNER' | 'EDITOR' | 'VIEWER' | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [showAddMemberDialog, setShowAddMemberDialog] = useState(false);
+
+  // Delete confirmation state
+  const router = useRouter();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchProjectAndKeys();
@@ -199,6 +206,33 @@ export default function ProjectSettingsPage({
     alert('Copied to clipboard!');
   };
 
+  const handleDeleteProject = async () => {
+    if (deleteConfirmText !== project?.name) {
+      alert('Project name does not match');
+      return;
+    }
+
+    setDeleting(true);
+
+    try {
+      const res = await fetch(`/api/projects/${project.slug}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        router.push('/dashboard');
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to delete project');
+      }
+    } catch (error) {
+      console.error('Failed to delete project:', error);
+      alert('Failed to delete project');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (loading) {
     return (
       <>
@@ -277,6 +311,22 @@ export default function ProjectSettingsPage({
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black dark:bg-white" />
               )}
             </button>
+            {currentUserRole === 'OWNER' && (
+              <button
+                onClick={() => setActiveTab('danger')}
+                className={`pb-4 px-2 text-lg font-light transition-colors relative ${
+                  activeTab === 'danger'
+                    ? 'text-danger'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-danger'
+                }`}
+              >
+                <AlertTriangle className="w-5 h-5 inline-block mr-2 mb-1" />
+                Danger Zone
+                {activeTab === 'danger' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-danger" />
+                )}
+              </button>
+            )}
           </div>
 
           {/* API Keys Tab */}
@@ -547,8 +597,121 @@ export default function ProjectSettingsPage({
               </Card>
             </>
           )}
+
+          {/* Danger Zone Tab */}
+          {activeTab === 'danger' && currentUserRole === 'OWNER' && (
+            <>
+              <Card variant="default" className="border-2 border-danger">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="w-6 h-6 text-danger" />
+                    <div>
+                      <h2 className="text-3xl font-light text-black dark:text-white mb-2">
+                        Danger Zone
+                      </h2>
+                      <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                        Irreversible and destructive actions
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+
+                <CardContent>
+                  <div className="p-6 bg-danger/5 border border-danger/20 rounded-lg">
+                    <h3 className="text-xl font-normal text-black dark:text-white mb-2">
+                      Delete this project
+                    </h3>
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+                      Once you delete a project, there is no going back. This will permanently delete:
+                    </p>
+                    <ul className="text-sm text-neutral-600 dark:text-neutral-400 mb-6 space-y-2 ml-5 list-disc">
+                      <li>All documents and their content</li>
+                      <li>All revisions and version history</li>
+                      <li>All proposals and changes</li>
+                      <li>All team members and permissions</li>
+                      <li>All API keys</li>
+                      <li>All audit logs</li>
+                    </ul>
+                    <Button
+                      onClick={() => setShowDeleteDialog(true)}
+                      variant="danger"
+                      size="md"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete Project
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteDialog && project && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <Card className="w-full max-w-lg mx-4" variant="default">
+            <CardHeader>
+              <div className="flex items-center gap-3 mb-2">
+                <AlertTriangle className="w-6 h-6 text-danger" />
+                <h2 className="text-2xl font-light text-black dark:text-white">
+                  Delete Project
+                </h2>
+              </div>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                This action cannot be undone. This will permanently delete the project and all its data.
+              </p>
+            </CardHeader>
+
+            <CardContent>
+              <div className="mb-6 p-4 bg-danger/10 border border-danger/20 rounded-lg">
+                <p className="text-sm text-danger font-medium">
+                  ⚠️ Warning: This action is irreversible
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-normal text-black dark:text-white mb-2">
+                  Type <span className="font-mono font-bold">{project.name}</span> to confirm:
+                </label>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  className="w-full px-4 py-2 border rounded-md bg-white dark:bg-neutral-950 text-black dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-600 focus:ring-2 focus:ring-danger focus:border-transparent border-neutral-200 dark:border-neutral-800"
+                  placeholder="Enter project name"
+                  autoFocus
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => {
+                    setShowDeleteDialog(false);
+                    setDeleteConfirmText('');
+                  }}
+                  variant="secondary"
+                  size="md"
+                  disabled={deleting}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleDeleteProject}
+                  variant="danger"
+                  size="md"
+                  disabled={deleting || deleteConfirmText !== project.name}
+                  className="flex-1"
+                >
+                  {deleting ? 'Deleting...' : 'Delete Project'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Add Member Dialog */}
       {project && (
