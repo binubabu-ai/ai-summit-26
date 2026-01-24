@@ -74,7 +74,7 @@ export default function TiptapEditor({
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm sm:prose lg:prose-lg dark:prose-invert max-w-none focus:outline-none min-h-[400px] p-4 bg-white dark:bg-neutral-950 text-black dark:text-white',
+        class: 'prose prose-sm dark:prose-invert max-w-none focus:outline-none min-h-[400px] p-4 bg-white dark:bg-neutral-950 text-black dark:text-white',
       },
     },
   });
@@ -113,6 +113,81 @@ export default function TiptapEditor({
     }
   };
 
+  // Helper function to detect formatting context
+  const getFormattingContext = () => {
+    if (!editor) return null;
+
+    const { $from } = editor.state.selection;
+    const parent = $from.parent;
+
+    return {
+      nodeType: parent.type.name,
+      isBlockquote: editor.isActive('blockquote'),
+      isHeading: editor.isActive('heading'),
+      headingLevel: editor.isActive('heading') ? editor.getAttributes('heading').level : null,
+      isBulletList: editor.isActive('bulletList'),
+      isOrderedList: editor.isActive('orderedList'),
+      isCodeBlock: editor.isActive('codeBlock'),
+      isBold: editor.isActive('bold'),
+      isItalic: editor.isActive('italic'),
+      isCode: editor.isActive('code'),
+    };
+  };
+
+  // Helper function to reapply formatting after AI improvement
+  const reapplyFormatting = (text: string, formatting: ReturnType<typeof getFormattingContext>) => {
+    if (!editor) return;
+
+    if (!formatting) {
+      // If no formatting context, insert as plain text
+      return editor.chain().focus().deleteSelection().insertContent(text).run();
+    }
+
+    // Delete selection first
+    editor.chain().focus().deleteSelection().run();
+
+    // Insert text based on node type
+    if (formatting.isBlockquote) {
+      // For blockquote, set as blockquote
+      editor.chain()
+        .insertContent(`<blockquote><p>${text}</p></blockquote>`)
+        .run();
+    } else if (formatting.isHeading && formatting.headingLevel) {
+      // For heading, set as heading with correct level
+      editor.chain()
+        .insertContent(`<h${formatting.headingLevel}>${text}</h${formatting.headingLevel}>`)
+        .run();
+    } else if (formatting.isCodeBlock) {
+      // For code block
+      editor.chain()
+        .insertContent(`<pre><code>${text}</code></pre>`)
+        .run();
+    } else if (formatting.isBulletList || formatting.isOrderedList) {
+      // For lists, insert as list item
+      const listTag = formatting.isBulletList ? 'ul' : 'ol';
+      editor.chain()
+        .insertContent(`<${listTag}><li><p>${text}</p></li></${listTag}>`)
+        .run();
+    } else {
+      // For paragraph or other nodes, insert as paragraph with inline formatting
+      let formattedText = text;
+
+      if (formatting.isBold) {
+        formattedText = `<strong>${formattedText}</strong>`;
+      }
+      if (formatting.isItalic) {
+        formattedText = `<em>${formattedText}</em>`;
+      }
+      if (formatting.isCode) {
+        formattedText = `<code>${formattedText}</code>`;
+      }
+
+      editor.chain()
+        .insertContent(`<p>${formattedText}</p>`)
+        .run();
+    }
+  };
+
   const handleAIAction = async (action: string) => {
     if (!editor) return;
 
@@ -130,10 +205,13 @@ export default function TiptapEditor({
         return;
       }
 
+      // Capture formatting context before AI call
+      const formatting = getFormattingContext();
+
       // Get document context (full text for AI reference)
       const documentContext = editor.getText();
 
-      // Call AI API
+      // Call AI API with formatting context
       const response = await fetch('/api/ai/improve-text', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -141,6 +219,7 @@ export default function TiptapEditor({
           text: selectedText,
           action,
           documentContext,
+          formatting,
         }),
       });
 
@@ -151,8 +230,8 @@ export default function TiptapEditor({
 
       const { improvedText } = await response.json();
 
-      // Replace selected text with improved version
-      editor.chain().focus().deleteSelection().insertContent(improvedText).run();
+      // Reapply original formatting to improved text
+      reapplyFormatting(improvedText, formatting);
 
       // Clear instruction after successful application
       setAiInstruction('');

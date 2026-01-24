@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { text, action, documentContext } = body;
+    const { text, action, documentContext, formatting } = body;
 
     if (!text || !action) {
       return NextResponse.json(
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Improve the text using AI
-    const result = await improveText(text, action, documentContext || '');
+    const result = await improveText(text, action, documentContext || '', formatting);
 
     return NextResponse.json(result);
   } catch (error) {
