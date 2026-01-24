@@ -19,6 +19,10 @@ import {
   Save as SaveIcon,
   Sparkles,
   ChevronDown,
+  Wand2,
+  Minimize2,
+  Maximize2,
+  AlertCircle,
 } from 'lucide-react';
 import { Loader } from '@/components/ui/loader';
 
@@ -39,6 +43,7 @@ export default function TiptapEditor({
   const [aiInstruction, setAiInstruction] = useState('');
   const [processing, setProcessing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Initialize turndown service for HTML to Markdown conversion
@@ -113,14 +118,49 @@ export default function TiptapEditor({
 
     setProcessing(true);
     setShowAiDropdown(false);
+    setError(null);
 
     try {
-      // TODO: Call AI API with the action
-      // For now, just a placeholder
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Get selected text or whole document
+      const { from, to } = editor.state.selection;
+      const selectedText = editor.state.doc.textBetween(from, to, '\n');
+
+      if (!selectedText || selectedText.trim().length === 0) {
+        setError('Please select some text to improve');
+        return;
+      }
+
+      // Get document context (full text for AI reference)
+      const documentContext = editor.getText();
+
+      // Call AI API
+      const response = await fetch('/api/ai/improve-text', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: selectedText,
+          action,
+          documentContext,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to improve text');
+      }
+
+      const { improvedText } = await response.json();
+
+      // Replace selected text with improved version
+      editor.chain().focus().deleteSelection().insertContent(improvedText).run();
+
+      // Clear instruction after successful application
+      setAiInstruction('');
+    } catch (err) {
+      console.error('AI action error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to improve text');
     } finally {
       setProcessing(false);
-      setAiInstruction('');
     }
   };
 
@@ -264,21 +304,24 @@ export default function TiptapEditor({
                 <div className="p-2 space-y-1">
                   <button
                     onClick={() => handleAIAction('refine')}
-                    className="w-full text-left px-3 py-2 text-sm text-black dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded-sm transition-colors"
+                    className="w-full text-left px-3 py-2 text-sm text-black dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded-sm transition-colors flex items-center gap-2"
                   >
-                    ✨ Refine
+                    <Wand2 className="w-4 h-4" />
+                    Refine
                   </button>
                   <button
                     onClick={() => handleAIAction('shorten')}
-                    className="w-full text-left px-3 py-2 text-sm text-black dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded-sm transition-colors"
+                    className="w-full text-left px-3 py-2 text-sm text-black dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded-sm transition-colors flex items-center gap-2"
                   >
-                    📝 Shorten
+                    <Minimize2 className="w-4 h-4" />
+                    Shorten
                   </button>
                   <button
                     onClick={() => handleAIAction('expand')}
-                    className="w-full text-left px-3 py-2 text-sm text-black dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded-sm transition-colors"
+                    className="w-full text-left px-3 py-2 text-sm text-black dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded-sm transition-colors flex items-center gap-2"
                   >
-                    📋 Expand
+                    <Maximize2 className="w-4 h-4" />
+                    Expand
                   </button>
                   <div className="border-t border-neutral-200 dark:border-neutral-800 my-1" />
                   <div className="p-2">
@@ -330,6 +373,20 @@ export default function TiptapEditor({
               </button>
             </>
           )}
+        </div>
+      )}
+      {error && (
+        <div className="bg-red-50 dark:bg-red-950/20 border-b border-red-200 dark:border-red-900 px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-red-600 dark:text-red-400 text-sm">
+            <AlertCircle className="w-4 h-4" />
+            <span>{error}</span>
+          </div>
+          <button
+            onClick={() => setError(null)}
+            className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+          >
+            <span className="text-lg">&times;</span>
+          </button>
         </div>
       )}
       <EditorContent editor={editor} />

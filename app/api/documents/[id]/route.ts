@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { z } from 'zod';
+import { checkPermission } from '@/lib/permissions';
 
 type Params = {
   params: Promise<{
@@ -92,15 +93,12 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
     const { content } = validation.data;
 
-    // Check if document exists and user has access to the project
+    // Check if document exists
     const doc = await prisma.document.findUnique({
       where: { id },
-      include: {
-        project: {
-          select: {
-            ownerId: true,
-          },
-        },
+      select: {
+        id: true,
+        projectId: true,
       },
     });
 
@@ -111,9 +109,10 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       );
     }
 
-    // For now, only the project owner can edit documents
-    // TODO: Check project members and their roles
-    if (doc.project.ownerId !== user.id) {
+    // Check if user has permission to edit documents
+    const hasPermission = await checkPermission(user.id, doc.projectId, 'canEditDocs');
+
+    if (!hasPermission) {
       return NextResponse.json(
         { error: 'Forbidden - You do not have permission to edit this document' },
         { status: 403 }
@@ -176,15 +175,12 @@ export async function DELETE(request: NextRequest, { params }: Params) {
 
     const { id } = await params;
 
-    // Check if document exists and user has access
+    // Check if document exists
     const doc = await prisma.document.findUnique({
       where: { id },
-      include: {
-        project: {
-          select: {
-            ownerId: true,
-          },
-        },
+      select: {
+        id: true,
+        projectId: true,
       },
     });
 
@@ -195,8 +191,10 @@ export async function DELETE(request: NextRequest, { params }: Params) {
       );
     }
 
-    // Only project owner can delete documents
-    if (doc.project.ownerId !== user.id) {
+    // Check if user has permission to delete documents
+    const hasPermission = await checkPermission(user.id, doc.projectId, 'canDeleteDocs');
+
+    if (!hasPermission) {
       return NextResponse.json(
         { error: 'Forbidden - You do not have permission to delete this document' },
         { status: 403 }

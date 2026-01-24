@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { z } from 'zod';
+import { checkPermission } from '@/lib/permissions';
 
 // GET /api/documents?projectId=xxx - List documents for a project
 export async function GET(request: NextRequest) {
@@ -68,10 +69,10 @@ export async function POST(request: NextRequest) {
 
     const { path, projectId, content } = validation.data;
 
-    // Check if user has access to the project
+    // Check if project exists
     const project = await prisma.project.findUnique({
       where: { id: projectId },
-      select: { ownerId: true },
+      select: { id: true },
     });
 
     if (!project) {
@@ -81,9 +82,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Only project owner can create documents
-    // TODO: Check project members and their roles
-    if (project.ownerId !== user.id) {
+    // Check if user has permission to create documents
+    const hasPermission = await checkPermission(user.id, projectId, 'canCreateDocs');
+
+    if (!hasPermission) {
       return NextResponse.json(
         { error: 'Forbidden - You do not have permission to create documents in this project' },
         { status: 403 }

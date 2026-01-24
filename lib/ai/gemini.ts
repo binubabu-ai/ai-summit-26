@@ -557,3 +557,75 @@ Return JSON with:
     throw new Error('Failed to process text into document structure');
   }
 }
+
+/**
+ * Improve text using AI (for editor)
+ */
+export async function improveText(
+  text: string,
+  action: string,
+  documentContext: string
+): Promise<{ improvedText: string; explanation?: string }> {
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-2.5-flash-lite',  // Cost-efficient for quick text improvements
+    systemInstruction: `You are a professional technical writer helping improve documentation text.
+Always preserve the original meaning and tone while making improvements.
+Return only the improved text without explanations unless specifically asked.`,
+  });
+
+  const actionPrompts: Record<string, string> = {
+    refine: `Refine and polish this text to make it more professional and clear while preserving its meaning and length:
+
+${text}
+
+Return ONLY the refined text, no explanations.`,
+
+    shorten: `Make this text more concise and to-the-point while preserving all key information:
+
+${text}
+
+Return ONLY the shortened text, no explanations.`,
+
+    expand: `Expand this text with more detail, examples, and context to make it more comprehensive:
+
+${text}
+
+${documentContext ? `\nDocument context for reference:\n${documentContext.substring(0, 500)}` : ''}
+
+Return ONLY the expanded text, no explanations.`,
+  };
+
+  // If it's a custom instruction, use it directly
+  const prompt = actionPrompts[action] || `${action}
+
+Text to improve:
+${text}
+
+${documentContext ? `\nDocument context:\n${documentContext.substring(0, 500)}` : ''}
+
+Return ONLY the improved text, no explanations.`;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const response = result.response;
+    let improvedText = response.text().trim();
+
+    // Remove any markdown code blocks if present
+    const codeBlockMatch = improvedText.match(/```(?:markdown|text|md)?\n([\s\S]*?)\n```/);
+    if (codeBlockMatch) {
+      improvedText = codeBlockMatch[1].trim();
+    }
+
+    // Remove quotes if the entire response is quoted
+    if (improvedText.startsWith('"') && improvedText.endsWith('"')) {
+      improvedText = improvedText.slice(1, -1);
+    }
+
+    return {
+      improvedText,
+    };
+  } catch (error) {
+    console.error('Error improving text:', error);
+    throw new Error('Failed to improve text');
+  }
+}
