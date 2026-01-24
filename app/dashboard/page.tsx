@@ -103,11 +103,11 @@ export default function Dashboard() {
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+        <div className="max-w-[1600px] mx-auto px-6 lg:px-16">
           <div className="flex items-center justify-between h-20">
             <Link href="/" className="flex items-center gap-3">
               <div className="text-2xl font-light tracking-tight text-black dark:text-white">
-                Docs Jays
+                Docjays
               </div>
               <Badge size="sm" variant="neutral">Beta</Badge>
             </Link>
@@ -146,7 +146,7 @@ export default function Dashboard() {
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-32 pb-16">
+      <main className="max-w-[1600px] mx-auto px-6 lg:px-16 pt-32 pb-16">
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-5xl md:text-6xl font-light tracking-tight text-black dark:text-white mb-4">

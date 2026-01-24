@@ -1,7 +1,7 @@
 # AI Features Implementation Roadmap
 
 ## 🎯 Vision
-Transform Docsjays into the world's first **hallucination-proof** documentation platform using AI.
+Transform Docjays into the world's first **hallucination-proof** documentation platform using AI.
 
 ---
 

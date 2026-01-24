@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import prisma from '@/lib/prisma';
 
-// DELETE /api/projects/:id/api-keys/:keyId - Delete an API key
+// DELETE /api/projects/:slug/api-keys/:keyId - Delete an API key
 export async function DELETE(
   request: NextRequest,
-  context: { params: Promise<{ id: string; keyId: string }> }
+  context: { params: Promise<{ slug: string; keyId: string }> }
 ) {
   try {
     const supabase = await createClient();
@@ -17,11 +17,11 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id: projectId, keyId } = await context.params;
+    const { slug, keyId } = await context.params;
 
     // Verify user owns this project
     const project = await prisma.project.findUnique({
-      where: { id: projectId },
+      where: { slug },
     });
 
     if (!project || project.ownerId !== user.id) {
@@ -35,7 +35,7 @@ export async function DELETE(
     await prisma.apiKey.delete({
       where: {
         id: keyId,
-        projectId, // Ensure it belongs to this project
+        projectId: project.id, // Ensure it belongs to this project
       },
     });
 
@@ -49,10 +49,10 @@ export async function DELETE(
   }
 }
 
-// PATCH /api/projects/:id/api-keys/:keyId - Update API key (toggle active status)
+// PATCH /api/projects/:slug/api-keys/:keyId - Update API key (toggle active status)
 export async function PATCH(
   request: NextRequest,
-  context: { params: Promise<{ id: string; keyId: string }> }
+  context: { params: Promise<{ slug: string; keyId: string }> }
 ) {
   try {
     const supabase = await createClient();
@@ -64,13 +64,13 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id: projectId, keyId } = await context.params;
+    const { slug, keyId } = await context.params;
     const body = await request.json();
     const { isActive } = body;
 
     // Verify user owns this project
     const project = await prisma.project.findUnique({
-      where: { id: projectId },
+      where: { slug },
     });
 
     if (!project || project.ownerId !== user.id) {
@@ -84,7 +84,7 @@ export async function PATCH(
     const apiKey = await prisma.apiKey.update({
       where: {
         id: keyId,
-        projectId,
+        projectId: project.id,
       },
       data: {
         isActive,

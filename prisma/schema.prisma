@@ -1,4 +1,4 @@
-// Docs Jays Database Schema
+// Docjays Database Schema
 // Virtual Version Control System for Documentation
 
 datasource db {
@@ -23,6 +23,7 @@ model User {
   // Relations
   projects   Project[] // Projects owned by user
   members    ProjectMember[] // Projects user is a member of
+  invitedMembers ProjectMember[] @relation("InvitedBy") // Members invited by this user
   versions   Version[] // Document versions created by user
   revisions  Revision[] // Revisions created by user
   auditLogs  AuditLog[] // Audit trail of user actions
@@ -85,16 +86,22 @@ model ProjectMember {
   id        String   @id @default(cuid())
   projectId String
   userId    String
-  role      String   @default("VIEWER") // OWNER, ADMIN, EDITOR, VIEWER
+  role      String   @default("VIEWER") // OWNER, EDITOR, VIEWER
   createdAt DateTime @default(now())
+
+  // Invitation tracking
+  invitedBy    String?   // User ID who invited this member
+  lastAccessAt DateTime? // Last time member accessed the project
 
   // Relations
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  inviter   User?   @relation("InvitedBy", fields: [invitedBy], references: [id], onDelete: SetNull)
 
   @@unique([projectId, userId])
   @@index([projectId])
   @@index([userId])
+  @@index([invitedBy])
   @@map("project_members")
 }
 

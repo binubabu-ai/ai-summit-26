@@ -57,7 +57,7 @@ export default async function RevisionPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-950">
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-[1600px] mx-auto px-6 py-8">
         <Suspense fallback={<div>Loading...</div>}>
           <RevisionView revision={revision as any} userId={user.id} />
         </Suspense>

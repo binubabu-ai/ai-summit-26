@@ -2,7 +2,7 @@
 
 ## What Was Built
 
-A complete Model Context Protocol (MCP) integration system that allows AI assistants (Claude Desktop, Cursor, Windsurf, Claude Code, VS Code) to connect to Docsjays projects and interact with documentation.
+A complete Model Context Protocol (MCP) integration system that allows AI assistants (Claude Desktop, Cursor, Windsurf, Claude Code, VS Code) to connect to Docjays projects and interact with documentation.
 
 ## Components Implemented
 
@@ -289,9 +289,9 @@ npm run dev
 ```json
 {
   "mcpServers": {
-    "Docsjays": {
+    "Docjays": {
       "command": "npx",
-      "args": ["mcp-remote", "https://docsjays.com/api/mcp"],
+      "args": ["mcp-remote", "https://Docjays.com/api/mcp"],
       "env": {
         "MCP_AUTH_TOKEN": "dj_proj_abc12345_..."
       }
@@ -304,8 +304,8 @@ npm run dev
 ```json
 {
   "mcpServers": {
-    "Docsjays": {
-      "url": "https://docsjays.com/api/mcp",
+    "Docjays": {
+      "url": "https://Docjays.com/api/mcp",
       "headers": {
         "Authorization": "Bearer dj_proj_abc12345_..."
       }

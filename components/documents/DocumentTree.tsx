@@ -25,13 +25,13 @@ function TreeNode({
     return (
       <Link
         href={`/projects/${projectSlug}/docs/${node.path}`}
-        className="flex items-center gap-2 px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded transition-colors"
+        className="flex items-center gap-2 px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-colors"
         style={{ paddingLeft: `${level * 1.5 + 0.75}rem` }}
       >
         <span className="text-blue-500">📄</span>
-        <span className="flex-1">{node.name}</span>
+        <span className="flex-1 text-black dark:text-white">{node.name}</span>
         {node.updatedAt && (
-          <span className="text-xs text-neutral-500">
+          <span className="text-xs text-neutral-500 dark:text-neutral-400">
             {new Date(node.updatedAt).toLocaleDateString()}
           </span>
         )}
@@ -44,7 +44,7 @@ function TreeNode({
     <div>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded transition-colors w-full text-left"
+        className="flex items-center gap-2 px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-colors w-full text-left"
         style={{ paddingLeft: `${level * 1.5 + 0.75}rem` }}
       >
         <span className="text-amber-500 transition-transform" style={{
@@ -53,9 +53,9 @@ function TreeNode({
           ▶
         </span>
         <span className="text-amber-500">📁</span>
-        <span className="flex-1 font-medium">{node.name}</span>
+        <span className="flex-1 font-medium text-black dark:text-white">{node.name}</span>
         {node.children && (
-          <span className="text-xs text-neutral-500">
+          <span className="text-xs text-neutral-500 dark:text-neutral-400">
             {node.children.length}
           </span>
         )}

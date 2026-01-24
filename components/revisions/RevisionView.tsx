@@ -251,7 +251,7 @@ export function RevisionView({ revision, userId }: RevisionViewProps) {
           </p>
           <Button
             onClick={() => router.push(`/projects/${revision.document.project.slug}/docs/${revision.document.path}`)}
-            variant="default"
+            variant="secondary"
           >
             View Document
           </Button>

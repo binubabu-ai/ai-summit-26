@@ -60,7 +60,7 @@
 - **Vercel**: Dark mode first, sharp edges, gradients
 - **Raycast**: Playful gradients, glassmorphism
 
-### Our Unique Identity: "Docsjays" 🐦
+### Our Unique Identity: "Docjays" 🐦
 
 **Theme**: Documentation as flight - smooth, elevated, effortless
 
@@ -140,7 +140,7 @@
   <div className="hero-content">
     <Badge>🚀 Now with AI-powered version control</Badge>
     <h1>Documentation that flies</h1>
-    <p>Docs Jays brings AI-native version control to your documentation.
+    <p>Docjays brings AI-native version control to your documentation.
        Let AI agents propose changes, review with diff views, and ship faster.</p>
     <CTAs>
       <PrimaryButton>Start for Free</PrimaryButton>
@@ -261,7 +261,7 @@
 
   <Stats>
     <Stat value="10K+" label="Documents created" />
-    <Stat value="500+" label="Teams using Docs Jays" />
+    <Stat value="500+" label="Teams using Docjays" />
     <Stat value="50K+" label="AI proposals reviewed" />
   </Stats>
 </section>
@@ -369,7 +369,7 @@
 
   <FooterBottom>
     <Logo />
-    <Copyright>© 2026 Docs Jays. All rights reserved.</Copyright>
+    <Copyright>© 2026 Docjays. All rights reserved.</Copyright>
     <SocialLinks>Twitter | GitHub | Discord</SocialLinks>
   </FooterBottom>
 </footer>

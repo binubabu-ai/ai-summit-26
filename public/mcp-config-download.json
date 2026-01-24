@@ -1,0 +1,165 @@
+{
+  "mcpServers": {
+    "docsjays": {
+      "url": "YOUR_DOCSJAYS_URL/api/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_API_KEY_HERE"
+      },
+      "tools": [
+        {
+          "name": "read_document",
+          "description": "Read the content of a document in the project with grounding status",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Path to the document (e.g., 'architecture.md', 'api/auth.md')"
+              }
+            },
+            "required": ["path"]
+          }
+        },
+        {
+          "name": "search_documents",
+          "description": "Search for documents by content or path",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Search query"
+              },
+              "limit": {
+                "type": "number",
+                "description": "Maximum number of results (default: 10)",
+                "default": 10
+              }
+            },
+            "required": ["query"]
+          }
+        },
+        {
+          "name": "list_documents",
+          "description": "List all documents in the project",
+          "inputSchema": {
+            "type": "object",
+            "properties": {}
+          }
+        },
+        {
+          "name": "create_revision",
+          "description": "Create a new revision (draft or proposed) with grounding status",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Path to the document"
+              },
+              "content": {
+                "type": "string",
+                "description": "New content for the revision"
+              },
+              "title": {
+                "type": "string",
+                "description": "Title describing the changes"
+              },
+              "description": {
+                "type": "string",
+                "description": "Detailed rationale for the changes"
+              },
+              "status": {
+                "type": "string",
+                "description": "Status: 'draft' or 'proposed' (default: draft)",
+                "enum": ["draft", "proposed"],
+                "default": "draft"
+              },
+              "basedOn": {
+                "type": "string",
+                "description": "Revision ID this is based on (optional, defaults to current main)"
+              }
+            },
+            "required": ["path", "content", "title"]
+          }
+        },
+        {
+          "name": "propose_revision",
+          "description": "Move a draft revision to proposed status (ready for review)",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "revisionId": {
+                "type": "string",
+                "description": "ID of the draft revision to propose"
+              }
+            },
+            "required": ["revisionId"]
+          }
+        },
+        {
+          "name": "get_revision_status",
+          "description": "Check the status of a revision (approved, rejected, pending, conflicted) - Bidirectional!",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "revisionId": {
+                "type": "string",
+                "description": "ID of the revision to check"
+              }
+            },
+            "required": ["revisionId"]
+          }
+        },
+        {
+          "name": "list_revisions",
+          "description": "List all revisions for a document",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Path to the document"
+              }
+            },
+            "required": ["path"]
+          }
+        },
+        {
+          "name": "propose_change",
+          "description": "Propose a change to a document (creates a proposal for review)",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Path to the document to change"
+              },
+              "newContent": {
+                "type": "string",
+                "description": "New content for the document"
+              },
+              "title": {
+                "type": "string",
+                "description": "Title for the proposal"
+              },
+              "rationale": {
+                "type": "string",
+                "description": "Explanation of why this change is needed"
+              }
+            },
+            "required": ["path", "newContent", "title", "rationale"]
+          }
+        },
+        {
+          "name": "get_project_info",
+          "description": "Get information about the current project",
+          "inputSchema": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      ]
+    }
+  }
+}

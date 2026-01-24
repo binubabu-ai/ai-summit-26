@@ -49,7 +49,9 @@ export async function POST(request: NextRequest, { params }: Params) {
           versions: {
             create: {
               content: version.content,
-              author: 'merge',
+              authorId: null,
+              authorType: 'system',
+              changeType: 'merge',
             },
           },
         },

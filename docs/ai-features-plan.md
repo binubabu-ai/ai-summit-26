@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-Transform Docsjays into an **intelligent documentation platform** with AI-powered editing, real-time audits, conflict detection, and smart suggestions. The goal: **prevent hallucinations by keeping documentation accurate, fresh, and conflict-free**.
+Transform Docjays into an **intelligent documentation platform** with AI-powered editing, real-time audits, conflict detection, and smart suggestions. The goal: **prevent hallucinations by keeping documentation accurate, fresh, and conflict-free**.
 
 ## Feature Matrix
 
@@ -163,7 +163,7 @@ model Suggestion {
 ```typescript
 // System prompt for doc chat
 const DOC_CHAT_SYSTEM_PROMPT = `
-You are an AI documentation assistant for Docsjays. Your role:
+You are an AI documentation assistant for Docjays. Your role:
 
 1. Help users improve their documentation
 2. Suggest clear, concise rewrites

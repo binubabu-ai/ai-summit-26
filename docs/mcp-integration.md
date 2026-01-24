@@ -1,6 +1,6 @@
-# Docsjays MCP Integration Guide
+# Docjays MCP Integration Guide
 
-Connect your AI assistants (Claude Desktop, Cursor, Windsurf, Claude Code, VS Code) to your Docsjays projects via Model Context Protocol (MCP).
+Connect your AI assistants (Claude Desktop, Cursor, Windsurf, Claude Code, VS Code) to your Docjays projects via Model Context Protocol (MCP).
 
 ## What is MCP?
 
@@ -12,13 +12,13 @@ Model Context Protocol allows AI assistants to directly access and propose chang
 
 ## Prerequisites
 
-1. A Docsjays project with documents
+1. A Docjays project with documents
 2. A project API key (see "Generating an API Key" below)
 3. One of the supported AI assistants
 
 ## Generating an API Key
 
-1. Navigate to your project in Docsjays
+1. Navigate to your project in Docjays
 2. Click on **Settings** → **API Keys**
 3. Click **Generate New Key**
 4. Give it a name (e.g., "Claude Desktop", "Cursor")
@@ -35,16 +35,16 @@ Your API key format: `dj_proj_xxxxxxxx_...`
    - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
    - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
-2. Add the Docsjays MCP server:
+2. Add the Docjays MCP server:
 
 ```json
 {
   "mcpServers": {
-    "Docsjays": {
+    "Docjays": {
       "command": "npx",
       "args": [
         "mcp-remote",
-        "https://docsjays.com/api/mcp"
+        "https://Docjays.com/api/mcp"
       ],
       "env": {
         "MCP_AUTH_TOKEN": "your-api-key-here"
@@ -63,8 +63,8 @@ Your API key format: `dj_proj_xxxxxxxx_...`
 ```json
 {
   "mcpServers": {
-    "Docsjays": {
-      "url": "https://docsjays.com/api/mcp",
+    "Docjays": {
+      "url": "https://Docjays.com/api/mcp",
       "headers": {
         "Authorization": "Bearer your-api-key-here"
       }
@@ -82,8 +82,8 @@ Your API key format: `dj_proj_xxxxxxxx_...`
 ```json
 {
   "mcpServers": {
-    "Docsjays": {
-      "url": "https://docsjays.com/api/mcp"
+    "Docjays": {
+      "url": "https://Docjays.com/api/mcp"
     }
   }
 }
@@ -96,7 +96,7 @@ Your API key format: `dj_proj_xxxxxxxx_...`
 ```json
 {
   "env": {
-    "DOCSJAYS_API_KEY": "your-api-key-here"
+    "Docjays_API_KEY": "your-api-key-here"
   }
 }
 ```
@@ -106,10 +106,10 @@ Your API key format: `dj_proj_xxxxxxxx_...`
 ```json
 {
   "mcpServers": {
-    "Docsjays": {
-      "url": "https://docsjays.com/api/mcp",
+    "Docjays": {
+      "url": "https://Docjays.com/api/mcp",
       "headers": {
-        "Authorization": "Bearer ${DOCSJAYS_API_KEY}"
+        "Authorization": "Bearer ${Docjays_API_KEY}"
       }
     }
   }
@@ -121,7 +121,7 @@ Your API key format: `dj_proj_xxxxxxxx_...`
 **Quick Setup (Deeplink)**:
 
 ```
-cursor://mcp/add?name=Docsjays&url=https://docsjays.com/api/mcp
+cursor://mcp/add?name=Docjays&url=https://Docjays.com/api/mcp
 ```
 
 ### Windsurf
@@ -133,9 +133,9 @@ cursor://mcp/add?name=Docsjays&url=https://docsjays.com/api/mcp
 
 ```json
 {
-  "name": "Docsjays",
+  "name": "Docjays",
   "command": "npx",
-  "args": ["mcp-remote", "https://docsjays.com/api/mcp"],
+  "args": ["mcp-remote", "https://Docjays.com/api/mcp"],
   "env": {
     "MCP_AUTH_TOKEN": "your-api-key-here"
   }
@@ -151,9 +151,9 @@ cursor://mcp/add?name=Docsjays&url=https://docsjays.com/api/mcp
 ```json
 {
   "mcpServers": {
-    "Docsjays": {
+    "Docjays": {
       "command": "npx",
-      "args": ["mcp-remote", "https://docsjays.com/api/mcp"],
+      "args": ["mcp-remote", "https://Docjays.com/api/mcp"],
       "env": {
         "MCP_AUTH_TOKEN": "your-api-key-here"
       }
@@ -165,9 +165,9 @@ cursor://mcp/add?name=Docsjays&url=https://docsjays.com/api/mcp
 2. Or set via CLI:
 
 ```bash
-claude-code mcp add Docsjays \
+claude-code mcp add Docjays \
   --command "npx" \
-  --args "mcp-remote,https://docsjays.com/api/mcp" \
+  --args "mcp-remote,https://Docjays.com/api/mcp" \
   --env "MCP_AUTH_TOKEN=your-api-key-here"
 ```
 
@@ -187,8 +187,8 @@ claude-code mcp list
 {
   "mcpServers": [
     {
-      "name": "Docsjays",
-      "url": "https://docsjays.com/api/mcp",
+      "name": "Docjays",
+      "url": "https://Docjays.com/api/mcp",
       "headers": {
         "Authorization": "Bearer your-api-key-here"
       }
@@ -277,7 +277,7 @@ Get project metadata (doc count, open proposals, etc.).
 3. **Rotate keys regularly** (every 90 days recommended)
 4. **Use separate keys** for each IDE/environment
 5. **Deactivate unused keys** in project settings
-6. **Monitor key usage** in the Docsjays dashboard
+6. **Monitor key usage** in the Docjays dashboard
 
 ## Troubleshooting
 
@@ -315,21 +315,21 @@ Get project metadata (doc count, open proposals, etc.).
 
 ## Support
 
-- **Documentation**: https://docsjays.com/docs
-- **GitHub Issues**: https://github.com/docsjays/issues
-- **Discord Community**: https://discord.gg/docsjays
-- **Email Support**: support@docsjays.com
+- **Documentation**: https://Docjays.com/docs
+- **GitHub Issues**: https://github.com/Docjays/issues
+- **Discord Community**: https://discord.gg/Docjays
+- **Email Support**: support@Docjays.com
 
 ## Advanced Configuration
 
 ### Custom MCP Server (Self-Hosted)
 
-If you're self-hosting Docsjays:
+If you're self-hosting Docjays:
 
 ```json
 {
   "mcpServers": {
-    "Docsjays": {
+    "Docjays": {
       "command": "npx",
       "args": ["mcp-remote", "https://your-domain.com/api/mcp"],
       "env": {
@@ -347,16 +347,16 @@ To connect multiple projects, add separate entries:
 ```json
 {
   "mcpServers": {
-    "Docsjays-ProjectA": {
+    "Docjays-ProjectA": {
       "command": "npx",
-      "args": ["mcp-remote", "https://docsjays.com/api/mcp"],
+      "args": ["mcp-remote", "https://Docjays.com/api/mcp"],
       "env": {
         "MCP_AUTH_TOKEN": "key-for-project-a"
       }
     },
-    "Docsjays-ProjectB": {
+    "Docjays-ProjectB": {
       "command": "npx",
-      "args": ["mcp-remote", "https://docsjays.com/api/mcp"],
+      "args": ["mcp-remote", "https://Docjays.com/api/mcp"],
       "env": {
         "MCP_AUTH_TOKEN": "key-for-project-b"
       }
@@ -371,19 +371,19 @@ For better security, use environment variables:
 
 **macOS/Linux**:
 ```bash
-export DOCSJAYS_API_KEY="your-key-here"
+export Docjays_API_KEY="your-key-here"
 ```
 
 **Windows (PowerShell)**:
 ```powershell
-$env:DOCSJAYS_API_KEY = "your-key-here"
+$env:Docjays_API_KEY = "your-key-here"
 ```
 
 Then reference in config:
 ```json
 {
   "env": {
-    "MCP_AUTH_TOKEN": "${DOCSJAYS_API_KEY}"
+    "MCP_AUTH_TOKEN": "${Docjays_API_KEY}"
   }
 }
 ```

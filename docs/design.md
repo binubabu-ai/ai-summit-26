@@ -1,4 +1,4 @@
-# Docs Jays Design System
+# Docjays Design System
 
 > Minimal, clean aesthetic inspired by luxury automotive brands (JLR)
 

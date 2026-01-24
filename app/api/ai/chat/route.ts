@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
         documentId,
         role: 'assistant',
         content: response.message,
-        suggestions: response.suggestions || [],
+        suggestions: response.suggestions as any,
       },
     });
 
@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
         projectId: document.projectId,
         documentId,
         operation: quickAction ? 'quick_suggestion' : 'chat',
-        model: 'claude-opus-4-5',
+        model: quickAction ? 'gemini-2.5-flash-lite' : 'gemini-3-flash-preview',
         inputTokens: response.usage.inputTokens,
         outputTokens: response.usage.outputTokens,
         cost: response.usage.cost,
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
           data: {
             userId: user.id,
             operation: 'chat',
-            model: 'claude-opus-4-5',
+            model: 'gemini-3-flash-preview',
             inputTokens: 0,
             outputTokens: 0,
             cost: 0,

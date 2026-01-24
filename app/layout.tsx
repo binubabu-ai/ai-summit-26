@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Docsjays - AI-Native Documentation Engine",
+  title: "Docjays - AI-Native Documentation Engine",
   description: "Virtual Version Control System for documentation with MCP integration. Let AI agents propose changes, review with diff views, and ship faster.",
   keywords: ["documentation", "version control", "AI", "MCP", "collaboration"],
 };

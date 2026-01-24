@@ -7,7 +7,9 @@ import { AppNav } from '@/components/layout/AppNav';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Copy, Eye, EyeOff, Trash2, Plus } from 'lucide-react';
+import { Copy, Eye, EyeOff, Trash2, Plus, Users, Key } from 'lucide-react';
+import { TeamMembersList } from '@/components/team/TeamMembersList';
+import { AddMemberDialog } from '@/components/team/AddMemberDialog';
 
 interface Project {
   id: string;
@@ -26,6 +28,27 @@ interface ApiKey {
   requestCount: number;
 }
 
+interface User {
+  id: string;
+  email: string;
+  name?: string;
+  avatar?: string;
+}
+
+interface TeamMember {
+  id: string;
+  userId: string;
+  role: 'OWNER' | 'EDITOR' | 'VIEWER';
+  createdAt: string;
+  lastAccessAt?: string;
+  user: User;
+  inviter?: {
+    id: string;
+    name?: string;
+    email: string;
+  } | null;
+}
+
 export default function ProjectSettingsPage({
   params,
 }: {
@@ -40,9 +63,29 @@ export default function ProjectSettingsPage({
   const [newKey, setNewKey] = useState<string | null>(null);
   const [showKey, setShowKey] = useState(false);
 
+  // Team management state
+  const [activeTab, setActiveTab] = useState<'api-keys' | 'team'>('api-keys');
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [currentUserRole, setCurrentUserRole] = useState<'OWNER' | 'EDITOR' | 'VIEWER' | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [showAddMemberDialog, setShowAddMemberDialog] = useState(false);
+
   useEffect(() => {
     fetchProjectAndKeys();
+    fetchCurrentUser();
   }, []);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const res = await fetch('/api/user');
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentUserId(data.id);
+      }
+    } catch (error) {
+      console.error('Failed to fetch current user:', error);
+    }
+  };
 
   const fetchProjectAndKeys = async () => {
     try {
@@ -52,14 +95,15 @@ export default function ProjectSettingsPage({
       const found = projects.find((p: Project) => p.slug === resolvedParams.slug);
 
       if (found) {
-        const projectRes = await fetch(`/api/projects/${found.id}`);
-        const projectData = await projectRes.json();
-        setProject(projectData);
+        setProject(found);
 
         // Get API keys
-        const keysRes = await fetch(`/api/projects/${found.id}/api-keys`);
+        const keysRes = await fetch(`/api/projects/${resolvedParams.slug}/api-keys`);
         const keysData = await keysRes.json();
         setApiKeys(keysData);
+
+        // Get team members
+        await fetchTeamMembers();
       }
     } catch (error) {
       console.error('Failed to fetch project and keys:', error);
@@ -68,12 +112,25 @@ export default function ProjectSettingsPage({
     }
   };
 
+  const fetchTeamMembers = async () => {
+    try {
+      const res = await fetch(`/api/projects/${resolvedParams.slug}/team`);
+      if (res.ok) {
+        const data = await res.json();
+        setTeamMembers(data.members || []);
+        setCurrentUserRole(data.currentUserRole || null);
+      }
+    } catch (error) {
+      console.error('Failed to fetch team members:', error);
+    }
+  };
+
   const handleCreateKey = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!project || !newKeyName.trim()) return;
 
     try {
-      const res = await fetch(`/api/projects/${project.id}/api-keys`, {
+      const res = await fetch(`/api/projects/${project.slug}/api-keys`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newKeyName }),
@@ -101,7 +158,7 @@ export default function ProjectSettingsPage({
     }
 
     try {
-      const res = await fetch(`/api/projects/${project.id}/api-keys/${keyId}`, {
+      const res = await fetch(`/api/projects/${project.slug}/api-keys/${keyId}`, {
         method: 'DELETE',
       });
 
@@ -120,7 +177,7 @@ export default function ProjectSettingsPage({
     if (!project) return;
 
     try {
-      const res = await fetch(`/api/projects/${project.id}/api-keys/${keyId}`, {
+      const res = await fetch(`/api/projects/${project.slug}/api-keys/${keyId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive: !currentStatus }),
@@ -146,7 +203,7 @@ export default function ProjectSettingsPage({
     return (
       <>
         <AppNav />
-        <div className="min-h-screen pt-32 px-6 lg:px-12 flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
+        <div className="min-h-screen pt-32 px-6 lg:px-16 flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
           <div className="text-xl font-light text-black dark:text-white">Loading...</div>
         </div>
       </>
@@ -157,7 +214,7 @@ export default function ProjectSettingsPage({
     return (
       <>
         <AppNav />
-        <div className="min-h-screen pt-32 px-6 lg:px-12 flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
+        <div className="min-h-screen pt-32 px-6 lg:px-16 flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
           <div className="text-center">
             <h1 className="text-4xl font-light mb-4 text-black dark:text-white">Project Not Found</h1>
             <Link href="/dashboard">
@@ -172,8 +229,8 @@ export default function ProjectSettingsPage({
   return (
     <>
       <AppNav />
-      <div className="min-h-screen pt-32 px-6 lg:px-12 pb-16 bg-neutral-50 dark:bg-neutral-950">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen pt-32 px-6 lg:px-16 pb-16 bg-neutral-50 dark:bg-neutral-950">
+        <div className="max-w-[1600px] mx-auto">
           {/* Header */}
           <div className="mb-12">
             <Link
@@ -190,8 +247,43 @@ export default function ProjectSettingsPage({
             </p>
           </div>
 
-          {/* New Key Success Modal */}
-          {newKey && (
+          {/* Tabs */}
+          <div className="flex gap-4 mb-8 border-b border-neutral-200 dark:border-neutral-800">
+            <button
+              onClick={() => setActiveTab('api-keys')}
+              className={`pb-4 px-2 text-lg font-light transition-colors relative ${
+                activeTab === 'api-keys'
+                  ? 'text-black dark:text-white'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white'
+              }`}
+            >
+              <Key className="w-5 h-5 inline-block mr-2 mb-1" />
+              API Keys
+              {activeTab === 'api-keys' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black dark:bg-white" />
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('team')}
+              className={`pb-4 px-2 text-lg font-light transition-colors relative ${
+                activeTab === 'team'
+                  ? 'text-black dark:text-white'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white'
+              }`}
+            >
+              <Users className="w-5 h-5 inline-block mr-2 mb-1" />
+              Team
+              {activeTab === 'team' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black dark:bg-white" />
+              )}
+            </button>
+          </div>
+
+          {/* API Keys Tab */}
+          {activeTab === 'api-keys' && (
+            <>
+              {/* New Key Success Modal */}
+              {newKey && (
             <Card className="mb-8 border-2 border-black dark:border-white" variant="default">
               <CardHeader>
                 <h2 className="text-2xl font-light text-black dark:text-white">API Key Created!</h2>
@@ -373,8 +465,101 @@ export default function ProjectSettingsPage({
               )}
             </CardContent>
           </Card>
+            </>
+          )}
+
+          {/* Team Tab */}
+          {activeTab === 'team' && (
+            <>
+              <Card variant="default">
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h2 className="text-3xl font-light text-black dark:text-white mb-2">
+                        Team Members
+                      </h2>
+                      <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                        Manage who has access to this project
+                      </p>
+                    </div>
+                    {currentUserRole === 'OWNER' && (
+                      <Button
+                        onClick={() => setShowAddMemberDialog(true)}
+                        variant="primary"
+                        size="md"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Member
+                      </Button>
+                    )}
+                  </div>
+                </CardHeader>
+
+                <CardContent>
+                  <TeamMembersList
+                    members={teamMembers}
+                    currentUserId={currentUserId || ''}
+                    currentUserRole={currentUserRole || 'VIEWER'}
+                    projectSlug={project.slug}
+                    onMemberUpdated={fetchTeamMembers}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Role Descriptions */}
+              <Card variant="default" className="mt-6">
+                <CardHeader>
+                  <h3 className="text-xl font-light text-black dark:text-white">
+                    Role Permissions
+                  </h3>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="default" size="sm">OWNER</Badge>
+                        <span className="text-sm font-normal text-black dark:text-white">Full access</span>
+                      </div>
+                      <p className="text-sm text-neutral-600 dark:text-neutral-400 ml-1">
+                        Can manage team, create/edit/delete documents, manage API keys, and delete project
+                      </p>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="success" size="sm">EDITOR</Badge>
+                        <span className="text-sm font-normal text-black dark:text-white">Can edit</span>
+                      </div>
+                      <p className="text-sm text-neutral-600 dark:text-neutral-400 ml-1">
+                        Can create and edit documents, but cannot manage team or settings
+                      </p>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="neutral" size="sm">VIEWER</Badge>
+                        <span className="text-sm font-normal text-black dark:text-white">Read-only</span>
+                      </div>
+                      <p className="text-sm text-neutral-600 dark:text-neutral-400 ml-1">
+                        Can only view documents, cannot make any changes
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
         </div>
       </div>
+
+      {/* Add Member Dialog */}
+      {project && (
+        <AddMemberDialog
+          projectSlug={project.slug}
+          projectId={project.id}
+          isOpen={showAddMemberDialog}
+          onClose={() => setShowAddMemberDialog(false)}
+          onMemberAdded={fetchTeamMembers}
+        />
+      )}
     </>
   );
 }

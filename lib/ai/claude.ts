@@ -39,7 +39,7 @@ export interface SuggestionData {
 }
 
 // System prompt for document chat
-const SYSTEM_PROMPT = `You are an AI documentation assistant for Docsjays. Your role is to help users improve their technical documentation.
+const SYSTEM_PROMPT = `You are an AI documentation assistant for Docjays. Your role is to help users improve their technical documentation.
 
 When helping users:
 1. Be specific and actionable

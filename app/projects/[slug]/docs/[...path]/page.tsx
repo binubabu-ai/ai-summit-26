@@ -134,7 +134,7 @@ export default function DocumentEditorPage({
     return (
       <>
         <AppNav />
-        <div className="min-h-screen pt-32 px-6 lg:px-12 flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
+        <div className="min-h-screen pt-32 px-6 lg:px-16 flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
           <div className="text-xl font-light text-black dark:text-white">Loading document...</div>
         </div>
       </>
@@ -145,7 +145,7 @@ export default function DocumentEditorPage({
     return (
       <>
         <AppNav />
-        <div className="min-h-screen pt-32 px-6 lg:px-12 flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
+        <div className="min-h-screen pt-32 px-6 lg:px-16 flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
           <div className="text-center">
             <h1 className="text-4xl font-light mb-4 text-black dark:text-white">Document Not Found</h1>
             <Link href={`/projects/${resolvedParams.slug}`}>
@@ -163,7 +163,7 @@ export default function DocumentEditorPage({
       <div className="min-h-screen pt-24 bg-neutral-50 dark:bg-neutral-950">
         {/* Header/Breadcrumb */}
         <div className="border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black">
-          <div className="max-w-7xl mx-auto px-6 lg:px-12 py-6">
+          <div className="max-w-[1600px] mx-auto px-6 lg:px-16 py-6">
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <Link

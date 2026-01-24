@@ -46,11 +46,11 @@ export default function LandingPage() {
     <div className="min-h-screen bg-white dark:bg-black">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-neutral-100 dark:border-neutral-900">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+        <div className="max-w-[1600px] mx-auto px-6 lg:px-16">
           <div className="flex items-center justify-between h-20">
             <div className="flex items-center gap-3">
               <div className="text-2xl font-light tracking-tight text-black dark:text-white">
-                Docsjays
+                Docjays
               </div>
               <span className="text-xs font-medium text-neutral-400 dark:text-neutral-600 uppercase tracking-wider">
                 Beta
@@ -81,8 +81,8 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-24 px-6 lg:px-12">
-        <div className="max-w-7xl mx-auto">
+      <section className="pt-32 pb-24 px-6 lg:px-16">
+        <div className="max-w-[1600px] mx-auto">
           <div className="max-w-4xl">
             <h1 className="text-6xl md:text-8xl font-light tracking-tight text-black dark:text-white mb-8 leading-[1.1]">
               Documentation
@@ -113,8 +113,8 @@ export default function LandingPage() {
       </section>
 
       {/* Features Grid */}
-      <section className="py-32 px-6 lg:px-12 border-t border-neutral-100 dark:border-neutral-900">
-        <div className="max-w-7xl mx-auto">
+      <section className="py-32 px-6 lg:px-16 border-t border-neutral-100 dark:border-neutral-900">
+        <div className="max-w-[1600px] mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
             {/* Feature 1 */}
             <div className="space-y-4">
@@ -162,8 +162,8 @@ export default function LandingPage() {
       </section>
 
       {/* How It Works */}
-      <section className="py-32 px-6 lg:px-12 border-t border-neutral-100 dark:border-neutral-900">
-        <div className="max-w-7xl mx-auto">
+      <section className="py-32 px-6 lg:px-16 border-t border-neutral-100 dark:border-neutral-900">
+        <div className="max-w-[1600px] mx-auto">
           <h2 className="text-4xl md:text-5xl font-light text-black dark:text-white mb-20 max-w-3xl">
             From documentation to intelligence in minutes
           </h2>
@@ -227,8 +227,8 @@ export default function LandingPage() {
       </section>
 
       {/* Benefits */}
-      <section className="py-32 px-6 lg:px-12 border-t border-neutral-100 dark:border-neutral-900">
-        <div className="max-w-7xl mx-auto">
+      <section className="py-32 px-6 lg:px-16 border-t border-neutral-100 dark:border-neutral-900">
+        <div className="max-w-[1600px] mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
             <div>
               <h2 className="text-4xl md:text-5xl font-light text-black dark:text-white mb-8">
@@ -282,8 +282,8 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-32 px-6 lg:px-12 border-t border-neutral-100 dark:border-neutral-900">
-        <div className="max-w-7xl mx-auto">
+      <section className="py-32 px-6 lg:px-16 border-t border-neutral-100 dark:border-neutral-900">
+        <div className="max-w-[1600px] mx-auto">
           <div className="max-w-3xl">
             <h2 className="text-5xl md:text-6xl font-light text-black dark:text-white mb-8 leading-tight">
               Ready to prevent
@@ -304,8 +304,8 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-16 px-6 lg:px-12 border-t border-neutral-100 dark:border-neutral-900">
-        <div className="max-w-7xl mx-auto">
+      <footer className="py-16 px-6 lg:px-16 border-t border-neutral-100 dark:border-neutral-900">
+        <div className="max-w-[1600px] mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-16">
             <div>
               <h4 className="text-sm font-medium text-black dark:text-white mb-4 uppercase tracking-wider">
@@ -350,7 +350,7 @@ export default function LandingPage() {
 
           <div className="pt-8 border-t border-neutral-100 dark:border-neutral-900 flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="text-sm text-neutral-500 dark:text-neutral-600">
-              © 2026 Docsjays. All rights reserved.
+              © 2026 Docjays. All rights reserved.
             </div>
             <div className="flex items-center gap-8">
               <Link href="https://twitter.com" className="text-sm text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white transition-colors">

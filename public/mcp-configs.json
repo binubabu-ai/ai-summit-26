@@ -4,9 +4,9 @@
     "description": "Configuration for Claude Desktop (macOS: ~/Library/Application Support/Claude/claude_desktop_config.json, Windows: %APPDATA%\\Claude\\claude_desktop_config.json)",
     "config": {
       "mcpServers": {
-        "Docsjays": {
+        "Docjays": {
           "command": "npx",
-          "args": ["mcp-remote", "https://docsjays.com/api/mcp"],
+          "args": ["mcp-remote", "https://Docjays.com/api/mcp"],
           "env": {
             "MCP_AUTH_TOKEN": "your-api-key-here"
           }
@@ -19,8 +19,8 @@
     "description": "Alternative configuration using direct HTTP connection",
     "config": {
       "mcpServers": {
-        "Docsjays": {
-          "url": "https://docsjays.com/api/mcp",
+        "Docjays": {
+          "url": "https://Docjays.com/api/mcp",
           "headers": {
             "Authorization": "Bearer your-api-key-here"
           }
@@ -33,28 +33,28 @@
     "description": "Configuration for Cursor IDE (Settings > MCP Servers)",
     "config": {
       "mcpServers": {
-        "Docsjays": {
-          "url": "https://docsjays.com/api/mcp",
+        "Docjays": {
+          "url": "https://Docjays.com/api/mcp",
           "headers": {
-            "Authorization": "Bearer ${DOCSJAYS_API_KEY}"
+            "Authorization": "Bearer ${Docjays_API_KEY}"
           }
         }
       }
     },
     "envConfig": {
       "env": {
-        "DOCSJAYS_API_KEY": "your-api-key-here"
+        "Docjays_API_KEY": "your-api-key-here"
       }
     },
-    "deeplink": "cursor://mcp/add?name=Docsjays&url=https://docsjays.com/api/mcp"
+    "deeplink": "cursor://mcp/add?name=Docjays&url=https://Docjays.com/api/mcp"
   },
   "windsurf": {
     "name": "Windsurf",
     "description": "Configuration for Windsurf IDE (MCP → Servers → Add Server)",
     "config": {
-      "name": "Docsjays",
+      "name": "Docjays",
       "command": "npx",
-      "args": ["mcp-remote", "https://docsjays.com/api/mcp"],
+      "args": ["mcp-remote", "https://Docjays.com/api/mcp"],
       "env": {
         "MCP_AUTH_TOKEN": "your-api-key-here"
       }
@@ -65,16 +65,16 @@
     "description": "Configuration for Claude Code CLI (~/.config/claude-code/mcp.json)",
     "config": {
       "mcpServers": {
-        "Docsjays": {
+        "Docjays": {
           "command": "npx",
-          "args": ["mcp-remote", "https://docsjays.com/api/mcp"],
+          "args": ["mcp-remote", "https://Docjays.com/api/mcp"],
           "env": {
             "MCP_AUTH_TOKEN": "your-api-key-here"
           }
         }
       }
     },
-    "cliCommand": "claude-code mcp add Docsjays --command \"npx\" --args \"mcp-remote,https://docsjays.com/api/mcp\" --env \"MCP_AUTH_TOKEN=your-api-key-here\""
+    "cliCommand": "claude-code mcp add Docjays --command \"npx\" --args \"mcp-remote,https://Docjays.com/api/mcp\" --env \"MCP_AUTH_TOKEN=your-api-key-here\""
   },
   "vscode-continue": {
     "name": "VS Code (Continue)",
@@ -82,8 +82,8 @@
     "config": {
       "mcpServers": [
         {
-          "name": "Docsjays",
-          "url": "https://docsjays.com/api/mcp",
+          "name": "Docjays",
+          "url": "https://Docjays.com/api/mcp",
           "headers": {
             "Authorization": "Bearer your-api-key-here"
           }
@@ -92,11 +92,11 @@
     }
   },
   "self-hosted": {
-    "name": "Self-Hosted Docsjays",
-    "description": "Configuration for self-hosted Docsjays instance",
+    "name": "Self-Hosted Docjays",
+    "description": "Configuration for self-hosted Docjays instance",
     "config": {
       "mcpServers": {
-        "Docsjays": {
+        "Docjays": {
           "command": "npx",
           "args": ["mcp-remote", "https://your-domain.com/api/mcp"],
           "env": {
@@ -108,19 +108,19 @@
   },
   "multi-project": {
     "name": "Multiple Projects",
-    "description": "Configuration for accessing multiple Docsjays projects",
+    "description": "Configuration for accessing multiple Docjays projects",
     "config": {
       "mcpServers": {
-        "Docsjays-ProjectA": {
+        "Docjays-ProjectA": {
           "command": "npx",
-          "args": ["mcp-remote", "https://docsjays.com/api/mcp"],
+          "args": ["mcp-remote", "https://Docjays.com/api/mcp"],
           "env": {
             "MCP_AUTH_TOKEN": "key-for-project-a"
           }
         },
-        "Docsjays-ProjectB": {
+        "Docjays-ProjectB": {
           "command": "npx",
-          "args": ["mcp-remote", "https://docsjays.com/api/mcp"],
+          "args": ["mcp-remote", "https://Docjays.com/api/mcp"],
           "env": {
             "MCP_AUTH_TOKEN": "key-for-project-b"
           }
@@ -191,8 +191,8 @@
       "VS Code (Continue extension)"
     ],
     "authenticationMethod": "Bearer token (project-scoped API key)",
-    "endpointUrl": "https://docsjays.com/api/mcp",
-    "documentationUrl": "https://docsjays.com/docs/mcp-integration",
+    "endpointUrl": "https://Docjays.com/api/mcp",
+    "documentationUrl": "https://Docjays.com/docs/mcp-integration",
     "rateLimits": {
       "requestsPerMinute": 100,
       "requestsPerHour": 1000

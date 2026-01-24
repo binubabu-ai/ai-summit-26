@@ -11,7 +11,7 @@
 ## 🎯 Revised Product Vision
 
 ### What We're Building
-**Docs Jays** is the **AI-Native Knowledge Governance Platform** that enables organizations to:
+**Docjays** is the **AI-Native Knowledge Governance Platform** that enables organizations to:
 - ✅ Give AI agents safe, governed write-back to documentation
 - ✅ Prevent hallucinations through conflict detection and freshness tracking
 - ✅ Maintain audit trails and confidence scores for all knowledge

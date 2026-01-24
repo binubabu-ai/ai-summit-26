@@ -96,8 +96,8 @@ export async function createRevision(input: CreateRevisionInput) {
         data: {
           revisionId: revision.id,
           diffType: 'line',
-          diffData: diff,
-          stats,
+          diffData: diff as any,
+          stats: stats as any,
         },
       });
     }
@@ -387,7 +387,7 @@ export async function rebaseRevision(
     documentId: oldRevision.documentId,
     content: newContent,
     title: `${oldRevision.title} (rebased)`,
-    description: oldRevision.description,
+    description: oldRevision.description || undefined,
     status: oldRevision.status as 'draft' | 'proposed',
     basedOn: oldRevision.document.mainRevisionId || undefined,
     authorId: userId || oldRevision.authorId || undefined,

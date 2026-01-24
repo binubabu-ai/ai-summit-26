@@ -3,10 +3,10 @@ import { createClient } from '@/lib/supabase/server';
 import prisma from '@/lib/prisma';
 import { generateApiKey } from '@/lib/api-keys';
 
-// GET /api/projects/:id/api-keys - List all API keys for a project
+// GET /api/projects/:slug/api-keys - List all API keys for a project
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
     const supabase = await createClient();
@@ -18,11 +18,11 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id: projectId } = await context.params;
+    const { slug } = await context.params;
 
     // Verify user has access to this project
     const project = await prisma.project.findUnique({
-      where: { id: projectId },
+      where: { slug },
       include: {
         members: {
           where: { userId: user.id },
@@ -36,7 +36,7 @@ export async function GET(
 
     // Get all API keys for this project (exclude the actual hash)
     const apiKeys = await prisma.apiKey.findMany({
-      where: { projectId },
+      where: { projectId: project.id },
       select: {
         id: true,
         name: true,
@@ -61,10 +61,10 @@ export async function GET(
   }
 }
 
-// POST /api/projects/:id/api-keys - Create a new API key
+// POST /api/projects/:slug/api-keys - Create a new API key
 export async function POST(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
     const supabase = await createClient();
@@ -76,7 +76,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id: projectId } = await context.params;
+    const { slug } = await context.params;
     const body = await request.json();
     const { name, expiresAt } = body;
 
@@ -89,7 +89,7 @@ export async function POST(
 
     // Verify user owns this project (only owners can create API keys)
     const project = await prisma.project.findUnique({
-      where: { id: projectId },
+      where: { slug },
     });
 
     if (!project || project.ownerId !== user.id) {
@@ -100,12 +100,12 @@ export async function POST(
     }
 
     // Generate the API key
-    const { key, keyPrefix, keyHash } = generateApiKey(projectId);
+    const { key, keyPrefix, keyHash } = generateApiKey(project.id);
 
     // Store the key in database
     const apiKey = await prisma.apiKey.create({
       data: {
-        projectId,
+        projectId: project.id,
         name,
         key: keyHash, // Store hash, not the actual key
         keyPrefix,

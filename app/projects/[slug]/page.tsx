@@ -111,7 +111,7 @@ export default function ProjectPage({
     return (
       <>
         <AppNav />
-        <div className="min-h-screen pt-32 px-6 lg:px-12 flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
+        <div className="min-h-screen pt-32 px-6 lg:px-16 flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
           <div className="text-xl font-light text-black dark:text-white">Loading...</div>
         </div>
       </>
@@ -122,7 +122,7 @@ export default function ProjectPage({
     return (
       <>
         <AppNav />
-        <div className="min-h-screen pt-32 px-6 lg:px-12 flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
+        <div className="min-h-screen pt-32 px-6 lg:px-16 flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
           <div className="text-center">
             <h1 className="text-4xl font-light mb-4 text-black dark:text-white">Project Not Found</h1>
             <Link href="/dashboard">
@@ -137,8 +137,8 @@ export default function ProjectPage({
   return (
     <>
       <AppNav />
-      <div className="min-h-screen pt-32 px-6 lg:px-12 pb-16 bg-neutral-50 dark:bg-neutral-950">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen pt-32 px-6 lg:px-16 pb-16 bg-neutral-50 dark:bg-neutral-950">
+        <div className="max-w-[1600px] mx-auto">
           {/* Header */}
           <div className="mb-12">
             <div className="flex items-center justify-between mb-4">

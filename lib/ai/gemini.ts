@@ -61,11 +61,46 @@ Document Type Guidelines:
 
 Always return valid JSON with formattedContent as a properly formatted markdown string.`;
 
+// Model selection strategy (Updated January 2026)
+// Latest Gemini 3 models (Preview) - Frontier intelligence with thinking & code execution
+// - gemini-3-flash-preview: Best for speed + quality balance (chat, suggestions)
+// - gemini-3-pro-preview: Highest capability (complex reasoning, audits)
+//
+// Stable Gemini 2.5 models - Production ready with 1M context window
+// - gemini-2.5-flash: Optimized for agentic use, low-latency
+// - gemini-2.5-flash-lite: Most cost-efficient for high volume
+// - gemini-2.5-pro: Complex reasoning, STEM, large datasets
+//
+// Note: Gemini 2.0 models deprecated March 31, 2026
+
 // Pricing (USD per 1M tokens)
 const GEMINI_PRICING = {
+  // Gemini 3 (Preview) - Latest frontier models
+  'gemini-3-flash-preview': {
+    input: 0.1,   // Estimated preview pricing
+    output: 0.4,  // Estimated preview pricing
+  },
+  'gemini-3-pro-preview': {
+    input: 2.0,   // Estimated preview pricing
+    output: 8.0,  // Estimated preview pricing
+  },
+  // Gemini 2.5 (Stable) - Production ready
+  'gemini-2.5-flash': {
+    input: 0.075,
+    output: 0.3,
+  },
+  'gemini-2.5-flash-lite': {
+    input: 0.05,  // Most cost-efficient
+    output: 0.2,
+  },
+  'gemini-2.5-pro': {
+    input: 1.25,
+    output: 5.0,
+  },
+  // Legacy models (for backward compatibility)
   'gemini-2.0-flash-exp': {
-    input: 0,  // Free tier
-    output: 0,  // Free tier
+    input: 0,
+    output: 0,
   },
   'gemini-1.5-pro': {
     input: 1.25,
@@ -74,10 +109,6 @@ const GEMINI_PRICING = {
   'gemini-1.5-flash': {
     input: 0.075,
     output: 0.3,
-  },
-  'gemini-1.0-pro': {
-    input: 0.5,
-    output: 1.5,
   },
 };
 
@@ -181,7 +212,7 @@ export async function chatWithDocument(
   quickAction?: string
 ): Promise<ChatResponse> {
   const model = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash-exp',  // Use free tier
+    model: 'gemini-3-flash-preview',  // Latest Gemini 3 with thinking & code execution
     systemInstruction: SYSTEM_PROMPT,
   });
 
@@ -277,7 +308,7 @@ If no changes are needed, just provide a conversational response without the JSO
   // Calculate usage and cost
   const inputTokens = response.usageMetadata?.promptTokenCount || 0;
   const outputTokens = response.usageMetadata?.candidatesTokenCount || 0;
-  const cost = calculateCost('gemini-2.0-flash-exp', inputTokens, outputTokens);
+  const cost = calculateCost('gemini-3-flash-preview', inputTokens, outputTokens);
 
   return {
     message,
@@ -299,7 +330,7 @@ export async function generateQuickSuggestion(
   documentContext: string
 ): Promise<ChatResponse> {
   const model = genAI.getGenerativeModel({
-    model: 'gemini-1.5-flash',  // Fast model for quick suggestions
+    model: 'gemini-2.5-flash-lite',  // Most cost-efficient for high-volume quick suggestions
     systemInstruction: SYSTEM_PROMPT,
   });
 
@@ -349,7 +380,7 @@ Respond with a JSON object:
 
   const inputTokens = response.usageMetadata?.promptTokenCount || 0;
   const outputTokens = response.usageMetadata?.candidatesTokenCount || 0;
-  const cost = calculateCost('gemini-1.5-flash', inputTokens, outputTokens);
+  const cost = calculateCost('gemini-2.5-flash-lite', inputTokens, outputTokens);
 
   return {
     message: suggestions.length > 0 ? 'Suggestion generated' : 'No changes suggested',
@@ -367,7 +398,7 @@ Respond with a JSON object:
  */
 export async function analyzeDocument(documentContent: string, documentPath: string) {
   const model = genAI.getGenerativeModel({
-    model: 'gemini-1.5-flash',
+    model: 'gemini-2.5-flash',  // Stable model optimized for agentic analysis tasks
     systemInstruction: SYSTEM_PROMPT,
   });
 
@@ -436,7 +467,7 @@ export async function queryProject(
   currentDocPath?: string
 ) {
   const model = genAI.getGenerativeModel({
-    model: 'gemini-1.5-pro',  // Use Pro for project-level queries
+    model: 'gemini-3-pro-preview',  // Highest capability for complex project-level queries
     systemInstruction: PROJECT_ASSISTANT_PROMPT,
   });
 
@@ -466,7 +497,7 @@ Instructions:
     usage: {
       inputTokens: response.usageMetadata?.promptTokenCount || 0,
       outputTokens: response.usageMetadata?.candidatesTokenCount || 0,
-      cost: calculateCost('gemini-1.5-pro',
+      cost: calculateCost('gemini-3-pro-preview',
         response.usageMetadata?.promptTokenCount || 0,
         response.usageMetadata?.candidatesTokenCount || 0
       ),
@@ -483,7 +514,7 @@ export async function processTextToDocument(
   projectId?: string
 ) {
   const model = genAI.getGenerativeModel({
-    model: 'gemini-1.5-pro',
+    model: 'gemini-2.5-pro',  // Stable Pro model for document structure extraction
     systemInstruction: QUICK_DOC_CREATOR_PROMPT,
   });
 
