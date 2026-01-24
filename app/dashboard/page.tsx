@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, FileText, GitBranch, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PageLoader } from '@/components/ui/loader';
+import { AuditCard } from '@/components/audit/AuditCard';
+import { AuditResult } from '@/lib/ai/audit';
 
 interface Project {
   id: string;
@@ -32,11 +34,20 @@ export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [auditData, setAuditData] = useState<(AuditResult & { id: string; createdAt: Date }) | undefined>();
+  const [auditLoading, setAuditLoading] = useState(false);
 
   useEffect(() => {
     checkAuth();
     fetchProjects();
   }, []);
+
+  // Fetch latest audit on mount and auto-refresh if stale
+  useEffect(() => {
+    if (user && projects.length > 0) {
+      fetchLatestAudit();
+    }
+  }, [user, projects.length]);
 
   const checkAuth = async () => {
     try {
@@ -47,6 +58,60 @@ export default function Dashboard() {
       console.error('Failed to check auth:', error);
     } finally {
       setLoadingAuth(false);
+    }
+  };
+
+  const isAuditStale = (auditDate: Date): boolean => {
+    const now = new Date();
+    const diffInHours = (now.getTime() - auditDate.getTime()) / (1000 * 60 * 60);
+    return diffInHours > 24;
+  };
+
+  const fetchLatestAudit = async () => {
+    try {
+      const response = await fetch('/api/audit/latest?level=dashboard');
+      if (!response.ok) return;
+
+      const { audit } = await response.json();
+
+      if (audit) {
+        const auditWithDate = {
+          ...audit,
+          createdAt: new Date(audit.createdAt),
+        };
+        setAuditData(auditWithDate);
+
+        // Auto-run new audit if stale (>24 hours)
+        if (isAuditStale(auditWithDate.createdAt)) {
+          // Run in background without showing loading state
+          runAuditInBackground();
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch latest audit:', error);
+    }
+  };
+
+  const runAuditInBackground = async () => {
+    if (!user) return;
+
+    try {
+      const response = await fetch('/api/audit/dashboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to run audit');
+      }
+
+      const result = await response.json();
+      setAuditData({
+        ...result,
+        createdAt: new Date(result.createdAt || Date.now()),
+      });
+    } catch (error) {
+      console.error('Failed to run background audit:', error);
     }
   };
 
@@ -109,6 +174,32 @@ export default function Dashboard() {
       .replace(/(^-|-$)/g, '');
   };
 
+  const handleRunAudit = async () => {
+    if (!user) return;
+
+    setAuditLoading(true);
+    try {
+      const response = await fetch('/api/audit/dashboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to run audit');
+      }
+
+      const result = await response.json();
+      setAuditData({
+        ...result,
+        createdAt: new Date(result.createdAt || Date.now()),
+      });
+    } catch (error) {
+      console.error('Failed to run audit:', error);
+    } finally {
+      setAuditLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
       {/* Navigation */}
@@ -166,6 +257,18 @@ export default function Dashboard() {
             AI-Native documentation with conflict detection, freshness tracking, and version control
           </p>
         </div>
+
+        {/* Audit Card */}
+        {user && projects.length > 0 && (
+          <div className="mb-8">
+            <AuditCard
+              level="dashboard"
+              auditData={auditData}
+              onRefresh={handleRunAudit}
+              loading={auditLoading}
+            />
+          </div>
+        )}
 
         {/* Create Project Button */}
         {user && (

@@ -440,3 +440,35 @@ model AiUsage {
   @@index([createdAt])
   @@map("ai_usage")
 }
+
+// Audit System - AI-powered quality analysis at multiple levels
+model Audit {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // Polymorphic - can be dashboard, project, or document
+  auditType String   // 'dashboard' | 'project' | 'document'
+  targetId  String?  // null for dashboard, project/document ID otherwise
+
+  userId    String
+
+  // Scores (0-100)
+  healthScore       Int
+  consistencyScore  Int?
+  freshnessScore    Int?
+  qualityScore      Int?
+
+  // Findings (JSON array of AuditFinding objects)
+  findings   Json     // Array of detailed findings with severity, category, etc.
+
+  // Metadata
+  duration   Int      // milliseconds
+  aiModel    String   // e.g., "gemini-2.5-pro"
+  cost       Float    // USD
+
+  @@index([auditType])
+  @@index([targetId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audits")
+}

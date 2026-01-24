@@ -14,6 +14,8 @@ import { RevisionSidebar } from '@/components/revisions/RevisionSidebar';
 import { getFolderPath, getFileName } from '@/lib/utils/document-tree';
 import { FileEdit } from 'lucide-react';
 import { PageLoader } from '@/components/ui/loader';
+import { AuditCard } from '@/components/audit/AuditCard';
+import { AuditResult } from '@/lib/ai/audit';
 
 interface Document {
   id: string;
@@ -50,6 +52,8 @@ export default function DocumentEditorPage({
   const [currentContent, setCurrentContent] = useState('');
   const [showRevisionDialog, setShowRevisionDialog] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
+  const [auditData, setAuditData] = useState<(AuditResult & { id: string; createdAt: Date }) | undefined>();
+  const [auditLoading, setAuditLoading] = useState(false);
 
   // Build breadcrumb from path
   const breadcrumb = useMemo(() => {
@@ -73,6 +77,70 @@ export default function DocumentEditorPage({
     fetchDocument();
     fetchCurrentUser();
   }, []);
+
+  // Fetch latest audit on mount and auto-refresh if stale
+  useEffect(() => {
+    if (document) {
+      fetchLatestAudit();
+    }
+  }, [document?.id]);
+
+  const isAuditStale = (auditDate: Date): boolean => {
+    const now = new Date();
+    const diffInHours = (now.getTime() - auditDate.getTime()) / (1000 * 60 * 60);
+    return diffInHours > 24;
+  };
+
+  const fetchLatestAudit = async () => {
+    if (!document) return;
+
+    try {
+      const response = await fetch(`/api/audit/latest?level=document&targetId=${document.id}`);
+      if (!response.ok) return;
+
+      const { audit } = await response.json();
+
+      if (audit) {
+        const auditWithDate = {
+          ...audit,
+          createdAt: new Date(audit.createdAt),
+        };
+        setAuditData(auditWithDate);
+
+        // Auto-run new audit if stale (>24 hours)
+        if (isAuditStale(auditWithDate.createdAt)) {
+          // Run in background without showing loading state
+          runAuditInBackground();
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch latest audit:', error);
+    }
+  };
+
+  const runAuditInBackground = async () => {
+    if (!document) return;
+
+    try {
+      const response = await fetch('/api/audit/document', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documentId: document.id }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to run audit');
+      }
+
+      const result = await response.json();
+      setAuditData({
+        ...result,
+        createdAt: new Date(result.createdAt || Date.now()),
+      });
+    } catch (error) {
+      console.error('Failed to run background audit:', error);
+    }
+  };
 
   const fetchCurrentUser = async () => {
     try {
@@ -158,6 +226,33 @@ export default function DocumentEditorPage({
       alert('Failed to save document');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleRunAudit = async () => {
+    if (!document) return;
+
+    setAuditLoading(true);
+    try {
+      const response = await fetch('/api/audit/document', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documentId: document.id }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to run audit');
+      }
+
+      const result = await response.json();
+      setAuditData({
+        ...result,
+        createdAt: new Date(result.createdAt || Date.now()),
+      });
+    } catch (error) {
+      console.error('Failed to run audit:', error);
+    } finally {
+      setAuditLoading(false);
     }
   };
 
@@ -255,7 +350,15 @@ export default function DocumentEditorPage({
         {/* Main Content */}
         <div className="flex h-[calc(100vh-180px)]">
           {/* Left: Metadata Sidebar */}
-          <div className="w-64 border-r border-neutral-200 dark:border-neutral-800 p-6 space-y-6 overflow-y-auto">
+          <div className="w-96 border-r border-neutral-200 dark:border-neutral-800 p-6 space-y-6 overflow-y-auto">
+            {/* Audit Card */}
+            <AuditCard
+              level="document"
+              auditData={auditData}
+              onRefresh={handleRunAudit}
+              loading={auditLoading}
+            />
+
             {/* Revisions */}
             <RevisionSidebar documentId={document.id} currentUserId={currentUserId} />
 

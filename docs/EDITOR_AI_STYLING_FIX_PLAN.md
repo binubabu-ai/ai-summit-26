@@ -341,3 +341,76 @@ const handleAIAction = async (action: string) => {
 - Format suggestions
 - Visual diff
 - Formatting templates
+
+---
+
+## Implementation Summary
+
+### Changes Made (2026-01-25)
+
+**Files Modified:**
+
+1. **[components/editor/TiptapEditor.tsx](../components/editor/TiptapEditor.tsx)**
+   - Added `getFormattingContext()` helper function to detect current formatting
+   - Added `reapplyFormatting()` helper function to reapply formatting after AI improvement
+   - Updated `handleAIAction()` to:
+     - Capture formatting context before AI call
+     - Pass formatting to API
+     - Reapply original formatting after receiving improved text
+
+2. **[app/api/ai/improve-text/route.ts](../app/api/ai/improve-text/route.ts)**
+   - Updated to accept `formatting` parameter
+   - Pass formatting context to `improveText()` function
+
+3. **[lib/ai/gemini.ts](../lib/ai/gemini.ts)**
+   - Updated `improveText()` function signature to accept formatting parameter
+   - Modified system instruction to explicitly tell AI to return plain text without markdown syntax
+   - Added formatting context to prompts so AI understands the text's context
+   - Added post-processing to strip any markdown syntax (>, #, -, * markers) from AI response
+
+### Implementation Approach
+
+Used the **Hybrid Approach** (Detect + Context + Reapply):
+
+1. **Detect formatting** before AI call using Tiptap's `isActive()` methods
+2. **Pass formatting context** to AI so it understands the text's purpose
+3. **Instruct AI** to return plain text without markdown syntax
+4. **Strip any markdown** syntax from AI response as fallback
+5. **Reapply original formatting** using HTML insertion with appropriate tags
+
+### Formatting Support
+
+✅ **Block-level formatting:**
+- Blockquote (`<blockquote>`)
+- Headings H1-H6 (`<h1>` - `<h6>`)
+- Bullet lists (`<ul><li>`)
+- Ordered lists (`<ol><li>`)
+- Code blocks (`<pre><code>`)
+
+✅ **Inline formatting:**
+- Bold (`<strong>`)
+- Italic (`<em>`)
+- Inline code (`<code>`)
+
+### Testing
+
+Build successful with no TypeScript errors. Ready for manual testing with the following scenarios:
+
+1. Select text in blockquote → Expand → Should remain blockquote
+2. Select heading text → Refine → Should remain heading at same level
+3. Select list item → Shorten → Should remain list item
+4. Select bold text → Expand → Should remain bold
+5. Select text in code block → Refine → Should remain code block
+
+### Next Steps
+
+**For testing:**
+1. Test each formatting type (blockquote, headings, lists, code)
+2. Test inline formatting (bold, italic, code)
+3. Test nested formatting (bold text in blockquote)
+4. Verify no markdown syntax leaks into editor
+
+**Future enhancements:**
+1. Handle multi-node selections (P1)
+2. Add visual diff preview (P2)
+3. Add format conversion suggestions (P2)
