@@ -22,7 +22,7 @@ function LoginForm() {
 
     try {
       const supabase = createClient();
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -30,6 +30,13 @@ function LoginForm() {
       if (signInError) {
         setError(signInError.message);
         setLoading(false);
+        return;
+      }
+
+      // Check if email is confirmed
+      if (data.user && !data.user.email_confirmed_at) {
+        // Email not verified - redirect to verification page
+        router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
         return;
       }
 
@@ -76,9 +83,17 @@ function LoginForm() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-black dark:text-white mb-2">
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label htmlFor="password" className="block text-sm font-medium text-black dark:text-white">
+                  Password
+                </label>
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-sm text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <input
                 id="password"
                 type="password"

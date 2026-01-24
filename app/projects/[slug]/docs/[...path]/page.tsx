@@ -3,12 +3,17 @@
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { use } from 'react';
+import { useRouter } from 'next/navigation';
 import { AppNav } from '@/components/layout/AppNav';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import TiptapEditor from '@/components/editor/TiptapEditor';
 import { DocChat } from '@/components/editor/DocChat';
+import { CreateRevisionDialog } from '@/components/revisions/CreateRevisionDialog';
+import { RevisionSidebar } from '@/components/revisions/RevisionSidebar';
 import { getFolderPath, getFileName } from '@/lib/utils/document-tree';
+import { FileEdit } from 'lucide-react';
+import { PageLoader } from '@/components/ui/loader';
 
 interface Document {
   id: string;
@@ -37,11 +42,14 @@ export default function DocumentEditorPage({
 }: {
   params: Promise<{ slug: string; path: string[] }>;
 }) {
+  const router = useRouter();
   const resolvedParams = use(params);
   const [document, setDocument] = useState<Document | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [currentContent, setCurrentContent] = useState('');
+  const [showRevisionDialog, setShowRevisionDialog] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
 
   // Build breadcrumb from path
   const breadcrumb = useMemo(() => {
@@ -63,7 +71,20 @@ export default function DocumentEditorPage({
 
   useEffect(() => {
     fetchDocument();
+    fetchCurrentUser();
   }, []);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const res = await fetch('/api/user');
+      if (res.ok) {
+        const user = await res.json();
+        setCurrentUserId(user.id);
+      }
+    } catch (error) {
+      console.error('Failed to fetch current user:', error);
+    }
+  };
 
   const fetchDocument = async () => {
     try {
@@ -92,6 +113,16 @@ export default function DocumentEditorPage({
       // Get full document details
       const docRes = await fetch(`/api/documents/${doc.id}`);
       const fullDoc = await docRes.json();
+
+      // Ensure project info is attached (fallback if API doesn't include it)
+      if (!fullDoc.project) {
+        fullDoc.project = {
+          id: project.id,
+          name: project.name,
+          slug: project.slug,
+        };
+      }
+
       setDocument(fullDoc);
       setCurrentContent(fullDoc.content);
     } catch (error) {
@@ -134,23 +165,27 @@ export default function DocumentEditorPage({
     return (
       <>
         <AppNav />
-        <div className="min-h-screen pt-32 px-6 lg:px-16 flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
-          <div className="text-xl font-light text-black dark:text-white">Loading document...</div>
+        <div className="min-h-screen pt-32 flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
+          <div className="max-w-[1600px] mx-auto px-6 lg:px-16">
+            <PageLoader />
+          </div>
         </div>
       </>
     );
   }
 
-  if (!document) {
+  if (!document || !document.project) {
     return (
       <>
         <AppNav />
-        <div className="min-h-screen pt-32 px-6 lg:px-16 flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
-          <div className="text-center">
-            <h1 className="text-4xl font-light mb-4 text-black dark:text-white">Document Not Found</h1>
-            <Link href={`/projects/${resolvedParams.slug}`}>
-              <Button variant="ghost">← Back to Project</Button>
-            </Link>
+        <div className="min-h-screen pt-32 flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
+          <div className="max-w-[1600px] mx-auto px-6 lg:px-16">
+            <div className="text-center">
+              <h1 className="text-4xl font-light mb-4 text-black dark:text-white">Document Not Found</h1>
+              <Link href={`/projects/${resolvedParams.slug}`}>
+                <Button variant="ghost">← Back to Project</Button>
+              </Link>
+            </div>
           </div>
         </div>
       </>
@@ -198,11 +233,21 @@ export default function DocumentEditorPage({
                 </h1>
               </div>
 
-              {saving && (
-                <span className="text-sm text-neutral-600 dark:text-neutral-400 animate-pulse">
-                  Saving...
-                </span>
-              )}
+              <div className="flex items-center gap-4">
+                {saving && (
+                  <span className="text-sm text-neutral-600 dark:text-neutral-400 animate-pulse">
+                    Saving...
+                  </span>
+                )}
+                <Button
+                  onClick={() => setShowRevisionDialog(true)}
+                  variant="secondary"
+                  size="sm"
+                >
+                  <FileEdit className="w-4 h-4 mr-2" />
+                  Create Revision
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -211,55 +256,27 @@ export default function DocumentEditorPage({
         <div className="flex h-[calc(100vh-180px)]">
           {/* Left: Metadata Sidebar */}
           <div className="w-64 border-r border-neutral-200 dark:border-neutral-800 p-6 space-y-6 overflow-y-auto">
-            {/* Sidebar */}
-              {/* Version History */}
-              <Card variant="default">
-                <CardHeader>
-                  <h3 className="text-lg font-light text-black dark:text-white">Version History</h3>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {document.versions.length === 0 ? (
-                      <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                        No versions yet
-                      </p>
-                    ) : (
-                      document.versions.map((version) => (
-                        <div
-                          key={version.id}
-                          className="pb-3 border-b border-neutral-200 dark:border-neutral-800 last:border-0"
-                        >
-                          <div className="text-sm font-normal text-black dark:text-white">
-                            {version.author?.name || version.author?.email || version.authorType}
-                          </div>
-                          <div className="text-neutral-600 dark:text-neutral-400 text-xs mt-1">
-                            {new Date(version.createdAt).toLocaleString()}
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+            {/* Revisions */}
+            <RevisionSidebar documentId={document.id} currentUserId={currentUserId} />
 
-              {/* Document Info */}
-              <Card variant="default">
-                <CardHeader>
-                  <h3 className="text-lg font-light text-black dark:text-white">Info</h3>
-                </CardHeader>
-                <CardContent>
-                  <dl className="space-y-3 text-sm">
-                    <div>
-                      <dt className="text-neutral-600 dark:text-neutral-400 mb-1">Project</dt>
-                      <dd className="font-normal text-black dark:text-white">{document.project.name}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-neutral-600 dark:text-neutral-400 mb-1">Path</dt>
-                      <dd className="font-mono text-xs text-black dark:text-white">{document.path}</dd>
-                    </div>
-                  </dl>
-                </CardContent>
-              </Card>
+            {/* Document Info */}
+            <Card variant="default">
+              <CardHeader>
+                <h3 className="text-lg font-light text-black dark:text-white">Info</h3>
+              </CardHeader>
+              <CardContent>
+                <dl className="space-y-3 text-sm">
+                  <div>
+                    <dt className="text-neutral-600 dark:text-neutral-400 mb-1">Project</dt>
+                    <dd className="font-normal text-black dark:text-white">{document.project.name}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-neutral-600 dark:text-neutral-400 mb-1">Path</dt>
+                    <dd className="font-mono text-xs text-black dark:text-white">{document.path}</dd>
+                  </div>
+                </dl>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Center: Editor */}
@@ -283,6 +300,18 @@ export default function DocumentEditorPage({
             />
           </div>
         </div>
+
+        {/* Create Revision Dialog */}
+        <CreateRevisionDialog
+          documentId={document.id}
+          content={currentContent}
+          isOpen={showRevisionDialog}
+          onClose={() => setShowRevisionDialog(false)}
+          onSuccess={(revisionId) => {
+            setShowRevisionDialog(false);
+            router.push(`/revisions/${revisionId}`);
+          }}
+        />
       </div>
     </>
   );

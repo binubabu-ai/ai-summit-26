@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plus, FileText, GitBranch, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { PageLoader } from '@/components/ui/loader';
 
 interface Project {
   id: string;
@@ -238,8 +239,8 @@ export default function Dashboard() {
 
         {/* Projects Grid */}
         {loading ? (
-          <div className="text-center py-16">
-            <div className="text-neutral-500 dark:text-neutral-500">Loading projects...</div>
+          <div className="flex items-center justify-center py-16">
+            <PageLoader />
           </div>
         ) : !user ? (
           <Card className="p-12 text-center">

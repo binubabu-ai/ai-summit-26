@@ -7,6 +7,8 @@ import { createClient } from '@/lib/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { Button } from '@/components/ui/button';
+import { HeroAnimation } from '@/components/landing/HeroAnimation';
+import { StepAnimation } from '@/components/landing/StepAnimation';
 import {
   Shield,
   Clock,
@@ -83,30 +85,38 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="pt-32 pb-24 px-6 lg:px-16">
         <div className="max-w-[1600px] mx-auto">
-          <div className="max-w-4xl">
-            <h1 className="text-6xl md:text-8xl font-light tracking-tight text-black dark:text-white mb-8 leading-[1.1]">
-              Documentation
-              <br />
-              that prevents
-              <br />
-              <span className="font-normal">hallucinations</span>
-            </h1>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            {/* Left: Text Content */}
+            <div>
+              <h1 className="text-6xl md:text-8xl font-light tracking-tight text-black dark:text-white mb-8 leading-[1.1]">
+                Documentation
+                <br />
+                that prevents
+                <br />
+                <span className="font-normal">hallucinations</span>
+              </h1>
 
-            <p className="text-xl md:text-2xl text-neutral-600 dark:text-neutral-400 mb-12 max-w-2xl font-light leading-relaxed">
-              The first documentation platform designed for AI agents. Detect conflicts,
-              track freshness, and maintain confidence in every document.
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <Link href="/auth/signup">
-                <Button size="lg" className="h-12 px-8">
-                  Start Free
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Link>
-              <p className="text-sm text-neutral-500 dark:text-neutral-600">
-                No credit card required
+              <p className="text-xl md:text-2xl text-neutral-600 dark:text-neutral-400 mb-12 max-w-2xl font-light leading-relaxed">
+                The first documentation platform designed for AI agents. Detect conflicts,
+                track freshness, and maintain confidence in every document.
               </p>
+
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <Link href="/auth/signup">
+                  <Button size="lg" className="h-12 px-8">
+                    Start Free
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+                <p className="text-sm text-neutral-500 dark:text-neutral-600">
+                  No credit card required
+                </p>
+              </div>
+            </div>
+
+            {/* Right: Animated SVG */}
+            <div className="hidden lg:block">
+              <HeroAnimation />
             </div>
           </div>
         </div>
@@ -168,58 +178,67 @@ export default function LandingPage() {
             From documentation to intelligence in minutes
           </h2>
 
-          <div className="space-y-16">
+          <div className="space-y-32">
             {/* Step 1 */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-              <div className="md:col-span-1">
-                <div className="text-6xl font-light text-neutral-200 dark:text-neutral-900">
-                  01
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              <div className="space-y-6">
+                <div className="flex items-center gap-6">
+                  <div className="w-20 h-20 rounded-full bg-black dark:bg-white flex items-center justify-center flex-shrink-0">
+                    <span className="text-3xl font-normal text-white dark:text-black">01</span>
+                  </div>
+                  <h3 className="text-3xl md:text-4xl font-light text-black dark:text-white">
+                    Create & Organize
+                  </h3>
                 </div>
-              </div>
-              <div className="md:col-span-11 space-y-3">
-                <h3 className="text-2xl font-light text-black dark:text-white">
-                  Create & Organize
-                </h3>
-                <p className="text-base text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-2xl">
+                <p className="text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed">
                   Start with a project, add documents, organize in folders. Use our
                   rich text editor or write in Markdown. Simple and intuitive.
                 </p>
               </div>
+              <div className="hidden lg:block h-96">
+                <StepAnimation step={1} />
+              </div>
             </div>
 
             {/* Step 2 */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-              <div className="md:col-span-1">
-                <div className="text-6xl font-light text-neutral-200 dark:text-neutral-900">
-                  02
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              <div className="lg:order-2 space-y-6">
+                <div className="flex items-center gap-6">
+                  <div className="w-20 h-20 rounded-full bg-black dark:bg-white flex items-center justify-center flex-shrink-0">
+                    <span className="text-3xl font-normal text-white dark:text-black">02</span>
+                  </div>
+                  <h3 className="text-3xl md:text-4xl font-light text-black dark:text-white">
+                    AI Proposes Changes
+                  </h3>
                 </div>
-              </div>
-              <div className="md:col-span-11 space-y-3">
-                <h3 className="text-2xl font-light text-black dark:text-white">
-                  AI Proposes Changes
-                </h3>
-                <p className="text-base text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-2xl">
+                <p className="text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed">
                   Connect AI agents via MCP. Agents can read, search, and propose
                   improvements with clear rationale for each change.
                 </p>
               </div>
+              <div className="lg:order-1 hidden lg:block h-96">
+                <StepAnimation step={2} />
+              </div>
             </div>
 
             {/* Step 3 */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-              <div className="md:col-span-1">
-                <div className="text-6xl font-light text-neutral-200 dark:text-neutral-900">
-                  03
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              <div className="space-y-6">
+                <div className="flex items-center gap-6">
+                  <div className="w-20 h-20 rounded-full bg-black dark:bg-white flex items-center justify-center flex-shrink-0">
+                    <span className="text-3xl font-normal text-white dark:text-black">03</span>
+                  </div>
+                  <h3 className="text-3xl md:text-4xl font-light text-black dark:text-white">
+                    Review & Govern
+                  </h3>
                 </div>
-              </div>
-              <div className="md:col-span-11 space-y-3">
-                <h3 className="text-2xl font-light text-black dark:text-white">
-                  Review & Govern
-                </h3>
-                <p className="text-base text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-2xl">
+                <p className="text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed">
                   Approve with confidence. Risk scores, conflict detection, and
                   freshness tracking keep your knowledge base reliable.
                 </p>
+              </div>
+              <div className="hidden lg:block h-96">
+                <StepAnimation step={3} />
               </div>
             </div>
           </div>

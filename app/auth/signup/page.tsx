@@ -14,7 +14,6 @@ export default function SignupPage() {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,6 +23,9 @@ export default function SignupPage() {
     try {
       const supabase = createClient();
 
+      // Get the base URL for email redirects
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+
       // Sign up with Supabase Auth
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
@@ -32,6 +34,7 @@ export default function SignupPage() {
           data: {
             name,
           },
+          emailRedirectTo: `${baseUrl}/auth/callback`,
         },
       });
 
@@ -53,33 +56,14 @@ export default function SignupPage() {
           }),
         });
 
-        setSuccess(true);
-        setTimeout(() => {
-          router.push('/dashboard');
-          router.refresh();
-        }, 2000);
+        // Redirect to email verification page
+        router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
       }
     } catch (err) {
       setError('An unexpected error occurred');
       setLoading(false);
     }
   };
-
-  if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950 p-4">
-        <div className="max-w-md w-full text-center">
-          <div className="bg-success/10 border border-success/20 rounded-lg p-8">
-            <div className="text-5xl mb-4">✓</div>
-            <h2 className="text-2xl font-light text-black dark:text-white mb-2">Account Created!</h2>
-            <p className="text-neutral-600 dark:text-neutral-400">
-              Redirecting you to the dashboard...
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950 p-4">
