@@ -53,6 +53,10 @@ tmp/
 temp/
 *.tmp
 
+# DocJays orchestrator generated files
+scripts/docjays-progress.json
+scripts/outputs/
+
 # OS files
 Thumbs.db
 .DS_Store
