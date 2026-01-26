@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { DiffPreview } from './DiffPreview';
-import { Send, Sparkles, Loader2, X, Minimize2, Maximize2 } from 'lucide-react';
+import { Send, Sparkles, Loader2 } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -40,7 +40,6 @@ export function DocChat({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [applyingId, setApplyingId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -200,7 +199,7 @@ export function DocChat({
       const data = await res.json();
       onApplySuggestion(data.newContent);
 
-      alert('✅ Suggestion applied successfully!');
+      alert('Suggestion applied successfully!');
     } catch (error) {
       console.error('Apply suggestion error:', error);
       alert('Failed to apply suggestion. Please try again.');
@@ -238,36 +237,13 @@ export function DocChat({
     }
   };
 
-  if (isCollapsed) {
-    return (
-      <div className="fixed right-6 bottom-6 z-50">
-        <Button
-          onClick={() => setIsCollapsed(false)}
-          className="rounded-full w-14 h-14 shadow-lg"
-        >
-          <Sparkles className="w-6 h-6" />
-        </Button>
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col h-full bg-white dark:bg-neutral-950 border-l border-neutral-200 dark:border-neutral-800">
       {/* Header */}
       <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-black dark:text-white" />
-            <h3 className="text-lg font-light text-black dark:text-white">AI Assistant</h3>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsCollapsed(true)}
-              className="p-1 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded"
-            >
-              <Minimize2 className="w-4 h-4" />
-            </button>
-          </div>
+        <div className="flex items-center gap-2 mb-3">
+          <Sparkles className="w-5 h-5 text-black dark:text-white" />
+          <h3 className="text-lg font-light text-black dark:text-white">AI Assistant</h3>
         </div>
 
         {/* Quick Actions */}
@@ -283,7 +259,7 @@ export function DocChat({
                 size="sm"
                 disabled={loading}
               >
-                ✂️ Concise
+                Concise
               </Button>
               <Button
                 onClick={() => handleQuickAction('clarity')}
@@ -291,7 +267,7 @@ export function DocChat({
                 size="sm"
                 disabled={loading}
               >
-                💡 Clarity
+                Clarity
               </Button>
               <Button
                 onClick={() => handleQuickAction('examples')}
@@ -299,7 +275,7 @@ export function DocChat({
                 size="sm"
                 disabled={loading}
               >
-                📊 Examples
+                Examples
               </Button>
               <Button
                 onClick={() => handleQuickAction('grammar')}
@@ -307,7 +283,7 @@ export function DocChat({
                 size="sm"
                 disabled={loading}
               >
-                ✅ Grammar
+                Grammar
               </Button>
             </div>
           </div>
