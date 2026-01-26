@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { use } from 'react';
 import { AppNav } from '@/components/layout/AppNav';
@@ -11,11 +11,18 @@ import { buildDocumentTree, extractFolders, validateDocumentPath } from '@/lib/u
 import { PageLoader } from '@/components/ui/loader';
 import { AuditCard } from '@/components/audit/AuditCard';
 import { AuditResult } from '@/lib/ai/audit';
+import { Plug, Check, BookOpen, AlertTriangle } from 'lucide-react';
+import { UploadWorkflow } from '@/components/knowledge/UploadWorkflow';
 
 interface Document {
   id: string;
   path: string;
   updatedAt: string;
+  groundingState: 'ungrounded' | 'grounded' | 'deprecated';
+  editorialState: 'draft' | 'review' | 'active' | 'archived';
+  _count?: {
+    modules: number;
+  };
 }
 
 interface Project {
@@ -39,12 +46,33 @@ export default function ProjectPage({
   const [pathError, setPathError] = useState('');
   const [auditData, setAuditData] = useState<(AuditResult & { id: string; createdAt: Date }) | undefined>();
   const [auditLoading, setAuditLoading] = useState(false);
+  const [documentFilter, setDocumentFilter] = useState<'all' | 'grounded' | 'ungrounded' | 'conflicts'>('all');
+  const [conflictCounts, setConflictCounts] = useState<Record<string, number>>({});
+  const [showNewDocMenu, setShowNewDocMenu] = useState(false);
+  const [showUploadWorkflow, setShowUploadWorkflow] = useState(false);
+  const newDocMenuRef = useRef<HTMLDivElement>(null);
 
-  // Build tree structure from documents
+  // Filter documents based on selected filter
+  const filteredDocs = useMemo(() => {
+    if (!project) return [];
+
+    switch (documentFilter) {
+      case 'grounded':
+        return project.docs.filter(doc => doc.groundingState === 'grounded');
+      case 'ungrounded':
+        return project.docs.filter(doc => doc.groundingState === 'ungrounded');
+      case 'conflicts':
+        return project.docs.filter(doc => conflictCounts[doc.id] > 0);
+      default:
+        return project.docs;
+    }
+  }, [project, documentFilter, conflictCounts]);
+
+  // Build tree structure from filtered documents
   const documentTree = useMemo(() => {
     if (!project) return [];
-    return buildDocumentTree(project.docs);
-  }, [project]);
+    return buildDocumentTree(filteredDocs, conflictCounts);
+  }, [filteredDocs, conflictCounts]);
 
   // Extract existing folders for suggestions
   const existingFolders = useMemo(() => {
@@ -54,7 +82,25 @@ export default function ProjectPage({
 
   useEffect(() => {
     fetchProject();
+    fetchConflictCounts();
   }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (newDocMenuRef.current && !newDocMenuRef.current.contains(event.target as Node)) {
+        setShowNewDocMenu(false);
+      }
+    };
+
+    if (showNewDocMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showNewDocMenu]);
 
   // Fetch latest audit on mount and auto-refresh if stale
   useEffect(() => {
@@ -122,7 +168,7 @@ export default function ProjectPage({
 
   const fetchProject = async () => {
     try {
-      const res = await fetch(`/api/projects/${resolvedParams.slug}`);
+      const res = await fetch(`/api/projects/${resolvedParams.slug}?includeGrounding=true`);
 
       if (res.ok) {
         const data = await res.json();
@@ -134,6 +180,27 @@ export default function ProjectPage({
       console.error('Failed to fetch project:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchConflictCounts = async () => {
+    try {
+      const res = await fetch(`/api/projects/${resolvedParams.slug}/knowledge/conflicts?status=open`);
+      if (res.ok) {
+        const { conflicts } = await res.json();
+
+        // Build a map of document ID to conflict count
+        const counts: Record<string, number> = {};
+        for (const conflict of conflicts) {
+          const docId = conflict.module?.document?.id;
+          if (docId) {
+            counts[docId] = (counts[docId] || 0) + 1;
+          }
+        }
+        setConflictCounts(counts);
+      }
+    } catch (error) {
+      console.error('Failed to fetch conflict counts:', error);
     }
   };
 
@@ -243,9 +310,17 @@ export default function ProjectPage({
               <Link href="/dashboard" className="inline-flex items-center text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white text-sm">
                 ← Back to Projects
               </Link>
-              <Link href={`/projects/${project.slug}/settings`}>
-                <Button variant="ghost" size="sm">Settings</Button>
-              </Link>
+              <div className="flex gap-2">
+                <Link href={`/projects/${project.slug}/connect`}>
+                  <Button variant="ghost" size="sm">
+                    <Plug className="w-4 h-4 mr-2" />
+                    Connect
+                  </Button>
+                </Link>
+                <Link href={`/projects/${project.slug}/settings`}>
+                  <Button variant="ghost" size="sm">Settings</Button>
+                </Link>
+              </div>
             </div>
             <h1 className="text-5xl md:text-6xl font-light tracking-tight text-black dark:text-white mb-2">
               {project.name}
@@ -255,32 +330,115 @@ export default function ProjectPage({
             </p>
           </div>
 
-          {/* Audit Card */}
-          <div className="mb-8">
-            <AuditCard
-              level="project"
-              auditData={auditData}
-              onRefresh={handleRunAudit}
-              loading={auditLoading}
-            />
-          </div>
-
-          {/* Documents Section */}
-          <Card className="mb-8" variant="default">
+          {/* Main Layout: Content Left, Audit Right */}
+          <div className="flex gap-6 items-start mb-8">
+            {/* Left: Documents Section (Larger) */}
+            <div className="flex-1 min-w-0">
+              <Card variant="default">
             <CardHeader>
               <div className="flex justify-between items-center">
                 <h2 className="text-3xl font-light text-black dark:text-white">Documents</h2>
-                <Button
-                  onClick={() => setShowCreateForm(!showCreateForm)}
-                  variant={showCreateForm ? 'secondary' : 'primary'}
-                  size="md"
-                >
-                  {showCreateForm ? 'Cancel' : 'New Document'}
-                </Button>
+                <div ref={newDocMenuRef} className="relative">
+                  <Button
+                    onClick={() => setShowNewDocMenu(!showNewDocMenu)}
+                    variant="primary"
+                    size="md"
+                  >
+                    New Document ▾
+                  </Button>
+                  {showNewDocMenu && (
+                    <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg shadow-lg z-10">
+                      <button
+                        onClick={() => {
+                          setShowCreateForm(true);
+                          setShowNewDocMenu(false);
+                          setShowUploadWorkflow(false);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors first:rounded-t-lg"
+                      >
+                        <div className="font-medium text-black dark:text-white">Create Empty</div>
+                        <div className="text-sm text-neutral-600 dark:text-neutral-400">Start with a blank document</div>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowUploadWorkflow(true);
+                          setShowNewDocMenu(false);
+                          setShowCreateForm(false);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors last:rounded-b-lg border-t border-neutral-200 dark:border-neutral-800"
+                      >
+                        <div className="font-medium text-black dark:text-white">Upload Files</div>
+                        <div className="text-sm text-neutral-600 dark:text-neutral-400">Import existing documents</div>
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </CardHeader>
 
             <CardContent>
+              {/* Filter Bar */}
+              <div className="mb-6 flex items-center gap-2">
+                <span className="text-sm text-neutral-600 dark:text-neutral-400 mr-2">Filter:</span>
+                <button
+                  onClick={() => setDocumentFilter('all')}
+                  className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                    documentFilter === 'all'
+                      ? 'bg-black text-white dark:bg-white dark:text-black'
+                      : 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                  }`}
+                >
+                  All
+                </button>
+                <button
+                  onClick={() => setDocumentFilter('grounded')}
+                  className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ${
+                    documentFilter === 'grounded'
+                      ? 'bg-black text-white dark:bg-white dark:text-black'
+                      : 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                  }`}
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  Grounded
+                </button>
+                <button
+                  onClick={() => setDocumentFilter('ungrounded')}
+                  className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ${
+                    documentFilter === 'ungrounded'
+                      ? 'bg-black text-white dark:bg-white dark:text-black'
+                      : 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                  }`}
+                >
+                  <BookOpen className="w-3.5 h-3.5" />
+                  Ungrounded
+                </button>
+                <button
+                  onClick={() => setDocumentFilter('conflicts')}
+                  className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ${
+                    documentFilter === 'conflicts'
+                      ? 'bg-black text-white dark:bg-white dark:text-black'
+                      : 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                  }`}
+                >
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  Conflicts
+                </button>
+              </div>
+
+              {/* Upload Workflow */}
+              {showUploadWorkflow && (
+                <div className="mb-6">
+                  <UploadWorkflow
+                    projectSlug={project.slug}
+                    onComplete={() => {
+                      setShowUploadWorkflow(false);
+                      fetchProject();
+                      fetchConflictCounts();
+                    }}
+                  />
+                </div>
+              )}
+
               {showCreateForm && (
                 <form onSubmit={handleCreateDoc} className="mb-6 p-6 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg">
                   <div className="mb-4">
@@ -321,9 +479,9 @@ export default function ProjectPage({
                               key={folder}
                               type="button"
                               onClick={() => setDocPath(`${folder}/`)}
-                              className="text-xs px-3 py-1.5 bg-neutral-200 dark:bg-neutral-800 text-black dark:text-white rounded hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-colors"
+                              className="text-xs px-3 py-1.5 bg-neutral-200 dark:bg-neutral-800 text-black dark:text-white rounded hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-colors flex items-center gap-1.5"
                             >
-                              📁 {folder}/
+                              {folder}/
                             </button>
                           ))}
                         </div>
@@ -336,9 +494,28 @@ export default function ProjectPage({
                 </form>
               )}
 
-              <DocumentTree nodes={documentTree} projectSlug={project.slug} />
+              <DocumentTree
+                nodes={documentTree}
+                projectSlug={project.slug}
+                onUpdate={() => {
+                  fetchProject();
+                  fetchConflictCounts();
+                }}
+              />
             </CardContent>
           </Card>
+            </div>
+
+            {/* Right: Strategic Audit Sidebar (Smaller) */}
+            <div className="w-96 flex-shrink-0 sticky top-32">
+              <AuditCard
+                level="project"
+                auditData={auditData}
+                onRefresh={handleRunAudit}
+                loading={auditLoading}
+              />
+            </div>
+          </div>
 
           {/* Proposals Section */}
           {project.proposals.length > 0 && (

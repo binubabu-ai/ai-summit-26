@@ -7,6 +7,10 @@ export interface DocumentNode {
   children?: DocumentNode[];
   docId?: string;
   updatedAt?: string;
+  groundingState?: 'ungrounded' | 'grounded' | 'deprecated';
+  editorialState?: 'draft' | 'review' | 'active' | 'archived';
+  moduleCount?: number;
+  conflictCount?: number;
 }
 
 /**
@@ -15,7 +19,15 @@ export interface DocumentNode {
  * Returns a tree with folders and files
  */
 export function buildDocumentTree(
-  docs: Array<{ id: string; path: string; updatedAt: string }>
+  docs: Array<{
+    id: string;
+    path: string;
+    updatedAt: string;
+    groundingState?: 'ungrounded' | 'grounded' | 'deprecated';
+    editorialState?: 'draft' | 'review' | 'active' | 'archived';
+    _count?: { modules: number };
+  }>,
+  conflictCounts?: Record<string, number>
 ): DocumentNode[] {
   const root: DocumentNode[] = [];
   const folderMap = new Map<string, DocumentNode>();
@@ -57,6 +69,10 @@ export function buildDocumentTree(
       type: 'file',
       docId: doc.id,
       updatedAt: doc.updatedAt,
+      groundingState: doc.groundingState,
+      editorialState: doc.editorialState,
+      moduleCount: doc._count?.modules || 0,
+      conflictCount: conflictCounts?.[doc.id] || 0,
     });
   }
 

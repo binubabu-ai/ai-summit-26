@@ -25,6 +25,10 @@ export async function GET(request: NextRequest, { params }: Params) {
 
     const { slug } = await params;
 
+    // Check if grounding data should be included
+    const { searchParams } = new URL(request.url);
+    const includeGrounding = searchParams.get('includeGrounding') === 'true';
+
     const project = await prisma.project.findUnique({
       where: { slug },
       include: {
@@ -34,6 +38,15 @@ export async function GET(request: NextRequest, { params }: Params) {
             id: true,
             path: true,
             updatedAt: true,
+            ...(includeGrounding && {
+              groundingState: true,
+              editorialState: true,
+              _count: {
+                select: {
+                  modules: true,
+                },
+              },
+            }),
           },
         },
         proposals: {

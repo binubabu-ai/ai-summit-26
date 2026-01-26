@@ -258,90 +258,82 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Audit Card */}
-        {user && projects.length > 0 && (
-          <div className="mb-8">
-            <AuditCard
-              level="dashboard"
-              auditData={auditData}
-              onRefresh={handleRunAudit}
-              loading={auditLoading}
-            />
-          </div>
-        )}
-
-        {/* Create Project Button */}
-        {user && (
-          <div className="mb-8">
-            <Button
-              onClick={() => setShowCreateForm(!showCreateForm)}
-              icon={!showCreateForm ? <Plus className="w-4 h-4" /> : undefined}
-            >
-              {showCreateForm ? 'Cancel' : 'New Project'}
-            </Button>
-          </div>
-        )}
-
-        {/* Create Form */}
-        {showCreateForm && (
-          <Card className="mb-8 p-6">
-            <form onSubmit={handleCreate} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-black dark:text-white mb-2">
-                  Project Name
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => {
-                    const name = e.target.value;
-                    setFormData({
-                      name,
-                      slug: generateSlug(name),
-                    });
-                  }}
-                  className="w-full px-4 py-2 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-md text-black dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-600 focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent"
-                  placeholder="My Documentation Project"
-                  required
-                />
+        {/* Main Layout: Content Left, Audit Right */}
+        <div className="flex gap-6 items-start">
+          {/* Left: Main Content (Larger) */}
+          <div className="flex-1 min-w-0">
+            {/* Create Project Button */}
+            {user && (
+              <div className="mb-8">
+                <Button
+                  onClick={() => setShowCreateForm(!showCreateForm)}
+                  icon={!showCreateForm ? <Plus className="w-4 h-4" /> : undefined}
+                >
+                  {showCreateForm ? 'Cancel' : 'New Project'}
+                </Button>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-black dark:text-white mb-2">
-                  Slug
-                </label>
-                <input
-                  type="text"
-                  value={formData.slug}
-                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  className="w-full px-4 py-2 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-md text-black dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-600 focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent"
-                  placeholder="my-documentation-project"
-                  pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
-                  required
-                />
-                <p className="text-sm text-neutral-500 dark:text-neutral-500 mt-2">
-                  Lowercase letters, numbers, and hyphens only
-                </p>
-              </div>
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={creating || !formData.name || !formData.slug}
-              >
-                {creating ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  'Create Project'
-                )}
-              </Button>
-            </form>
-          </Card>
-        )}
+            )}
 
-        {/* Projects Grid */}
-        {loading ? (
+            {/* Create Form */}
+            {showCreateForm && (
+              <Card className="mb-8 p-6">
+                <form onSubmit={handleCreate} className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-black dark:text-white mb-2">
+                      Project Name
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => {
+                        const name = e.target.value;
+                        setFormData({
+                          name,
+                          slug: generateSlug(name),
+                        });
+                      }}
+                      className="w-full px-4 py-2 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-md text-black dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-600 focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent"
+                      placeholder="My Documentation Project"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-black dark:text-white mb-2">
+                      Slug
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.slug}
+                      onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                      className="w-full px-4 py-2 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-md text-black dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-600 focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent"
+                      placeholder="my-documentation-project"
+                      pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+                      required
+                    />
+                    <p className="text-sm text-neutral-500 dark:text-neutral-500 mt-2">
+                      Lowercase letters, numbers, and hyphens only
+                    </p>
+                  </div>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    disabled={creating || !formData.name || !formData.slug}
+                  >
+                    {creating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      'Create Project'
+                    )}
+                  </Button>
+                </form>
+              </Card>
+            )}
+
+            {/* Projects Grid */}
+            {loading ? (
           <div className="flex items-center justify-center py-16">
             <PageLoader />
           </div>
@@ -409,6 +401,20 @@ export default function Dashboard() {
             ))}
           </div>
         )}
+          </div>
+
+          {/* Right: Strategic Audit Sidebar (Smaller) */}
+          {user && projects.length > 0 && (
+            <div className="w-96 flex-shrink-0 sticky top-32">
+              <AuditCard
+                level="dashboard"
+                auditData={auditData}
+                onRefresh={handleRunAudit}
+                loading={auditLoading}
+              />
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );

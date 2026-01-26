@@ -28,6 +28,7 @@
     "diff2html": "^3.4.49",
     "framer-motion": "^12.29.0",
     "lucide-react": "^0.563.0",
+    "mammoth": "^1.11.0",
     "marked": "^17.0.1",
     "next": "^15.1.4",
     "next-themes": "^0.4.6",

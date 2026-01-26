@@ -12,7 +12,7 @@ import { DocChat } from '@/components/editor/DocChat';
 import { CreateRevisionDialog } from '@/components/revisions/CreateRevisionDialog';
 import { RevisionSidebar } from '@/components/revisions/RevisionSidebar';
 import { getFolderPath, getFileName } from '@/lib/utils/document-tree';
-import { FileEdit } from 'lucide-react';
+import { FileEdit, Folder, FileText as FileTextIcon } from 'lucide-react';
 import { PageLoader } from '@/components/ui/loader';
 import { AuditCard } from '@/components/audit/AuditCard';
 import { AuditResult } from '@/lib/ai/audit';
@@ -314,12 +314,14 @@ export default function DocumentEditorPage({
                   {breadcrumb.map((crumb) => (
                     <span key={crumb.path} className="flex items-center gap-2">
                       <span>/</span>
-                      <span>📁 {crumb.name}</span>
+                      <Folder className="w-3.5 h-3.5" />
+                      <span>{crumb.name}</span>
                     </span>
                   ))}
                   {breadcrumb.length > 0 && <span>/</span>}
-                  <span className="text-black dark:text-white">
-                    📄 {getFileName(document.path)}
+                  <span className="text-black dark:text-white flex items-center gap-2">
+                    <FileTextIcon className="w-3.5 h-3.5" />
+                    {getFileName(document.path)}
                   </span>
                 </div>
 
@@ -348,9 +350,33 @@ export default function DocumentEditorPage({
         </div>
 
         {/* Main Content */}
-        <div className="flex h-[calc(100vh-180px)]">
-          {/* Left: Metadata Sidebar */}
-          <div className="w-96 border-r border-neutral-200 dark:border-neutral-800 p-6 space-y-6 overflow-y-auto">
+        <div className="flex h-[calc(100vh-180px)] gap-6 px-6 lg:px-16">
+          {/* Left: Editor & Chat (Larger) */}
+          <div className="flex-1 flex gap-6 min-w-0">
+            {/* Editor */}
+            <div className="flex-1 overflow-y-auto">
+              <TiptapEditor
+                initialContent={currentContent}
+                onChange={setCurrentContent}
+                onSave={handleSave}
+              />
+            </div>
+
+            {/* AI Chat */}
+            <div className="w-80 flex-shrink-0">
+              <DocChat
+                documentId={document.id}
+                documentContent={currentContent}
+                onApplySuggestion={(newContent) => {
+                  setCurrentContent(newContent);
+                  handleSave(newContent);
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Right: Strategic Audit & Metadata Sidebar */}
+          <div className="w-80 flex-shrink-0 border-l border-neutral-200 dark:border-neutral-800 pl-6 space-y-6 overflow-y-auto">
             {/* Audit Card */}
             <AuditCard
               level="document"
@@ -380,27 +406,6 @@ export default function DocumentEditorPage({
                 </dl>
               </CardContent>
             </Card>
-          </div>
-
-          {/* Center: Editor */}
-          <div className="flex-1 p-6 overflow-y-auto">
-            <TiptapEditor
-              initialContent={currentContent}
-              onChange={setCurrentContent}
-              onSave={handleSave}
-            />
-          </div>
-
-          {/* Right: AI Chat */}
-          <div className="w-96">
-            <DocChat
-              documentId={document.id}
-              documentContent={currentContent}
-              onApplySuggestion={(newContent) => {
-                setCurrentContent(newContent);
-                handleSave(newContent);
-              }}
-            />
           </div>
         </div>
 

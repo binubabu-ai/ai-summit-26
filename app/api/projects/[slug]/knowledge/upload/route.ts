@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import prisma from '@/lib/prisma';
 import { logDocumentUpload } from '@/lib/knowledge/audit';
+import { convertToMarkdown, cleanMarkdown } from '@/lib/utils/document-converter';
 
 // POST /api/projects/:slug/knowledge/upload
 // Upload documents for processing
@@ -48,12 +49,7 @@ export async function POST(
 
     // Validate files
     const maxFileSize = 10 * 1024 * 1024; // 10MB
-    const allowedTypes = [
-      'text/plain',
-      'text/markdown',
-      'application/pdf',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    ];
+    const allowedExtensions = ['.md', '.markdown', '.txt', '.docx'];
 
     for (const file of files) {
       if (file.size > maxFileSize) {
@@ -63,9 +59,13 @@ export async function POST(
         );
       }
 
-      if (!allowedTypes.includes(file.type) && !file.name.endsWith('.md') && !file.name.endsWith('.txt')) {
+      const hasAllowedExtension = allowedExtensions.some(ext =>
+        file.name.toLowerCase().endsWith(ext)
+      );
+
+      if (!hasAllowedExtension) {
         return NextResponse.json(
-          { error: `File ${file.name} has unsupported type: ${file.type}` },
+          { error: `File ${file.name} has unsupported format. Supported: ${allowedExtensions.join(', ')}` },
           { status: 400 }
         );
       }
@@ -74,13 +74,24 @@ export async function POST(
     // Create documents in "raw" state
     const uploadedDocs = await Promise.all(
       files.map(async (file) => {
-        const rawContent = await file.text();
+        // Convert file to markdown (handles .docx, .txt, .md)
+        let content: string;
+        let conversionWarnings: string[] | undefined;
 
-        // Sanitize content: remove null bytes (PostgreSQL doesn't allow them in text fields)
-        const content = rawContent.replace(/\0/g, '');
+        try {
+          const result = await convertToMarkdown(file);
+          content = cleanMarkdown(result.markdown);
+          conversionWarnings = result.warnings;
+        } catch (conversionError) {
+          // Fallback: try reading as text
+          console.warn(`Conversion failed for ${file.name}, falling back to text:`, conversionError);
+          const rawContent = await file.text();
+          content = rawContent.replace(/\0/g, ''); // Remove null bytes
+        }
 
-        // Generate path from filename
-        const path = `uploads/${file.name.replace(/\s+/g, '-').toLowerCase()}`;
+        // Generate path from filename (convert extension to .md)
+        const baseName = file.name.replace(/\.(docx|txt|md|markdown)$/i, '');
+        const path = `uploads/${baseName.replace(/\s+/g, '-').toLowerCase()}.md`;
 
         // Check if document already exists
         const existing = await prisma.document.findFirst({

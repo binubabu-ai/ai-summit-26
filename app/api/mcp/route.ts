@@ -273,6 +273,65 @@ function handleToolsList(project: any) {
           required: ['path'],
         },
       },
+      {
+        name: 'query_grounded_knowledge',
+        description: 'Search across grounded documentation modules for specific information',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description: 'Natural language query or keywords to search for',
+            },
+            category: {
+              type: 'string',
+              description: 'Optional category filter (tag) for modules',
+            },
+            minConfidence: {
+              type: 'number',
+              description: 'Minimum confidence score (0.0-1.0, default: 0.5)',
+              default: 0.5,
+            },
+            limit: {
+              type: 'number',
+              description: 'Maximum number of results (default: 10)',
+              default: 10,
+            },
+          },
+          required: ['query'],
+        },
+      },
+      {
+        name: 'get_grounding_status',
+        description: 'Check grounding status for documents and their modules',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            documentPath: {
+              type: 'string',
+              description: 'Optional document path to check specific document status',
+            },
+          },
+        },
+      },
+      {
+        name: 'list_grounded_modules',
+        description: 'List all grounded modules in the project with metadata',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            category: {
+              type: 'string',
+              description: 'Optional category filter (tag)',
+            },
+            limit: {
+              type: 'number',
+              description: 'Maximum number of modules to return (default: 50)',
+              default: 50,
+            },
+          },
+        },
+      },
     ],
   });
 }
@@ -309,6 +368,15 @@ async function handleToolsCall(project: any, params: any) {
 
       case 'list_revisions':
         return await listRevisionsTool(project, args);
+
+      case 'query_grounded_knowledge':
+        return await queryGroundedKnowledge(project, args);
+
+      case 'get_grounding_status':
+        return await getGroundingStatus(project, args);
+
+      case 'list_grounded_modules':
+        return await listGroundedModules(project, args);
 
       default:
         return NextResponse.json(
@@ -769,6 +837,296 @@ async function handlePromptsGet(project: any, params: any) {
     { error: 'Unknown prompt' },
     { status: 400 }
   );
+}
+
+// Grounded Knowledge Tools
+async function queryGroundedKnowledge(
+  project: any,
+  args: { query: string; category?: string; minConfidence?: number; limit?: number }
+) {
+  const minConfidence = args.minConfidence || 0.5;
+  const limit = args.limit || 10;
+
+  // Build where clause
+  const where: any = {
+    document: {
+      projectId: project.id,
+    },
+    isGrounded: true,
+    confidenceScore: { gte: minConfidence },
+  };
+
+  // Add category filter if provided
+  if (args.category) {
+    where.tags = {
+      path: '$[*]',
+      array_contains: args.category,
+    };
+  }
+
+  // Search grounded modules
+  const modules = await prisma.documentModule.findMany({
+    where: {
+      ...where,
+      OR: [
+        { title: { contains: args.query, mode: 'insensitive' } },
+        { description: { contains: args.query, mode: 'insensitive' } },
+        { content: { contains: args.query, mode: 'insensitive' } },
+      ],
+    },
+    select: {
+      id: true,
+      moduleKey: true,
+      title: true,
+      description: true,
+      content: true,
+      isGrounded: true,
+      confidenceScore: true,
+      tags: true,
+      document: {
+        select: {
+          path: true,
+          groundingState: true,
+        },
+      },
+    },
+    orderBy: [
+      { confidenceScore: 'desc' },
+      { groundedAt: 'desc' },
+    ],
+    take: limit,
+  });
+
+  const results = modules.map((module) => ({
+    moduleKey: module.moduleKey,
+    title: module.title,
+    description: module.description,
+    content: module.content,
+    documentPath: module.document.path,
+    confidenceScore: module.confidenceScore,
+    tags: module.tags,
+    isGrounded: module.isGrounded,
+  }));
+
+  return NextResponse.json({
+    content: [
+      {
+        type: 'text',
+        text: JSON.stringify(
+          {
+            query: args.query,
+            resultsCount: results.length,
+            results,
+            message:
+              results.length > 0
+                ? `Found ${results.length} grounded module(s) matching your query.`
+                : 'No grounded modules found matching your query.',
+          },
+          null,
+          2
+        ),
+      },
+    ],
+  });
+}
+
+async function getGroundingStatus(project: any, args: { documentPath?: string }) {
+  if (args.documentPath) {
+    // Get specific document status
+    const doc = await prisma.document.findUnique({
+      where: {
+        projectId_path: {
+          projectId: project.id,
+          path: args.documentPath,
+        },
+      },
+      select: {
+        path: true,
+        groundingState: true,
+        groundedAt: true,
+        editorialState: true,
+        uploadState: true,
+        modules: {
+          select: {
+            id: true,
+            moduleKey: true,
+            title: true,
+            isGrounded: true,
+            confidenceScore: true,
+          },
+        },
+      },
+    });
+
+    if (!doc) {
+      return NextResponse.json(
+        { error: `Document not found: ${args.documentPath}` },
+        { status: 404 }
+      );
+    }
+
+    const groundedModules = doc.modules.filter(m => m.isGrounded).length;
+    const totalModules = doc.modules.length;
+
+    return NextResponse.json({
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(
+            {
+              documentPath: doc.path,
+              groundingState: doc.groundingState,
+              editorialState: doc.editorialState,
+              uploadState: doc.uploadState,
+              groundedAt: doc.groundedAt?.toISOString(),
+              modulesGrounded: groundedModules,
+              totalModules,
+              groundingCoverage: totalModules > 0 ? (groundedModules / totalModules) * 100 : 0,
+              modules: doc.modules,
+            },
+            null,
+            2
+          ),
+        },
+      ],
+    });
+  }
+
+  // Get project-wide status
+  const [totalDocuments, groundedDocuments, totalModules, groundedModules] = await Promise.all([
+    prisma.document.count({
+      where: { projectId: project.id },
+    }),
+    prisma.document.count({
+      where: { projectId: project.id, groundingState: 'grounded' },
+    }),
+    prisma.documentModule.count({
+      where: { document: { projectId: project.id } },
+    }),
+    prisma.documentModule.count({
+      where: { document: { projectId: project.id }, isGrounded: true },
+    }),
+  ]);
+
+  // Get breakdown by grounding state
+  const documentsByState = await prisma.document.groupBy({
+    by: ['groundingState'],
+    where: { projectId: project.id },
+    _count: true,
+  });
+
+  const stateBreakdown: Record<string, number> = {};
+  documentsByState.forEach(item => {
+    stateBreakdown[item.groundingState] = item._count;
+  });
+
+  return NextResponse.json({
+    content: [
+      {
+        type: 'text',
+        text: JSON.stringify(
+          {
+            projectName: project.name,
+            totalDocuments,
+            groundedDocuments,
+            documentGroundingCoverage: totalDocuments > 0 ? (groundedDocuments / totalDocuments) * 100 : 0,
+            totalModules,
+            groundedModules,
+            moduleGroundingCoverage: totalModules > 0 ? (groundedModules / totalModules) * 100 : 0,
+            stateBreakdown,
+            message: `${groundedDocuments}/${totalDocuments} documents grounded (${((groundedDocuments / totalDocuments) * 100).toFixed(1)}%)`,
+          },
+          null,
+          2
+        ),
+      },
+    ],
+  });
+}
+
+async function listGroundedModules(project: any, args: { category?: string; limit?: number }) {
+  const limit = args.limit || 50;
+
+  // Build where clause
+  const where: any = {
+    document: {
+      projectId: project.id,
+    },
+    isGrounded: true,
+  };
+
+  // Add category filter if provided
+  if (args.category) {
+    where.tags = {
+      path: '$[*]',
+      array_contains: args.category,
+    };
+  }
+
+  const modules = await prisma.documentModule.findMany({
+    where,
+    select: {
+      id: true,
+      moduleKey: true,
+      title: true,
+      description: true,
+      moduleType: true,
+      isGrounded: true,
+      groundedAt: true,
+      confidenceScore: true,
+      tags: true,
+      dependsOn: true,
+      document: {
+        select: {
+          path: true,
+        },
+      },
+    },
+    orderBy: [
+      { groundedAt: 'desc' },
+      { confidenceScore: 'desc' },
+    ],
+    take: limit,
+  });
+
+  // Group by category if requested
+  const categoryCounts: Record<string, number> = {};
+  modules.forEach(module => {
+    const tags = module.tags as string[] || [];
+    tags.forEach(tag => {
+      categoryCounts[tag] = (categoryCounts[tag] || 0) + 1;
+    });
+  });
+
+  const formattedModules = modules.map(module => ({
+    moduleKey: module.moduleKey,
+    title: module.title,
+    description: module.description,
+    documentPath: module.document.path,
+    moduleType: module.moduleType,
+    confidenceScore: module.confidenceScore,
+    groundedAt: module.groundedAt?.toISOString(),
+    tags: module.tags,
+    dependencies: module.dependsOn,
+  }));
+
+  return NextResponse.json({
+    content: [
+      {
+        type: 'text',
+        text: JSON.stringify(
+          {
+            totalGrounded: formattedModules.length,
+            modules: formattedModules,
+            categoryBreakdown: categoryCounts,
+            message: `${formattedModules.length} grounded module(s) available for context.`,
+          },
+          null,
+          2
+        ),
+      },
+    ],
+  });
 }
 
 // OPTIONS for CORS

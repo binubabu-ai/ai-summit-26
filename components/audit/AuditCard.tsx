@@ -36,9 +36,9 @@ export function AuditCard({ level, auditData, onRefresh, loading }: AuditCardPro
   };
 
   const levelNames = {
-    dashboard: 'Portfolio Audit',
-    project: 'Project Audit',
-    document: 'Document Audit',
+    dashboard: 'Strategic Portfolio Audit',
+    project: 'Strategic Project Audit',
+    document: 'Strategic Document Audit',
   };
 
   return (
