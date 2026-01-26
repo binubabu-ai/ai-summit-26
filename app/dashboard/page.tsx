@@ -36,6 +36,7 @@ export default function Dashboard() {
   const [creating, setCreating] = useState(false);
   const [auditData, setAuditData] = useState<(AuditResult & { id: string; createdAt: Date }) | undefined>();
   const [auditLoading, setAuditLoading] = useState(false);
+  const [auditInitialLoading, setAuditInitialLoading] = useState(true);
 
   useEffect(() => {
     checkAuth();
@@ -70,7 +71,10 @@ export default function Dashboard() {
   const fetchLatestAudit = async () => {
     try {
       const response = await fetch('/api/audit/latest?level=dashboard');
-      if (!response.ok) return;
+      if (!response.ok) {
+        setAuditInitialLoading(false);
+        return;
+      }
 
       const { audit } = await response.json();
 
@@ -89,6 +93,8 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error('Failed to fetch latest audit:', error);
+    } finally {
+      setAuditInitialLoading(false);
     }
   };
 
@@ -411,6 +417,7 @@ export default function Dashboard() {
                 auditData={auditData}
                 onRefresh={handleRunAudit}
                 loading={auditLoading}
+                initialLoading={auditInitialLoading}
               />
             </div>
           )}

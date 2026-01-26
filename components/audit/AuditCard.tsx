@@ -5,6 +5,7 @@ import { RefreshCw } from 'lucide-react';
 import { HealthScore } from './HealthScore';
 import { FindingsList } from './FindingsList';
 import { Loader } from '@/components/ui/loader';
+import { Skeleton } from '@/components/ui/skeleton';
 import { AuditResult } from '@/lib/ai/audit';
 import Link from 'next/link';
 
@@ -13,9 +14,10 @@ interface AuditCardProps {
   auditData?: AuditResult & { id: string; createdAt: Date };
   onRefresh: () => Promise<void>;
   loading?: boolean;
+  initialLoading?: boolean;
 }
 
-export function AuditCard({ level, auditData, onRefresh, loading }: AuditCardProps) {
+export function AuditCard({ level, auditData, onRefresh, loading, initialLoading }: AuditCardProps) {
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = async () => {
@@ -68,12 +70,38 @@ export function AuditCard({ level, auditData, onRefresh, loading }: AuditCardPro
         </button>
       </div>
 
-      {loading && !auditData ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader size="md" />
-          <span className="ml-3 text-sm text-neutral-600 dark:text-neutral-400">
-            Running audit...
-          </span>
+      {(initialLoading || (loading && !auditData)) ? (
+        <div className="space-y-6">
+          {/* Health Score Skeleton */}
+          <div className="space-y-3">
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-32 w-full" />
+          </div>
+
+          {/* Metrics Skeleton */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-8 w-16" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-8 w-16" />
+            </div>
+          </div>
+
+          {/* Findings Skeleton */}
+          <div className="space-y-3">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+
+          {/* Footer Skeleton */}
+          <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
+            <Skeleton className="h-4 w-full" />
+          </div>
         </div>
       ) : auditData ? (
         <div className="space-y-6">

@@ -55,6 +55,7 @@ export default function DocumentEditorPage({
   const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
   const [auditData, setAuditData] = useState<(AuditResult & { id: string; createdAt: Date }) | undefined>();
   const [auditLoading, setAuditLoading] = useState(false);
+  const [auditInitialLoading, setAuditInitialLoading] = useState(true);
   const [showChatModal, setShowChatModal] = useState(false);
 
   // Build breadcrumb from path
@@ -98,7 +99,10 @@ export default function DocumentEditorPage({
 
     try {
       const response = await fetch(`/api/audit/latest?level=document&targetId=${document.id}`);
-      if (!response.ok) return;
+      if (!response.ok) {
+        setAuditInitialLoading(false);
+        return;
+      }
 
       const { audit } = await response.json();
 
@@ -117,6 +121,8 @@ export default function DocumentEditorPage({
       }
     } catch (error) {
       console.error('Failed to fetch latest audit:', error);
+    } finally {
+      setAuditInitialLoading(false);
     }
   };
 
@@ -385,6 +391,7 @@ export default function DocumentEditorPage({
               auditData={auditData}
               onRefresh={handleRunAudit}
               loading={auditLoading}
+              initialLoading={auditInitialLoading}
             />
 
             {/* Revisions */}

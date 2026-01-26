@@ -46,6 +46,7 @@ export default function ProjectPage({
   const [pathError, setPathError] = useState('');
   const [auditData, setAuditData] = useState<(AuditResult & { id: string; createdAt: Date }) | undefined>();
   const [auditLoading, setAuditLoading] = useState(false);
+  const [auditInitialLoading, setAuditInitialLoading] = useState(true);
   const [documentFilter, setDocumentFilter] = useState<'all' | 'grounded' | 'ungrounded' | 'conflicts'>('all');
   const [conflictCounts, setConflictCounts] = useState<Record<string, number>>({});
   const [showNewDocMenu, setShowNewDocMenu] = useState(false);
@@ -120,7 +121,10 @@ export default function ProjectPage({
 
     try {
       const response = await fetch(`/api/audit/latest?level=project&targetId=${project.id}`);
-      if (!response.ok) return;
+      if (!response.ok) {
+        setAuditInitialLoading(false);
+        return;
+      }
 
       const { audit } = await response.json();
 
@@ -139,6 +143,8 @@ export default function ProjectPage({
       }
     } catch (error) {
       console.error('Failed to fetch latest audit:', error);
+    } finally {
+      setAuditInitialLoading(false);
     }
   };
 
@@ -513,6 +519,7 @@ export default function ProjectPage({
                 auditData={auditData}
                 onRefresh={handleRunAudit}
                 loading={auditLoading}
+                initialLoading={auditInitialLoading}
               />
             </div>
           </div>
