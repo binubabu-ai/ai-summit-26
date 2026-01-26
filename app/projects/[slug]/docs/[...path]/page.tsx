@@ -8,14 +8,15 @@ import { AppNav } from '@/components/layout/AppNav';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import TiptapEditor from '@/components/editor/TiptapEditor';
-import { DocChat } from '@/components/editor/DocChat';
+import { DocChatModal } from '@/components/editor/DocChatModal';
 import { CreateRevisionDialog } from '@/components/revisions/CreateRevisionDialog';
 import { RevisionSidebar } from '@/components/revisions/RevisionSidebar';
 import { getFolderPath, getFileName } from '@/lib/utils/document-tree';
-import { FileEdit, Folder, FileText as FileTextIcon } from 'lucide-react';
+import { FileEdit, Folder, FileText as FileTextIcon, MessageSquare, Sparkles } from 'lucide-react';
 import { PageLoader } from '@/components/ui/loader';
 import { AuditCard } from '@/components/audit/AuditCard';
 import { AuditResult } from '@/lib/ai/audit';
+import { FloatingActionButton } from '@/components/ui/floating-action-button';
 
 interface Document {
   id: string;
@@ -54,6 +55,7 @@ export default function DocumentEditorPage({
   const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
   const [auditData, setAuditData] = useState<(AuditResult & { id: string; createdAt: Date }) | undefined>();
   const [auditLoading, setAuditLoading] = useState(false);
+  const [showChatModal, setShowChatModal] = useState(false);
 
   // Build breadcrumb from path
   const breadcrumb = useMemo(() => {
@@ -337,6 +339,14 @@ export default function DocumentEditorPage({
                   </span>
                 )}
                 <Button
+                  onClick={() => setShowChatModal(true)}
+                  variant="ghost"
+                  size="sm"
+                >
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  AI Chat
+                </Button>
+                <Button
                   onClick={() => setShowRevisionDialog(true)}
                   variant="secondary"
                   size="sm"
@@ -351,32 +361,24 @@ export default function DocumentEditorPage({
 
         {/* Main Content */}
         <div className="flex h-[calc(100vh-180px)] gap-6 px-6 lg:px-16">
-          {/* Left: Editor & Chat (Larger) */}
-          <div className="flex-1 flex gap-6 min-w-0">
-            {/* Editor */}
-            <div className="flex-1 overflow-y-auto">
-              <TiptapEditor
-                initialContent={currentContent}
-                onChange={setCurrentContent}
-                onSave={handleSave}
-              />
-            </div>
+          {/* Left: Editor (Larger) */}
+          <div className="flex-1 relative overflow-y-auto">
+            <TiptapEditor
+              initialContent={currentContent}
+              onChange={setCurrentContent}
+              onSave={handleSave}
+            />
 
-            {/* AI Chat */}
-            <div className="w-80 flex-shrink-0">
-              <DocChat
-                documentId={document.id}
-                documentContent={currentContent}
-                onApplySuggestion={(newContent) => {
-                  setCurrentContent(newContent);
-                  handleSave(newContent);
-                }}
-              />
-            </div>
+            {/* Floating AI Chat Button */}
+            <FloatingActionButton
+              onClick={() => setShowChatModal(true)}
+              icon={<Sparkles className="w-6 h-6" />}
+              label="AI Chat"
+            />
           </div>
 
           {/* Right: Strategic Audit & Metadata Sidebar */}
-          <div className="w-80 flex-shrink-0 border-l border-neutral-200 dark:border-neutral-800 pl-6 space-y-6 overflow-y-auto">
+          <div className="w-96 flex-shrink-0 border-l border-neutral-200 dark:border-neutral-800 pl-6 space-y-6 overflow-y-auto">
             {/* Audit Card */}
             <AuditCard
               level="document"
@@ -408,6 +410,18 @@ export default function DocumentEditorPage({
             </Card>
           </div>
         </div>
+
+        {/* AI Chat Modal */}
+        <DocChatModal
+          isOpen={showChatModal}
+          onClose={() => setShowChatModal(false)}
+          documentId={document.id}
+          documentContent={currentContent}
+          onApplySuggestion={(newContent) => {
+            setCurrentContent(newContent);
+            handleSave(newContent);
+          }}
+        />
 
         {/* Create Revision Dialog */}
         <CreateRevisionDialog
