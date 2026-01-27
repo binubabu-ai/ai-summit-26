@@ -52,6 +52,12 @@ export function AppNav() {
           </Link>
 
           <div className="flex items-center gap-6">
+            <Link
+              href="/help"
+              className="text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+            >
+              Help
+            </Link>
             <ThemeToggle />
 
             {loading ? (
