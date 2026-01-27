@@ -1,53 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
+import { z } from 'zod';
 
-// GET /api/projects - List user's projects
-export async function GET(request: NextRequest) {
+// GET /api/projects - List all projects
+export async function GET() {
   try {
-    const supabase = await createClient();
+    const projects = await prisma.project.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        _count: {
+          select: {
+            docs: true,
+            proposals: true,
+          },
+        },
+      },
+    });
 
-    // Check authentication
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Fetch user's projects
-    const { data: projects, error } = await supabase
-      .from('projects')
-      .select('id, name, slug, created_at, updated_at')
-      .eq('owner_id', session.user.id)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching projects:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch projects' },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ projects });
+    return NextResponse.json(projects);
   } catch (error) {
-    console.error('Projects GET error:', error);
+    console.error('Error fetching projects:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to fetch projects' },
       { status: 500 }
     );
   }
 }
 
-// POST /api/projects - Create new project
+// POST /api/projects - Create a new project
+const createProjectSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  slug: z.string().min(1, 'Slug is required').regex(
+    /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+    'Slug must be lowercase with hyphens only'
+  ).optional(),
+});
+
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
-
-    // Check authentication
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    // Require authentication
+    let user;
+    try {
+      user = await requireAuth();
+    } catch (error) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -55,98 +51,151 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name } = body;
+    const validation = createProjectSchema.safeParse(body);
 
-    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'Project name is required' },
+        { error: validation.error.errors },
         { status: 400 }
       );
     }
 
-    // Generate slug from name
-    const slug = name
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
+    let { name, slug } = validation.data;
 
-    // Check if slug already exists for this user
-    const { data: existingProject } = await supabase
-      .from('projects')
-      .select('id')
-      .eq('owner_id', session.user.id)
-      .eq('slug', slug)
-      .single();
+    // Generate slug from name if not provided
+    if (!slug) {
+      slug = name
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+    }
 
-    if (existingProject) {
+    // Check if slug already exists
+    const existing = await prisma.project.findUnique({
+      where: { slug },
+    });
+
+    if (existing) {
       return NextResponse.json(
-        { error: 'A project with this name already exists' },
+        { error: 'A project with this slug already exists' },
         { status: 409 }
       );
     }
 
-    // Create project
-    const { data: project, error: projectError } = await supabase
-      .from('projects')
-      .insert({
-        owner_id: session.user.id,
-        name: name.trim(),
+    // Generate API key
+    const crypto = require('crypto');
+    const keyBuffer = crypto.randomBytes(24);
+    const apiKey = 'dj_' + keyBuffer.toString('base64')
+      .replace(/\+/g, '')
+      .replace(/\//g, '')
+      .replace(/=/g, '');
+
+    // Create project and API key in a transaction
+    const project = await prisma.project.create({
+      data: {
+        name,
         slug,
-      })
-      .select()
-      .single();
+        ownerId: user.id,
+        apiKeys: {
+          create: {
+            name: 'Default Key',
+            key: apiKey,
+            keyPrefix: 'dj_',
+          },
+        },
+        docs: {
+          create: {
+            path: 'README.md',
+            content: `# ${name}
 
-    if (projectError) {
-      console.error('Error creating project:', projectError);
-      return NextResponse.json(
-        { error: 'Failed to create project' },
-        { status: 500 }
-      );
-    }
+> **About this document**: This README serves as the introduction and overview for your project. Edit this file to describe what your project is about, its purpose, and any important information visitors should know.
 
-    // Generate API key for the project
-    const { data: apiKeyData } = await supabase
-      .rpc('generate_api_key');
+## What is this project?
 
-    if (!apiKeyData) {
-      console.error('Failed to generate API key');
-      return NextResponse.json({
-        project,
-        apiKey: null,
-        warning: 'Project created but API key generation failed'
-      });
-    }
+[Describe your project here - what it does, who it's for, and why it exists]
 
-    const apiKey = apiKeyData;
+## Key Information
 
-    // Store API key
-    const { error: keyError } = await supabase
-      .from('api_keys')
-      .insert({
-        project_id: project.id,
-        name: 'Default Key',
-        key: apiKey,
-        key_prefix: 'dj_',
-      });
+- **Project Name**: ${name}
+- **Project Slug**: ${slug}
+- **Created**: ${new Date().toLocaleDateString()}
 
-    if (keyError) {
-      console.error('Error storing API key:', keyError);
-      return NextResponse.json({
-        project,
-        apiKey: null,
-        warning: 'Project created but API key storage failed'
-      });
-    }
+## Getting Started
+
+[Add instructions on how to get started with this project]
+
+## Documentation Structure
+
+Use this project to organize your documentation:
+
+- Create new documents for different topics
+- Use folders in paths (e.g., \`api/authentication.md\`)
+- Keep related docs together
+- Update this README as your project evolves
+
+## Additional Resources
+
+[Add links to related resources, external docs, or helpful references]
+
+---
+
+*This README was automatically generated. Feel free to customize it to fit your project's needs.*
+`,
+            versions: {
+              create: {
+                content: `# ${name}
+
+> **About this document**: This README serves as the introduction and overview for your project. Edit this file to describe what your project is about, its purpose, and any important information visitors should know.
+
+## What is this project?
+
+[Describe your project here - what it does, who it's for, and why it exists]
+
+## Key Information
+
+- **Project Name**: ${name}
+- **Project Slug**: ${slug}
+- **Created**: ${new Date().toLocaleDateString()}
+
+## Getting Started
+
+[Add instructions on how to get started with this project]
+
+## Documentation Structure
+
+Use this project to organize your documentation:
+
+- Create new documents for different topics
+- Use folders in paths (e.g., \`api/authentication.md\`)
+- Keep related docs together
+- Update this README as your project evolves
+
+## Additional Resources
+
+[Add links to related resources, external docs, or helpful references]
+
+---
+
+*This README was automatically generated. Feel free to customize it to fit your project's needs.*
+`,
+                authorId: user.id,
+                authorType: 'user',
+              },
+            },
+          },
+        },
+      },
+    });
 
     return NextResponse.json({
       project,
       apiKey,
     }, { status: 201 });
   } catch (error) {
-    console.error('Projects POST error:', error);
+    console.error('Error creating project:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to create project' },
       { status: 500 }
     );
   }

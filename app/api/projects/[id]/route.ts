@@ -1,44 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
+import { z } from 'zod';
 
 // GET /api/projects/:id - Get project details
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = await createClient();
-    const { id } = await params;
-
-    // Check authentication
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    // Require authentication
+    let user;
+    try {
+      user = await requireAuth();
+    } catch (error) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    // Fetch project with API key
-    const { data: project, error } = await supabase
-      .from('projects')
-      .select(`
-        id,
-        name,
-        slug,
-        created_at,
-        updated_at,
-        api_keys (
-          key,
-          created_at,
-          last_used_at
-        )
-      `)
-      .eq('id', id)
-      .eq('owner_id', session.user.id)
-      .single();
+    const { id } = await params;
 
-    if (error || !project) {
+    // Fetch project with API keys
+    const project = await prisma.project.findFirst({
+      where: {
+        id,
+        ownerId: user.id,
+      },
+      include: {
+        apiKeys: {
+          select: {
+            id: true,
+            key: true,
+            name: true,
+            createdAt: true,
+            lastUsedAt: true,
+          },
+        },
+      },
+    });
+
+    if (!project) {
       return NextResponse.json(
         { error: 'Project not found' },
         { status: 404 }
@@ -56,57 +59,69 @@ export async function GET(
 }
 
 // PATCH /api/projects/:id - Update project
+const updateProjectSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+});
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = await createClient();
-    const { id } = await params;
-
-    // Check authentication
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    // Require authentication
+    let user;
+    try {
+      user = await requireAuth();
+    } catch (error) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
+    const { id } = await params;
     const body = await request.json();
-    const { name } = body;
+    const validation = updateProjectSchema.safeParse(body);
 
-    if (!name || typeof name !== 'string') {
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'Name is required' },
+        { error: validation.error.errors },
         { status: 400 }
       );
     }
 
-    const updates: any = {};
-    updates.name = name.trim();
-    // Update slug if name changed
-    updates.slug = name
+    const { name } = validation.data;
+
+    // Generate new slug from name
+    const slug = name
       .toLowerCase()
       .trim()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
 
-    // Update project
-    const { data: project, error } = await supabase
-      .from('projects')
-      .update(updates)
-      .eq('id', id)
-      .eq('owner_id', session.user.id)
-      .select()
-      .single();
+    // Check if user owns the project
+    const existingProject = await prisma.project.findFirst({
+      where: {
+        id,
+        ownerId: user.id,
+      },
+    });
 
-    if (error || !project) {
+    if (!existingProject) {
       return NextResponse.json(
-        { error: 'Failed to update project' },
-        { status: 500 }
+        { error: 'Project not found' },
+        { status: 404 }
       );
     }
+
+    // Update project
+    const project = await prisma.project.update({
+      where: { id },
+      data: {
+        name: name.trim(),
+        slug,
+      },
+    });
 
     return NextResponse.json({ project });
   } catch (error) {
@@ -120,35 +135,42 @@ export async function PATCH(
 
 // DELETE /api/projects/:id - Delete project
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = await createClient();
-    const { id } = await params;
-
-    // Check authentication
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    // Require authentication
+    let user;
+    try {
+      user = await requireAuth();
+    } catch (error) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    // Delete project (cascade will delete API keys)
-    const { error } = await supabase
-      .from('projects')
-      .delete()
-      .eq('id', id)
-      .eq('owner_id', session.user.id);
+    const { id } = await params;
 
-    if (error) {
+    // Check if user owns the project
+    const existingProject = await prisma.project.findFirst({
+      where: {
+        id,
+        ownerId: user.id,
+      },
+    });
+
+    if (!existingProject) {
       return NextResponse.json(
-        { error: 'Failed to delete project' },
-        { status: 500 }
+        { error: 'Project not found' },
+        { status: 404 }
       );
     }
+
+    // Delete project (cascade will delete API keys via Prisma schema)
+    await prisma.project.delete({
+      where: { id },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
