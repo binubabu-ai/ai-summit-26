@@ -80,7 +80,7 @@ export default function HelpPage() {
           />
           <TopicLink
             href="/help/cli"
-            title="Using the DocJays CLI tool"
+            title="Using the Docjays CLI tool"
           />
           <TopicLink
             href="/help/api/mcp"

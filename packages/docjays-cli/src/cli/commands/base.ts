@@ -59,7 +59,7 @@ export abstract class BaseCommand {
   }
 
   /**
-   * Check if DocJays is initialized
+   * Check if Docjays is initialized
    */
   protected async requireInitialization(): Promise<void> {
     const { ConfigManager } = await import('../../core/config');
@@ -67,7 +67,7 @@ export abstract class BaseCommand {
 
     if (!(await configManager.isInitialized())) {
       throw new Error(
-        'DocJays not initialized in this directory.\nRun: docjays init'
+        'Docjays not initialized in this directory.\nRun: docjays init'
       );
     }
   }

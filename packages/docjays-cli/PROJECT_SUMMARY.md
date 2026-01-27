@@ -1,4 +1,4 @@
-# DocJays CLI - Project Summary
+# Docjays CLI - Project Summary
 
 **Status:** ✅ Complete and Ready for Publishing
 **Version:** 0.1.0
@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-DocJays CLI is a comprehensive documentation management tool designed for AI-assisted development. It allows developers to clone and manage documentation from multiple sources (Git, HTTP, local) while keeping them separate from the main codebase—perfect for client projects. The tool integrates seamlessly with Claude via the Model Context Protocol (MCP), providing AI-powered documentation access without bloating your context window.
+Docjays CLI is a comprehensive documentation management tool designed for AI-assisted development. It allows developers to clone and manage documentation from multiple sources (Git, HTTP, local) while keeping them separate from the main codebase—perfect for client projects. The tool integrates seamlessly with Claude via the Model Context Protocol (MCP), providing AI-powered documentation access without bloating your context window.
 
 ### Key Achievement
 Built a production-ready CLI tool with **9 commands**, **encrypted authentication system**, **MCP integration**, and **comprehensive documentation** in a single development session.
@@ -90,7 +90,7 @@ Built a production-ready CLI tool with **9 commands**, **encrypted authenticatio
     - `list_resources` - List all resources
 
 #### 5. CLI Framework
-- **DocJaysCLI** ([src/cli/index.ts](src/cli/index.ts))
+- **DocjaysCLI** ([src/cli/index.ts](src/cli/index.ts))
   - Commander.js-based CLI
   - Command registration and routing
   - Global options and error handling
@@ -128,7 +128,7 @@ All commands implemented with beautiful UX (colors, spinners, progress):
    - Summary report
 
 5. **status** ([src/cli/commands/status.ts](src/cli/commands/status.ts))
-   - Show DocJays status
+   - Show Docjays status
    - Source information
    - Content statistics
    - JSON output support
@@ -269,7 +269,7 @@ Or use GitHub release to trigger automatic publishing.
 ```
 ┌─────────────────────────────────────────┐
 │                                         │
-│   🎉 DocJays initialized successfully!  │
+│   🎉 Docjays initialized successfully!  │
 │                                         │
 │   Created: .docjays folder              │
 │   Updated: .gitignore                   │

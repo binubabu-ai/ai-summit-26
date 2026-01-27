@@ -1,4 +1,4 @@
-name: Publish DocJays CLI to npm
+name: Publish Docjays CLI to npm
 
 on:
   release:
@@ -64,9 +64,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: docjays-v${{ github.event.inputs.version || 'auto' }}
-          release_name: DocJays CLI v${{ github.event.inputs.version || 'auto' }}
+          release_name: Docjays CLI v${{ github.event.inputs.version || 'auto' }}
           body: |
-            Published DocJays CLI to npm
+            Published Docjays CLI to npm
 
             ## Installation
             ```bash

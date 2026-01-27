@@ -1,6 +1,6 @@
-# Publishing DocJays CLI to GitHub Packages
+# Publishing Docjays CLI to GitHub Packages
 
-This guide covers how to publish and install the DocJays CLI using GitHub Packages (Option C - recommended for internal team use).
+This guide covers how to publish and install the Docjays CLI using GitHub Packages (Option C - recommended for internal team use).
 
 ## Prerequisites
 
@@ -29,7 +29,7 @@ The CLI is automatically published to GitHub Packages when you create a new rele
 3. **Create a GitHub release:**
    ```bash
    # Using GitHub CLI
-   gh release create v0.1.0 --title "DocJays CLI v0.1.0" --notes "Release notes here"
+   gh release create v0.1.0 --title "Docjays CLI v0.1.0" --notes "Release notes here"
 
    # Or via GitHub web UI: https://github.com/techjays/ai-summit/releases/new
    ```
@@ -59,7 +59,7 @@ If you need to publish manually:
 
 1. Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
 2. Click "Generate new token (classic)"
-3. Give it a descriptive name: "DocJays CLI - GitHub Packages"
+3. Give it a descriptive name: "Docjays CLI - GitHub Packages"
 4. Select scopes:
    - ✓ `write:packages` (to publish packages)
    - ✓ `read:packages` (to download packages)
@@ -87,7 +87,7 @@ If you need to publish manually:
    # Email: your-email@example.com
    ```
 
-### Install DocJays CLI
+### Install Docjays CLI
 
 ```bash
 # Install globally
@@ -190,7 +190,7 @@ Use the built-in `GITHUB_TOKEN` (no manual PAT needed):
     registry-url: 'https://npm.pkg.github.com'
     scope: '@binubabu-ai'
 
-- name: Install DocJays CLI
+- name: Install Docjays CLI
   run: npm install -g @binubabu-ai/docjays
   env:
     NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -201,7 +201,7 @@ Use the built-in `GITHUB_TOKEN` (no manual PAT needed):
 Add your GitHub PAT as a secret and configure `.npmrc`:
 
 ```yaml
-- name: Install DocJays CLI
+- name: Install Docjays CLI
   run: |
     echo "@binubabu-ai:registry=https://npm.pkg.github.com" >> ~/.npmrc
     echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_PAT }}" >> ~/.npmrc

@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-The Next.js web app and DocJays CLI package are **fundamentally misaligned** in their approach to documentation management. They use different data models, authentication systems, and have no integration path. This creates **four critical problems**:
+The Next.js web app and Docjays CLI package are **fundamentally misaligned** in their approach to documentation management. They use different data models, authentication systems, and have no integration path. This creates **four critical problems**:
 
 1. **No Single Source of Truth** - Documents can exist in both systems with conflicting states
 2. **Authentication Incompatibility** - CLI cannot authenticate against web app MCP endpoint
@@ -849,8 +849,8 @@ export default function CLISettingsPage({ params }: { params: { slug: string } }
       <h1>CLI Integration</h1>
 
       <section>
-        <h2>Connect DocJays CLI</h2>
-        <p>Use the DocJays CLI to sync documents from external sources.</p>
+        <h2>Connect Docjays CLI</h2>
+        <p>Use the Docjays CLI to sync documents from external sources.</p>
 
         {!apiKey && (
           <Button onClick={generateKey}>Generate API Key</Button>

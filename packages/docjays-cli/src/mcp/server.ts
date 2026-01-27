@@ -12,7 +12,7 @@ import { Logger } from '../utils/logger';
 
 /**
  * MCP Server
- * Exposes DocJays documentation to Claude via Model Context Protocol
+ * Exposes Docjays documentation to Claude via Model Context Protocol
  */
 export class MCPServer {
   private server: Server;

@@ -53,15 +53,15 @@ tmp/
 temp/
 *.tmp
 
-# DocJays orchestrator generated files
+# Docjays orchestrator generated files
 scripts/docjays-progress.json
 scripts/outputs/
 
-# DocJays CLI package
+# Docjays CLI package
 packages/docjays-cli/dist/
 packages/docjays-cli/*.tsbuildinfo
 
-# DocJays managed documentation (never commit)
+# Docjays managed documentation (never commit)
 .docjays/
 
 # OS files

@@ -4,7 +4,7 @@ import { ConfigManager } from '../core/config';
 
 /**
  * Tool Provider
- * Provides tools for Claude to interact with DocJays documentation
+ * Provides tools for Claude to interact with Docjays documentation
  */
 export class ToolProvider {
   private resourceProvider: ResourceProvider;

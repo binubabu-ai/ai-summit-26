@@ -1,4 +1,4 @@
-# Documentation Consolidation Plan for AI Summit & DocJays
+# Documentation Consolidation Plan for AI Summit & Docjays
 
 **Status:** Proposed
 **Created:** 2026-01-27
@@ -11,7 +11,7 @@
 The AI Summit project has **strong CLI documentation** but **fragmented web app documentation** and **incomplete developer guides**. This plan proposes a unified documentation architecture that serves all audiences: CLI users, web app users, developers, AI agents, and operations teams.
 
 ### Current State
-- ✅ **DocJays CLI:** Excellent (README, USAGE, PUBLISHING, PROJECT_SUMMARY)
+- ✅ **Docjays CLI:** Excellent (README, USAGE, PUBLISHING, PROJECT_SUMMARY)
 - ⚠️ **Web Application:** Minimal (scattered feature specs, no user guide)
 - ⚠️ **Developer Docs:** Incomplete (missing setup, testing, deployment guides)
 - ⚠️ **API Docs:** MCP only (REST endpoints undocumented)
@@ -139,9 +139,9 @@ docs/user-guides/web-app/
 
 ---
 
-### 2. CLI Users (DocJays CLI)
+### 2. CLI Users (Docjays CLI)
 
-**Target:** Developers using DocJays CLI
+**Target:** Developers using Docjays CLI
 **Access:** npm package, GitHub, command line
 **Priority:** LOW (already excellent!)
 
@@ -337,7 +337,7 @@ docs/ai/
 
 ### 6. npm Package Users
 
-**Target:** Developers installing DocJays from npm
+**Target:** Developers installing Docjays from npm
 **Access:** npm registry, GitHub
 **Priority:** LOW (already excellent!)
 
@@ -725,7 +725,7 @@ docjays docs
 - **Developer Docs:** Engineering team
 - **Operations:** DevOps/SRE team
 - **API Reference:** Backend team
-- **CLI Docs:** DocJays maintainer
+- **CLI Docs:** Docjays maintainer
 
 ### Review Process
 - Pull request for all doc changes

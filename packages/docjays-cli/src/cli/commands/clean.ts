@@ -85,7 +85,7 @@ export class CleanCommand extends BaseCommand {
       spinner.succeed('.docjays folder removed');
 
       console.log('');
-      console.log(chalk.green.bold('✓ DocJays has been completely removed'));
+      console.log(chalk.green.bold('✓ Docjays has been completely removed'));
       console.log('');
       console.log(chalk.dim('To reinitialize: docjays init'));
       console.log('');

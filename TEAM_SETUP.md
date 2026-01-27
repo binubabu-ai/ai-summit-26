@@ -1,14 +1,14 @@
-# Team Setup Guide - DocJays CLI
+# Team Setup Guide - Docjays CLI
 
-Quick setup guide for TechJays team members to install and use DocJays CLI from GitHub Packages.
+Quick setup guide for TechJays team members to install and use Docjays CLI from GitHub Packages.
 
-## For Team Members: Installing DocJays CLI
+## For Team Members: Installing Docjays CLI
 
 ### Step 1: Create GitHub Personal Access Token
 
 1. Go to [GitHub Settings → Personal access tokens](https://github.com/settings/tokens)
 2. Click "Generate new token (classic)"
-3. Name it: "DocJays CLI"
+3. Name it: "Docjays CLI"
 4. Select scope: `read:packages`
 5. Click "Generate token"
 6. **Copy and save the token** (you won't see it again!)
@@ -34,7 +34,7 @@ When prompted:
 - **Password:** paste-your-personal-access-token
 - **Email:** your-email@example.com
 
-### Step 4: Install DocJays CLI
+### Step 4: Install Docjays CLI
 
 ```bash
 npm install -g @binubabu-ai/docjays
@@ -47,7 +47,7 @@ docjays --version
 docjays --help
 ```
 
-That's it! You're ready to use DocJays CLI.
+That's it! You're ready to use Docjays CLI.
 
 ---
 
@@ -70,7 +70,7 @@ That's it! You're ready to use DocJays CLI.
 
 3. **Create GitHub release:**
    ```bash
-   gh release create vX.Y.Z --title "DocJays CLI vX.Y.Z" --notes "Release notes"
+   gh release create vX.Y.Z --title "Docjays CLI vX.Y.Z" --notes "Release notes"
    ```
 
 GitHub Actions will automatically build and publish to GitHub Packages.
@@ -131,7 +131,7 @@ Manually add to `~/.npmrc`:
 
 For GitHub Actions:
 ```yaml
-- name: Install DocJays CLI
+- name: Install Docjays CLI
   run: npm install -g @binubabu-ai/docjays
   env:
     NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

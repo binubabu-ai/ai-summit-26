@@ -41,7 +41,7 @@ export class ServeCommand extends BaseCommand {
 
       // Show startup message (to stderr, not stdout, as stdout is used for MCP communication)
       console.error('');
-      console.error(chalk.cyan.bold('🚀 DocJays MCP Server'));
+      console.error(chalk.cyan.bold('🚀 Docjays MCP Server'));
       console.error('');
       console.error(chalk.dim('Starting MCP server for Claude integration...'));
       console.error('');

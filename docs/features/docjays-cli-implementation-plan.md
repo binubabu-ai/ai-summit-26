@@ -1,4 +1,4 @@
-# DocJays CLI - Complete Implementation Plan (FE/BE/Docs)
+# Docjays CLI - Complete Implementation Plan (FE/BE/Docs)
 
 **Created**: 2026-01-27
 **Status**: Implementation Ready
@@ -117,7 +117,7 @@ import { SyncCommand } from './commands/sync';
 import { ServeCommand } from './commands/serve';
 // ... other imports
 
-export class DocJaysCLI {
+export class DocjaysCLI {
   private program: Command;
 
   constructor() {
@@ -176,9 +176,9 @@ export class DocJaysCLI {
 ```javascript
 #!/usr/bin/env node
 
-const { DocJaysCLI } = require('../dist/cli/index.js');
+const { DocjaysCLI } = require('../dist/cli/index.js');
 
-const cli = new DocJaysCLI();
+const cli = new DocjaysCLI();
 cli.run(process.argv).catch((error) => {
   console.error(error);
   process.exit(1);
@@ -229,7 +229,7 @@ export class InitCommand extends BaseCommand {
   register() {
     this.program
       .command('init')
-      .description('Initialize DocJays in the current project')
+      .description('Initialize Docjays in the current project')
       .option('-y, --yes', 'Skip prompts and use defaults')
       .option('--no-gitignore', 'Skip updating .gitignore')
       .action(async (options) => {
@@ -238,7 +238,7 @@ export class InitCommand extends BaseCommand {
   }
 
   async execute(options: any) {
-    this.logger.info('Initializing DocJays...');
+    this.logger.info('Initializing Docjays...');
 
     // Check if already initialized
     if (await this.isInitialized()) {
@@ -289,7 +289,7 @@ export class InitCommand extends BaseCommand {
       const gitignoreSpinner = ora('Updating .gitignore...').start();
       try {
         const { GitIgnoreManager } = await import('../../core/gitignore');
-        await GitIgnoreManager.addDocJays();
+        await GitIgnoreManager.addDocjays();
         gitignoreSpinner.succeed('Updated .gitignore');
       } catch (error) {
         gitignoreSpinner.warn('.gitignore not updated');
@@ -302,7 +302,7 @@ export class InitCommand extends BaseCommand {
 
   private showSuccessMessage() {
     const message = `
-${chalk.green.bold('✓ DocJays initialized successfully!')}
+${chalk.green.bold('✓ Docjays initialized successfully!')}
 
 Next steps:
   ${chalk.cyan('1.')} Add documentation sources:
@@ -483,7 +483,7 @@ Options:
   -h, --help             Display help for command
 
 Commands:
-  init [options]         Initialize DocJays in the current project
+  init [options]         Initialize Docjays in the current project
   sync [options]         Sync documentation sources
   add-source [options]   Add a documentation source
   remove-source <name>   Remove a documentation source
@@ -590,11 +590,11 @@ export class Logger {
 import fs from 'fs-extra';
 import path from 'path';
 import Ajv from 'ajv';
-import { DocJaysConfig, Source, MCPConfig, SyncConfig } from '../types';
+import { DocjaysConfig, Source, MCPConfig, SyncConfig } from '../types';
 
 export class ConfigManager {
   private configPath: string;
-  private config: DocJaysConfig | null = null;
+  private config: DocjaysConfig | null = null;
   private ajv: Ajv;
 
   constructor(basePath: string = process.cwd()) {
@@ -609,13 +609,13 @@ export class ConfigManager {
     await this.save(config);
   }
 
-  async load(): Promise<DocJaysConfig> {
+  async load(): Promise<DocjaysConfig> {
     if (this.config) {
       return this.config;
     }
 
     if (!await fs.pathExists(this.configPath)) {
-      throw new Error('DocJays not initialized. Run "docjays init" first.');
+      throw new Error('Docjays not initialized. Run "docjays init" first.');
     }
 
     const content = await fs.readFile(this.configPath, 'utf-8');
@@ -626,7 +626,7 @@ export class ConfigManager {
     return config;
   }
 
-  async save(config: DocJaysConfig): Promise<void> {
+  async save(config: DocjaysConfig): Promise<void> {
     this.validate(config);
 
     const dir = path.dirname(this.configPath);
@@ -686,7 +686,7 @@ export class ConfigManager {
     }
   }
 
-  private getDefaultConfig(): DocJaysConfig {
+  private getDefaultConfig(): DocjaysConfig {
     return {
       version: '1.0.0',
       sources: [],
@@ -1050,7 +1050,7 @@ export class MCPServer {
   }
 
   async start() {
-    this.logger.info('Starting DocJays MCP server...');
+    this.logger.info('Starting Docjays MCP server...');
 
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
@@ -1487,9 +1487,9 @@ export class SourceWatcher {
 **Auto-generated README**: `templates/README.md`
 
 ```markdown
-# DocJays - Documentation Manager
+# Docjays - Documentation Manager
 
-This `.docjays/` folder contains all documentation, feature specifications, and AI context for this project. It's automatically managed by the DocJays CLI and is git-ignored by default.
+This `.docjays/` folder contains all documentation, feature specifications, and AI context for this project. It's automatically managed by the Docjays CLI and is git-ignored by default.
 
 ## 📁 Folder Structure
 
@@ -1523,7 +1523,7 @@ docjays serve
 
 ## 📚 Learn More
 
-- [DocJays Documentation](https://docjays.dev)
+- [Docjays Documentation](https://docjays.dev)
 - [Getting Started Guide](https://docjays.dev/getting-started)
 - [Configuration Reference](https://docjays.dev/configuration)
 
@@ -1542,7 +1542,7 @@ Built into each command using Commander.js:
 register() {
   this.program
     .command('init')
-    .description('Initialize DocJays in the current project')
+    .description('Initialize Docjays in the current project')
     .option('-y, --yes', 'Skip prompts and use defaults')
     .option('--no-gitignore', 'Skip updating .gitignore')
     .addHelpText('after', `
@@ -1564,7 +1564,7 @@ Learn more: https://docjays.dev/cli/init
 **File**: `packages/docjays-cli/README.md`
 
 ```markdown
-# DocJays CLI
+# Docjays CLI
 
 Documentation management for AI-assisted development.
 
@@ -1592,7 +1592,7 @@ docjays serve
 
 ## Commands
 
-- `docjays init` - Initialize DocJays
+- `docjays init` - Initialize Docjays
 - `docjays sync` - Sync documentation sources
 - `docjays add-source` - Add a documentation source
 - `docjays serve` - Start MCP server
@@ -1726,8 +1726,8 @@ packages/docjays-cli/
 ```typescript
 class ConfigManager {
   constructor(basePath?: string)
-  async load(): Promise<DocJaysConfig>
-  async save(config: DocJaysConfig): Promise<void>
+  async load(): Promise<DocjaysConfig>
+  async save(config: DocjaysConfig): Promise<void>
   async addSource(source: Source): Promise<void>
   async removeSource(name: string): Promise<void>
   async updateSource(name: string, updates: Partial<Source>): Promise<void>

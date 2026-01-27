@@ -1,5 +1,5 @@
 import { ConfigManager } from '../../src/core/config';
-import { DocJaysConfig, Source } from '../../src/types';
+import { DocjaysConfig, Source } from '../../src/types';
 import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
@@ -133,7 +133,7 @@ describe('ConfigManager', () => {
   });
 
   describe('save', () => {
-    let config: DocJaysConfig;
+    let config: DocjaysConfig;
 
     beforeEach(async () => {
       await configManager.initialize();

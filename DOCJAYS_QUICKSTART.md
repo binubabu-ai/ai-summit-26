@@ -1,10 +1,10 @@
-# DocJays Enhancement - Quick Start Guide
+# Docjays Enhancement - Quick Start Guide
 
-**🚀 Get started with the DocJays implementation in 5 minutes**
+**🚀 Get started with the Docjays implementation in 5 minutes**
 
-## What is DocJays Enhancement?
+## What is Docjays Enhancement?
 
-DocJays is evolving from a basic document grounding system into a comprehensive **Knowledge Governance Layer** that:
+Docjays is evolving from a basic document grounding system into a comprehensive **Knowledge Governance Layer** that:
 - ✅ Enforces constraints during development (HARD vs SOFT)
 - ✅ Detects architectural drift across features
 - ✅ Extracts decisions automatically from PRs
@@ -228,25 +228,25 @@ cat scripts/outputs/phase1_*.log
 # Before planning
 /feature-new user-export-v2
 
-# DocJays checks for constraints
+# Docjays checks for constraints
 # Shows relevant grounded docs
 
 # During planning
 /plan user-export-v2
-# DocJays provides constraint context
+# Docjays provides constraint context
 
 # During execution
 /execute user-export-v2
-# DocJays checks compliance real-time
+# Docjays checks compliance real-time
 
 # After PR
 /submit user-export-v2
-# DocJays extracts decisions
+# Docjays extracts decisions
 ```
 
 ### Custom Workflow Integration
 1. Create workflow in `.claude/workflows/`
-2. Call DocJays commands at key points
+2. Call Docjays commands at key points
 3. Document integration patterns
 
 ## Troubleshooting
@@ -352,7 +352,7 @@ A: No, start with dev/staging, then production.
 A: Yes, designed to integrate seamlessly.
 
 **Q: What if I have custom workflows?**
-A: DocJays is extensible. Adapt as needed.
+A: Docjays is extensible. Adapt as needed.
 
 ## Resources
 

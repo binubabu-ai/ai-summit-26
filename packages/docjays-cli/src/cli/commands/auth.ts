@@ -6,7 +6,7 @@ import { KeyStore, KeyType } from '../../core/auth/keystore';
 
 /**
  * Auth Command
- * Manages authentication credentials for DocJays
+ * Manages authentication credentials for Docjays
  */
 export class AuthCommand extends BaseCommand {
   private keyStore: KeyStore;

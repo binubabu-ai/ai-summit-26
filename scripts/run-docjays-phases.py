@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-DocJays Implementation Orchestrator
+Docjays Implementation Orchestrator
 
-This script automates the execution of DocJays enhancement phases using Claude Code CLI.
+This script automates the execution of Docjays enhancement phases using Claude Code CLI.
 It runs each phase systematically, tracks progress, handles errors, and generates reports.
 
 Usage:
@@ -55,8 +55,8 @@ class PhaseResult:
     output_file: Optional[str] = None
 
 
-class DocJaysOrchestrator:
-    """Orchestrates the execution of DocJays implementation phases"""
+class DocjaysOrchestrator:
+    """Orchestrates the execution of Docjays implementation phases"""
 
     # Phase definitions
     PHASES = {
@@ -265,7 +265,7 @@ class DocJaysOrchestrator:
         else:
             phases_to_run = [int(phase_range)]
 
-        print(f"\n🚀 DocJays Implementation Orchestrator")
+        print(f"\n🚀 Docjays Implementation Orchestrator")
         print(f"Project: {self.project_root}")
         print(f"Phases to run: {phases_to_run}")
         print(f"Dry run: {self.dry_run}")
@@ -378,7 +378,7 @@ class DocJaysOrchestrator:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="DocJays Implementation Orchestrator",
+        description="Docjays Implementation Orchestrator",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -439,7 +439,7 @@ Examples:
         sys.exit(1)
 
     # Create orchestrator
-    orchestrator = DocJaysOrchestrator(str(project_root), dry_run=args.dry_run)
+    orchestrator = DocjaysOrchestrator(str(project_root), dry_run=args.dry_run)
 
     try:
         if args.resume_from:

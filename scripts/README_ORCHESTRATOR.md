@@ -1,10 +1,10 @@
-# DocJays Implementation Orchestrator
+# Docjays Implementation Orchestrator
 
-Automated execution of DocJays enhancement phases using Claude Code CLI.
+Automated execution of Docjays enhancement phases using Claude Code CLI.
 
 ## Overview
 
-The orchestrator systematically executes all 7 phases of the DocJays implementation plan, tracks progress, handles errors, and generates detailed reports.
+The orchestrator systematically executes all 7 phases of the Docjays implementation plan, tracks progress, handles errors, and generates detailed reports.
 
 ## Prerequisites
 
@@ -411,4 +411,4 @@ For issues:
 
 ## License
 
-Internal tool for DocJays implementation. Not for external distribution.
+Internal tool for Docjays implementation. Not for external distribution.

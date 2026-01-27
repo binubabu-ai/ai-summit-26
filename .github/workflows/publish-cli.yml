@@ -1,4 +1,4 @@
-name: Publish DocJays CLI to GitHub Packages
+name: Publish Docjays CLI to GitHub Packages
 
 on:
   release:

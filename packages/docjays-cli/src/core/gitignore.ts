@@ -4,7 +4,7 @@ import { Logger } from '../utils/logger';
 
 /**
  * GitIgnore Manager
- * Manages .gitignore file updates for DocJays
+ * Manages .gitignore file updates for Docjays
  */
 export class GitIgnoreManager {
   private gitignorePath: string;
@@ -25,9 +25,9 @@ export class GitIgnoreManager {
   /**
    * Add .docjays to .gitignore
    */
-  async addDocJays(): Promise<boolean> {
+  async addDocjays(): Promise<boolean> {
     const entry = '.docjays/';
-    const marker = '# DocJays managed documentation (never commit)';
+    const marker = '# Docjays managed documentation (never commit)';
 
     // Check if .gitignore exists
     if (!(await this.exists())) {
@@ -42,7 +42,7 @@ export class GitIgnoreManager {
     const content = await fs.readFile(this.gitignorePath, 'utf-8');
 
     // Check if already present
-    if (this.hasDocJaysEntry(content)) {
+    if (this.hasDocjaysEntry(content)) {
       this.logger.info('.docjays already in .gitignore');
       return false;
     }
@@ -58,14 +58,14 @@ export class GitIgnoreManager {
   /**
    * Remove .docjays from .gitignore
    */
-  async removeDocJays(): Promise<boolean> {
+  async removeDocjays(): Promise<boolean> {
     if (!(await this.exists())) {
       return false;
     }
 
     const content = await fs.readFile(this.gitignorePath, 'utf-8');
 
-    if (!this.hasDocJaysEntry(content)) {
+    if (!this.hasDocjaysEntry(content)) {
       return false;
     }
 
@@ -74,7 +74,7 @@ export class GitIgnoreManager {
     const filtered = lines.filter((line) => {
       return (
         !line.includes('.docjays') &&
-        !line.includes('DocJays managed documentation')
+        !line.includes('Docjays managed documentation')
       );
     });
 
@@ -94,13 +94,13 @@ export class GitIgnoreManager {
     }
 
     const content = await fs.readFile(this.gitignorePath, 'utf-8');
-    return this.hasDocJaysEntry(content);
+    return this.hasDocjaysEntry(content);
   }
 
   /**
    * Check if content has .docjays entry
    */
-  private hasDocJaysEntry(content: string): boolean {
+  private hasDocjaysEntry(content: string): boolean {
     const lines = content.split('\n');
     return lines.some(
       (line) =>
@@ -138,7 +138,7 @@ export class GitIgnoreManager {
   }
 
   /**
-   * Create default .gitignore for DocJays projects
+   * Create default .gitignore for Docjays projects
    */
   async createDefault(): Promise<void> {
     const defaultContent = `# Dependencies
@@ -175,7 +175,7 @@ coverage/
 # Cache
 .cache/
 
-# DocJays managed documentation (never commit)
+# Docjays managed documentation (never commit)
 .docjays/
 `;
 

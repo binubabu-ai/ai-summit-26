@@ -1,10 +1,10 @@
 /**
- * DocJays CLI - Main Entry Point
+ * Docjays CLI - Main Entry Point
  * Export public API for programmatic usage
  */
 
 // CLI
-export { DocJaysCLI } from './cli';
+export { DocjaysCLI } from './cli';
 
 // Core modules
 export { ConfigManager } from './core/config';

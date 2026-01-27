@@ -1,4 +1,4 @@
-# DocJays Enhancement - Implementation Plan
+# Docjays Enhancement - Implementation Plan
 
 **Version**: 2.0
 **Target**: Production-Ready Knowledge Governance System
@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-DocJays will evolve from a basic document grounding system into a comprehensive Knowledge Governance Layer that:
+Docjays will evolve from a basic document grounding system into a comprehensive Knowledge Governance Layer that:
 - Enforces constraints during development
 - Detects architectural drift across features
 - Extracts and preserves decisions automatically

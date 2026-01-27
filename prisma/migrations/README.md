@@ -1,8 +1,8 @@
-# DocJays Phase 1 - Database Migration Guide
+# Docjays Phase 1 - Database Migration Guide
 
 ## Overview
 
-This directory contains migration scripts and backfill utilities for DocJays Phase 1: Document Governance Layer.
+This directory contains migration scripts and backfill utilities for Docjays Phase 1: Document Governance Layer.
 
 ## Files
 

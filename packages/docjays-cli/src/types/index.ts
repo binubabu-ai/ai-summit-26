@@ -1,8 +1,8 @@
 /**
- * DocJays Type Definitions
+ * Docjays Type Definitions
  */
 
-export interface DocJaysConfig {
+export interface DocjaysConfig {
   version: string;
   sources: Source[];
   mcp: MCPConfig;

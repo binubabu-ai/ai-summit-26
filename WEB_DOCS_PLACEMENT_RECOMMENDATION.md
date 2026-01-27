@@ -241,7 +241,7 @@ export default function HelpPage() {
           </li>
           <li>
             <Link href="/help/cli" className="text-blue-600 hover:underline">
-              Using the DocJays CLI tool
+              Using the Docjays CLI tool
             </Link>
           </li>
         </ul>

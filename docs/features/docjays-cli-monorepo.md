@@ -1,4 +1,4 @@
-# Feature Spec: DocJays CLI Package (Monorepo)
+# Feature Spec: Docjays CLI Package (Monorepo)
 
 **Status**: Planning
 **Feature Branch**: `feature/docjays-cli-monorepo`
@@ -145,7 +145,7 @@ ai-summit/
 │       │       └── test-repos/
 │       ├── README.md              # CLI documentation
 │       └── .npmignore             # Files to exclude from npm package
-├── src/                           # Main DocJays app
+├── src/                           # Main Docjays app
 ├── docs/
 └── ...
 ```
@@ -154,7 +154,7 @@ ai-summit/
 
 ```
 .docjays/
-├── config.json              # DocJays configuration
+├── config.json              # Docjays configuration
 ├── README.md                # Auto-generated explanation
 ├── sources/                 # Cloned documentation sources
 │   ├── main-docs/          # From primary docs repo
@@ -177,7 +177,7 @@ ai-summit/
 #### Configuration Schema (`config.json`)
 
 ```typescript
-interface DocJaysConfig {
+interface DocjaysConfig {
   version: string;
   sources: Source[];
   mcp: MCPConfig;
@@ -333,7 +333,7 @@ $ docjays init
 ✓ Adding .docjays to .gitignore...
 ✓ Creating template files...
 
-DocJays initialized successfully!
+Docjays initialized successfully!
 
 Next steps:
 1. Add documentation sources: docjays add-source
@@ -450,7 +450,7 @@ All sources synced successfully!
 **Command Behavior:**
 ```bash
 $ docjays serve
-Starting DocJays MCP server...
+Starting Docjays MCP server...
 ✓ Server running on stdio transport
 ✓ Exposing 3 resource types: sources, features, context
 ✓ Providing 4 tools

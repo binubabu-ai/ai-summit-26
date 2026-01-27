@@ -1,16 +1,16 @@
 import fs from 'fs-extra';
 import path from 'path';
 import Ajv from 'ajv';
-import { DocJaysConfig, Source, MCPConfig, SyncConfig } from '../types';
+import { DocjaysConfig, Source, MCPConfig, SyncConfig } from '../types';
 import { Logger } from '../utils/logger';
 
 /**
  * Configuration Manager
- * Manages DocJays configuration file (.docjays/config.json)
+ * Manages Docjays configuration file (.docjays/config.json)
  */
 export class ConfigManager {
   private configPath: string;
-  private config: DocJaysConfig | null = null;
+  private config: DocjaysConfig | null = null;
   private ajv: Ajv;
   private logger: Logger;
   private basePath: string;
@@ -23,7 +23,7 @@ export class ConfigManager {
   }
 
   /**
-   * Check if DocJays is initialized
+   * Check if Docjays is initialized
    */
   async isInitialized(): Promise<boolean> {
     return fs.pathExists(this.configPath);
@@ -32,9 +32,9 @@ export class ConfigManager {
   /**
    * Initialize configuration with defaults
    */
-  async initialize(options: Partial<DocJaysConfig> = {}): Promise<void> {
+  async initialize(options: Partial<DocjaysConfig> = {}): Promise<void> {
     if (await this.isInitialized()) {
-      throw new Error('DocJays already initialized');
+      throw new Error('Docjays already initialized');
     }
 
     const defaultConfig = this.getDefaultConfig();
@@ -47,14 +47,14 @@ export class ConfigManager {
   /**
    * Load configuration
    */
-  async load(useCache: boolean = true): Promise<DocJaysConfig> {
+  async load(useCache: boolean = true): Promise<DocjaysConfig> {
     if (useCache && this.config) {
       return this.config;
     }
 
     if (!(await this.isInitialized())) {
       throw new Error(
-        'DocJays not initialized. Run: docjays init'
+        'Docjays not initialized. Run: docjays init'
       );
     }
 
@@ -69,7 +69,7 @@ export class ConfigManager {
   /**
    * Save configuration
    */
-  async save(config: DocJaysConfig): Promise<void> {
+  async save(config: DocjaysConfig): Promise<void> {
     this.validate(config);
 
     const dir = path.dirname(this.configPath);
@@ -84,7 +84,7 @@ export class ConfigManager {
   /**
    * Reload configuration from disk
    */
-  async reload(): Promise<DocJaysConfig> {
+  async reload(): Promise<DocjaysConfig> {
     this.config = null;
     return this.load(false);
   }
@@ -228,7 +228,7 @@ export class ConfigManager {
   /**
    * Get default configuration
    */
-  private getDefaultConfig(): DocJaysConfig {
+  private getDefaultConfig(): DocjaysConfig {
     return {
       version: '1.0.0',
       sources: [],

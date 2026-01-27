@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to DocJays CLI will be documented in this file.
+All notable changes to Docjays CLI will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -31,10 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Stdio transport for seamless Claude integration
 
 - **CLI Commands**
-  - `init` - Initialize DocJays in a project
+  - `init` - Initialize Docjays in a project
   - `add-source` - Add documentation sources
   - `sync` - Sync documentation sources
-  - `status` - Show DocJays status and information
+  - `status` - Show Docjays status and information
   - `list-sources` (alias: `ls`) - List all sources
   - `clean` - Clean cache/logs or remove .docjays folder
   - `watch` - Auto-sync sources at intervals

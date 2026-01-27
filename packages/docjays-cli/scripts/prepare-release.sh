@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# DocJays Release Preparation Script
-# This script helps prepare a new release of DocJays CLI
+# Docjays Release Preparation Script
+# This script helps prepare a new release of Docjays CLI
 
 set -e
 
-echo "🚀 DocJays Release Preparation"
+echo "🚀 Docjays Release Preparation"
 echo "================================"
 echo ""
 

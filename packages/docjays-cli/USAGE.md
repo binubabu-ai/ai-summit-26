@@ -1,6 +1,6 @@
-# DocJays CLI - Complete Usage Guide
+# Docjays CLI - Complete Usage Guide
 
-This guide covers all features and workflows for DocJays CLI.
+This guide covers all features and workflows for Docjays CLI.
 
 ## Table of Contents
 
@@ -32,7 +32,7 @@ npx docjays init
 # Navigate to your project
 cd /path/to/your/project
 
-# Initialize DocJays (interactive)
+# Initialize Docjays (interactive)
 docjays init
 
 # Or use defaults
@@ -49,7 +49,7 @@ This creates:
 
 ### Documentation Sources
 
-DocJays supports three types of documentation sources:
+Docjays supports three types of documentation sources:
 
 1. **Git Repositories**
    - Clone entire repos or specific branches
@@ -67,7 +67,7 @@ DocJays supports three types of documentation sources:
 
 ### Authentication System
 
-DocJays uses a **keystore** to securely manage credentials:
+Docjays uses a **keystore** to securely manage credentials:
 - Credentials encrypted with AES-256-GCM
 - Protected by master password
 - Never stored in plain text
@@ -85,7 +85,7 @@ Model Context Protocol (MCP) exposes your documentation to Claude:
 
 ### `docjays init`
 
-Initialize DocJays in your project.
+Initialize Docjays in your project.
 
 **Usage:**
 ```bash
@@ -228,7 +228,7 @@ After syncing, you'll see:
 
 ### `docjays status`
 
-Show DocJays status and information.
+Show Docjays status and information.
 
 **Usage:**
 ```bash
@@ -520,7 +520,7 @@ You're working on a client project and need access to your company docs.
 # 1. Navigate to client project
 cd /path/to/client-project
 
-# 2. Initialize DocJays
+# 2. Initialize Docjays
 docjays init -y
 
 # 3. Initialize keystore (if using private repos)
@@ -571,7 +571,7 @@ Help new team member set up.
 git clone https://github.com/mycompany/client-project
 cd client-project
 
-# They initialize DocJays
+# They initialize Docjays
 docjays init -y
 
 # Import shared keystore (if applicable)
@@ -628,7 +628,7 @@ docjays sync
 
 ### Setup for Claude Desktop
 
-1. **Ensure DocJays is installed:**
+1. **Ensure Docjays is installed:**
    ```bash
    npm install -g docjays
    ```
@@ -693,9 +693,9 @@ Claude can access these resources:
 
 ## Troubleshooting
 
-### DocJays not initialized
+### Docjays not initialized
 
-**Error:** `DocJays not initialized in this directory`
+**Error:** `Docjays not initialized in this directory`
 
 **Solution:**
 ```bash
@@ -741,10 +741,10 @@ docjays sync --source <name> --force
 
 ### MCP not working with Claude
 
-**Claude can't see DocJays docs**
+**Claude can't see Docjays docs**
 
 **Checklist:**
-1. Is DocJays initialized? `docjays status`
+1. Is Docjays initialized? `docjays status`
 2. Are sources synced? `docjays sync`
 3. Is MCP enabled in config? Check `.docjays/config.json`
 4. Is Claude Desktop config correct? Check `claude_desktop_config.json`
@@ -763,7 +763,7 @@ docjays serve
 **Solution:**
 ```bash
 # Use shallow clones (default)
-# DocJays already uses --depth 1
+# Docjays already uses --depth 1
 
 # Or sync specific sources only
 docjays sync --source small-repo
@@ -879,7 +879,7 @@ The token is sent as: `Authorization: Bearer <token>`
 
 ### Environment Variables
 
-DocJays respects these environment variables:
+Docjays respects these environment variables:
 
 - `DEBUG=1` - Enable debug logging
 - `DOCJAYS_HOME` - Override .docjays location (default: `$PWD/.docjays`)
@@ -908,7 +908,7 @@ DEBUG=1 docjays sync
 
 ### Performance
 
-1. **Use shallow clones** - DocJays does this by default
+1. **Use shallow clones** - Docjays does this by default
 2. **Sync selectively** - Use `--source` flag for large projects
 3. **Clean cache regularly** - Run `docjays clean --cache` weekly
 4. **Disable unused sources** - Set `enabled: false`

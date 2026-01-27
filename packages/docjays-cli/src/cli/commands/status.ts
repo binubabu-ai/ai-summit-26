@@ -6,13 +6,13 @@ import { KeyStore } from '../../core/auth/keystore';
 
 /**
  * Status Command
- * Show DocJays status and sync information
+ * Show Docjays status and sync information
  */
 export class StatusCommand extends BaseCommand {
   register(): void {
     this.program
       .command('status')
-      .description('Show DocJays status and sync information')
+      .description('Show Docjays status and sync information')
       .option('--json', 'Output as JSON')
       .action(async (options) => {
         await this.execute(options);
@@ -89,7 +89,7 @@ export class StatusCommand extends BaseCommand {
    */
   private displayStatus(status: any): void {
     console.log('');
-    console.log(chalk.bold.cyan('📊 DocJays Status'));
+    console.log(chalk.bold.cyan('📊 Docjays Status'));
     console.log('─'.repeat(60));
     console.log('');
 

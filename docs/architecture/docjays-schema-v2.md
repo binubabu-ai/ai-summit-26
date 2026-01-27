@@ -1,4 +1,4 @@
-# DocJays Schema v2 - Document Governance Layer
+# Docjays Schema v2 - Document Governance Layer
 
 **Version**: 2.0
 **Date**: 2026-01-26
@@ -9,7 +9,7 @@
 
 ## Overview
 
-DocJays v2 enhances the database schema to support comprehensive knowledge governance, including:
+Docjays v2 enhances the database schema to support comprehensive knowledge governance, including:
 
 - **Document Taxonomy**: Type classification (ARCHITECTURE, API_CONTRACT, etc.)
 - **Constraint Enforcement**: HARD vs SOFT constraint levels

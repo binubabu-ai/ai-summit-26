@@ -1,4 +1,4 @@
-name: DocJays CLI - CI
+name: Docjays CLI - CI
 
 on:
   push:

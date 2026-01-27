@@ -4,7 +4,7 @@ import { CryptoManager, EncryptedData } from './crypto';
 import { Logger } from '../../utils/logger';
 
 /**
- * Key types supported by DocJays
+ * Key types supported by Docjays
  */
 export enum KeyType {
   TOKEN = 'token',
