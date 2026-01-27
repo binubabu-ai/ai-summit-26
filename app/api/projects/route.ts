@@ -1,12 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
 import { z } from 'zod';
 
-// GET /api/projects - List all projects
+// GET /api/projects - List user's projects
 export async function GET() {
   try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Get projects where user is owner or member
     const projects = await prisma.project.findMany({
+      where: {
+        OR: [
+          { ownerId: user.id },
+          {
+            members: {
+              some: {
+                userId: user.id,
+              },
+            },
+          },
+        ],
+      },
       orderBy: { createdAt: 'desc' },
       include: {
         _count: {
@@ -39,15 +61,13 @@ const createProjectSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Require authentication
-    let user;
-    try {
-      user = await requireAuth();
-    } catch (error) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -91,7 +111,7 @@ export async function POST(request: NextRequest) {
       .replace(/\//g, '')
       .replace(/=/g, '');
 
-    // Create project and API key in a transaction
+    // Create project with default document and API key
     const project = await prisma.project.create({
       data: {
         name,
@@ -188,10 +208,15 @@ Use this project to organize your documentation:
       },
     });
 
-    return NextResponse.json({
-      project,
-      apiKey,
-    }, { status: 201 });
+    // Return project with apiKey property (apiKey only shown once!)
+    return NextResponse.json(
+      {
+        ...project,
+        apiKey,
+        warning: 'Save this API key now. You won\'t be able to see it again!',
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Error creating project:', error);
     return NextResponse.json(
