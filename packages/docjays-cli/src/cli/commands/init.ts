@@ -2,6 +2,8 @@ import chalk from 'chalk';
 import ora from 'ora';
 import boxen from 'boxen';
 import inquirer from 'inquirer';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 import { BaseCommand } from './base';
 import { StructureManager } from '../../core/structure';
 import { ConfigManager } from '../../core/config';
@@ -10,13 +12,13 @@ import { KeyStore } from '../../core/auth/keystore';
 
 /**
  * Init Command
- * Initialize DocJays in the current project
+ * Initialize Docjays in the current project
  */
 export class InitCommand extends BaseCommand {
   register(): void {
     this.program
       .command('init')
-      .description('Initialize DocJays in the current project')
+      .description('Initialize Docjays in the current project')
       .option('-y, --yes', 'Skip prompts and use defaults')
       .option('--no-gitignore', 'Skip updating .gitignore')
       .option('--no-auth', 'Skip keystore initialization')
@@ -32,7 +34,7 @@ export class InitCommand extends BaseCommand {
       if (await configManager.isInitialized()) {
         this.logger.warn('.docjays already exists');
         const overwrite = await this.confirm(
-          'Re-initialize DocJays? This will preserve existing sources but reset configuration.',
+          'Re-initialize Docjays? This will preserve existing sources but reset configuration.',
           false
         );
 
@@ -56,6 +58,11 @@ export class InitCommand extends BaseCommand {
       // Initialize configuration
       await this.initializeConfig(config);
 
+      // Maybe create skills.md
+      if (!options.yes) {
+        await this.maybeCreateSkills();
+      }
+
       // Update .gitignore
       if (options.gitignore !== false) {
         await this.updateGitIgnore();
@@ -78,7 +85,7 @@ export class InitCommand extends BaseCommand {
    */
   private showWelcome(): void {
     console.log('');
-    console.log(chalk.cyan.bold('📚 DocJays - Documentation Management'));
+    console.log(chalk.cyan.bold('📚 Docjays - Documentation Management'));
     console.log(chalk.dim('Setting up documentation management for this project...'));
     console.log('');
   }
@@ -190,7 +197,7 @@ export class InitCommand extends BaseCommand {
 
     try {
       const gitignoreManager = new GitIgnoreManager();
-      const added = await gitignoreManager.addDocJays();
+      const added = await gitignoreManager.addDocjays();
 
       if (added) {
         spinner.succeed('Updated .gitignore');
@@ -200,6 +207,69 @@ export class InitCommand extends BaseCommand {
     } catch (error: any) {
       spinner.warn('Could not update .gitignore');
       this.logger.debug(error.message);
+    }
+  }
+
+  /**
+   * Maybe create skills.md for AI agent instructions
+   */
+  private async maybeCreateSkills(): Promise<void> {
+    const skillsPath = path.join(process.cwd(), 'skills.md');
+    const templatePath = path.join(__dirname, '../../../templates/skills.md');
+
+    try {
+      // Check if skills.md already exists
+      const exists = await fs.access(skillsPath).then(() => true).catch(() => false);
+
+      if (exists) {
+        // Check if it has Docjays content
+        const content = await fs.readFile(skillsPath, 'utf-8');
+        const hasDocjaysContent =
+          content.includes('# Docjays Skills') ||
+          content.includes('Ground Responses with Docjays');
+
+        if (hasDocjaysContent) {
+          this.logger.info('✓ Docjays skills already configured in skills.md');
+          return;
+        }
+
+        // Exists but no Docjays content
+        console.log('');
+        this.logger.info(chalk.dim('skills.md already exists'));
+        this.logger.info(chalk.dim('To add Docjays skills, run: ') + chalk.cyan('docjays create-skills'));
+        console.log('');
+        return;
+      }
+
+      // No skills.md, ask to create
+      console.log('');
+      const { createSkills } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'createSkills',
+          message: 'Create skills.md for AI agent instructions?',
+          default: true,
+        },
+      ]);
+
+      if (createSkills) {
+        const spinner = ora('Creating skills.md...').start();
+        try {
+          await fs.copyFile(templatePath, skillsPath);
+          spinner.succeed('Created skills.md');
+          console.log(chalk.dim('  AI agents like Claude Code can now use Docjays workflows'));
+        } catch (error: any) {
+          spinner.fail('Failed to create skills.md');
+          this.logger.debug(error.message);
+        }
+      } else {
+        console.log('');
+        this.logger.info(chalk.dim('Skipped skills.md creation'));
+        this.logger.info(chalk.dim('To create later, run: ') + chalk.cyan('docjays create-skills'));
+      }
+      console.log('');
+    } catch (error: any) {
+      this.logger.debug('Error in maybeCreateSkills:', error.message);
     }
   }
 
@@ -245,7 +315,7 @@ export class InitCommand extends BaseCommand {
     console.log('');
 
     const message = `
-${chalk.green.bold('✓ DocJays initialized successfully!')}
+${chalk.green.bold('✓ Docjays initialized successfully!')}
 
 ${chalk.bold('Folder Structure:')}
   ${chalk.cyan('.docjays/')}

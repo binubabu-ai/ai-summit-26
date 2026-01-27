@@ -20,6 +20,13 @@ export default function SignupPage() {
     setError('');
     setLoading(true);
 
+    // Validate TechJays email domain
+    if (!email.endsWith('@techjays.com')) {
+      setError('Access restricted to TechJays organization members. Please use your @techjays.com email address.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const supabase = createClient();
 
@@ -71,7 +78,7 @@ export default function SignupPage() {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-light tracking-tight text-black dark:text-white mb-2">Create Your Account</h1>
           <p className="text-neutral-600 dark:text-neutral-400">
-            Start managing your documentation with AI
+            For TechJays organization members only
           </p>
         </div>
 
@@ -101,7 +108,7 @@ export default function SignupPage() {
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-black dark:text-white mb-2">
-                Email
+                TechJays Email
               </label>
               <input
                 id="email"
@@ -109,10 +116,13 @@ export default function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-2 border border-neutral-200 dark:border-neutral-800 rounded-md bg-white dark:bg-neutral-950 text-black dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-600 focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent"
-                placeholder="you@example.com"
+                placeholder="you@techjays.com"
                 required
                 disabled={loading}
               />
+              <p className="text-xs text-neutral-500 dark:text-neutral-500 mt-1">
+                Must be a @techjays.com email address
+              </p>
             </div>
 
             <div>

@@ -1,6 +1,12 @@
 {
-  "name": "@binubabu-ai/docjays",
-  "version": "0.1.0",
+  "name": "docjays",
+  "version": "0.1.1",
+  "authors": [
+    {
+      "name": "Binu Babu",
+      "email": "binu.babu@techjays.com"
+    }  
+  ],
   "description": "Documentation management for AI-assisted development",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -8,7 +14,7 @@
     "docjays": "./bin/docjays.js"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/",
+    "registry": "https://registry.npmjs.org/",
     "access": "public"
   },
   "files": [
@@ -21,7 +27,7 @@
     "build": "tsc",
     "build:watch": "tsc --watch",
     "dev": "npm run build:watch",
-    "clean": "rm -rf dist",
+    "clean": "node -e \"require('fs').rmSync('dist', {recursive: true, force: true})\"",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -64,6 +70,7 @@
     "fs-extra": "^11.2.0",
     "inquirer": "^9.2.0",
     "node-fetch": "^3.3.2",
+    "open": "^10.0.3",
     "ora": "^8.0.1",
     "simple-git": "^3.22.0"
   },

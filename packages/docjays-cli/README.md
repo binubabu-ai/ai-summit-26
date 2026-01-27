@@ -1,8 +1,17 @@
-# DocJays CLI
+# Docjays CLI
 
 > Documentation management for AI-assisted development
 
-DocJays is a CLI tool that helps you manage documentation sources in your projects while keeping them separate from your main codebase. Perfect for client projects where you want to maintain company standards, API docs, and architecture references without committing them to the client's repository.
+Docjays is a CLI tool that helps you manage documentation sources in your projects while keeping them separate from your main codebase. Perfect for client projects where you want to maintain company standards, API docs, and architecture references without committing them to the client's repository.
+
+## Prerequisites
+
+Before installing Docjays CLI, you need:
+
+1. **Node.js 18+** - [Download from nodejs.org](https://nodejs.org/)
+2. **A Docjays Account** - Visit [docjays.vercel.app](https://docjays.vercel.app) to sign up
+   - Currently available exclusively for TechJays organization members
+   - Requires a @techjays.com email address
 
 ## Features
 
@@ -12,54 +21,218 @@ DocJays is a CLI tool that helps you manage documentation sources in your projec
 - 🎯 **Multi-Source** - Manage multiple documentation sources
 - 🚫 **Git-Ignored** - Keeps `.docjays/` out of your repository
 - 📝 **Feature Specs** - Built-in support for feature-first development
+- 🎓 **AI Skills** - Auto-generated `skills.md` teaches AI agents Docjays workflows
 
 ## Installation
 
-### From GitHub Packages (Recommended for TechJays Team)
+### npm (Recommended)
+
+Install globally using npm:
 
 ```bash
-# One-time setup: Configure npm to use GitHub Packages
+npm install -g docjays
+```
+
+Verify installation:
+
+```bash
+docjays --version
+```
+
+**Or use without installing:**
+
+```bash
+npx docjays login
+npx docjays init
+```
+
+### GitHub Packages (For TechJays Team)
+
+For internal team use with GitHub Packages:
+
+```bash
+# Configure npm
 echo "@binubabu-ai:registry=https://npm.pkg.github.com" >> ~/.npmrc
 
-# Authenticate (requires GitHub Personal Access Token with read:packages scope)
+# Authenticate (requires GitHub PAT with read:packages scope)
 npm login --scope=@binubabu-ai --registry=https://npm.pkg.github.com
 
 # Install
 npm install -g @binubabu-ai/docjays
 ```
 
-**Need a Personal Access Token?** Create one at [GitHub Settings → Personal access tokens](https://github.com/settings/tokens) with `read:packages` scope.
+## Getting Started in Your Repository
 
-### From npm (Public)
+### Step 1: Install and Login
 
 ```bash
+# Install Docjays CLI
 npm install -g docjays
+
+# Login with your Docjays account
+docjays login
 ```
 
-Or use without installation:
+This opens your browser to authenticate. Use your @techjays.com email.
+
+### Step 2: Initialize in Your Project
 
 ```bash
-npx docjays init
-```
+# Navigate to your project
+cd /path/to/your-project
 
-## Quick Start
-
-```bash
-# Initialize DocJays in your project
+# Initialize Docjays
 docjays init
+```
 
-# Add documentation sources
+This will:
+- ✅ Create `.docjays/` folder
+- ✅ Auto-generate project API key
+- ✅ Prompt to create `skills.md` for AI agents
+- ✅ Update `.gitignore`
+
+### Step 3: Add Documentation Sources
+
+```bash
+# Add your company's documentation
 docjays add-source --name company-docs --type git --url https://github.com/myorg/docs
-docjays add-source --name api-specs --type git --url https://github.com/myorg/api-specs
 
-# Sync all documentation
+# Add API documentation
+docjays add-source --name api-specs --type git --url https://github.com/myorg/api-specs
+```
+
+### Step 4: Sync and Use
+
+```bash
+# Pull all documentation
 docjays sync
 
-# Start MCP server for Claude
+# Start MCP server for AI assistants
 docjays serve
 ```
 
-## Usage
+**Done!** Your documentation is now available to Claude and other AI assistants.
+
+---
+
+## Quick Reference
+
+```bash
+# Authentication
+docjays login              # Authenticate with Docjays
+docjays whoami             # Show current user
+docjays logout             # Remove credentials
+
+# Project Setup
+docjays init               # Initialize in current directory
+docjays create-skills      # Create skills.md for AI agents
+
+# Documentation Management
+docjays add-source [opts]  # Add a documentation source
+docjays sync               # Sync all documentation
+docjays status             # Show sync status
+docjays list-sources       # List all sources
+
+# AI Integration
+docjays serve              # Start MCP server
+docjays watch              # Auto-sync in background
+```
+
+---
+
+## Local-Only Mode (No Account Required)
+
+Work completely offline without authentication:
+
+```bash
+docjays init --offline
+docjays add-source --name docs --url https://github.com/public/docs
+docjays sync
+docjays serve
+```
+
+## Command Reference
+
+### Authentication Commands
+
+#### Login
+
+```bash
+docjays login [options]
+
+Options:
+  -f, --force    Force re-authentication even if already logged in
+  -h, --help     Display help
+```
+
+Authenticate with your Docjays account via browser:
+
+1. Opens browser to [docjays.vercel.app/cli/auth](https://docjays.vercel.app/cli/auth)
+2. Sign in with your @techjays.com account (or create one)
+3. Returns to CLI automatically
+4. Token saved to `~/.docjays/auth.json` (60-day expiry)
+
+**Example:**
+
+```bash
+$ docjays login
+
+📱 Opening browser for authentication...
+⏳ Waiting for authentication...
+✓ Authentication successful!
+
+Logged in as: user@techjays.com
+Token expires: 2026-03-28 (60 days remaining)
+```
+
+#### Check Login Status
+
+```bash
+docjays whoami [options]
+
+Options:
+  --json    Output as JSON
+  -h, --help  Display help
+```
+
+Shows your current authentication status.
+
+**Example:**
+
+```bash
+$ docjays whoami
+
+Authentication Status
+
+  Logged in as: user@techjays.com
+  User ID:      user_abc123
+  Token expires: 2026-03-28 (60 days remaining)
+  Config file:  ~/.docjays/auth.json
+```
+
+#### Logout
+
+```bash
+docjays logout [options]
+
+Options:
+  -f, --force    Skip confirmation prompt
+  -h, --help     Display help
+```
+
+Removes your authentication credentials.
+
+**Example:**
+
+```bash
+$ docjays logout
+
+Currently logged in as: user@techjays.com
+
+? Are you sure you want to logout? (y/N) y
+
+✓ Logged out successfully
+```
 
 ### Initialize Project
 
@@ -67,10 +240,71 @@ docjays serve
 docjays init [options]
 
 Options:
+  -n, --name <name>  Project name (default: folder name)
+  --offline          Initialize without cloud (local-only)
   -y, --yes          Skip prompts and use defaults
   --no-gitignore     Skip updating .gitignore
   -h, --help         Display help
 ```
+
+Creates a new project. If logged in, automatically creates project in cloud and generates API key.
+
+**Note:** During initialization, you'll be prompted to create a `skills.md` file for AI agent instructions. This file helps AI assistants like Claude Code understand Docjays workflows and best practices.
+
+### Create Skills File
+
+```bash
+docjays create-skills [options]
+
+Options:
+  -o, --output <file>  Output to specific file (default: skills.md)
+  -f, --force          Overwrite if exists
+  -m, --merge          Append to existing file
+  -p, --print          Just print template without creating file
+  -h, --help           Display help
+```
+
+Creates a `skills.md` file that provides AI agents with instructions on how to work with Docjays workflows. This includes:
+- Creating feature specifications
+- Adding external documentation sources
+- Grounding responses with documentation
+- Maintaining documentation
+
+**When to use:**
+- Skip this during `docjays init` but want to add it later
+- Project already has `skills.md` and you want to add Docjays skills
+- Want to create with a different filename (e.g., `docjays-skills.md`)
+
+**Examples:**
+
+```bash
+# Create skills.md in current directory
+docjays create-skills
+
+# Create with custom filename (if skills.md already exists)
+docjays create-skills --output docjays-skills.md
+
+# Merge with existing skills.md
+docjays create-skills --merge
+
+# Overwrite existing skills.md
+docjays create-skills --force
+
+# Just preview the template
+docjays create-skills --print
+```
+
+**Benefits:**
+- ✅ Claude Code automatically reads `skills.md`
+- ✅ Consistent documentation workflows across team
+- ✅ AI agents understand Docjays best practices
+- ✅ Grounded responses based on actual documentation
+
+**Conflict handling:** If `skills.md` exists, you'll be prompted with options:
+- Create as `docjays-skills.md` instead (recommended)
+- Overwrite existing file
+- Merge/append to existing
+- Cancel
 
 ### Add Documentation Source
 
@@ -118,12 +352,12 @@ Options:
   -h, --help  Display help
 ```
 
-Shows DocJays status including:
+Shows Docjays status including:
 - Initialization status
 - MCP configuration
 - Configured sources
 - Content statistics (features, contexts)
-- Keystore status
+- Authentication status
 
 ### List Sources
 
@@ -176,61 +410,170 @@ docjays watch                    # Watch with 30m interval
 docjays watch -i 1h --sync-now   # Watch with 1h interval, sync immediately
 ```
 
-### Authentication Management
+## Authentication
+
+DocJays uses a simple OAuth-based authentication:
+
+### How It Works
+
+1. **One-Time Login** - Run `docjays login` once to authenticate
+2. **Browser Opens** - Automatically opens [docjays.vercel.app/cli/auth](https://docjays.vercel.app/cli/auth)
+3. **Sign In** - Login with your @techjays.com account (or create one)
+4. **Auto-Return** - CLI automatically receives your token
+5. **Done** - Token saved to `~/.docjays/auth.json` (valid for 60 days)
+
+### Usage
 
 ```bash
-docjays auth <action> [options]
+# Login (opens browser)
+docjays login
 
-Actions:
-  init                          Initialize keystore with master password
-  add <name>                    Add a new credential
-  list                          List all stored credentials
-  remove <name>                 Remove a credential
-  update <name>                 Update a credential
-  rotate-password               Change master password
-  export [file]                 Export keystore (encrypted)
-  import <file>                 Import keystore
-  destroy                       Delete keystore (destructive)
+# Check your status
+docjays whoami
+
+# Logout when done
+docjays logout
 ```
 
-Example workflow with authentication:
+**Key Features:**
+- ✅ Secure OAuth flow via browser
+- ✅ Token stored locally in `~/.docjays/auth.json`
+- ✅ 60-day token expiry
+- ✅ Works across all your projects
+- ✅ No passwords stored in CLI
+
+### Project API Keys (Auto-Generated)
+
+Each project gets its own API key automatically:
+
 ```bash
-# Initialize keystore
-docjays auth init
-
-# Add GitHub token
-docjays auth add github-token
-
-# Add source with authentication
-docjays add-source --name private-docs \
-  --type git \
-  --url https://github.com/myorg/private-docs \
-  --auth github-token
-
-# Sync (will prompt for keystore password)
-docjays sync
+# Initialize project (generates API key automatically)
+cd my-project
+docjays init
+# ✓ Project created
+# ✓ API Key generated: djkey_proj_abc123_xyz
+# ✓ Saved to .docjays/config.json
 ```
 
-## MCP Integration with Claude
+**What happens:**
+- Project created in cloud
+- API key auto-generated
+- Key stored locally in `.docjays/config.json`
+- Used for MCP server authentication
+- Visible in web dashboard
 
-To use DocJays with Claude Desktop, add to your MCP settings (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
+### Authenticated Sources
 
+For private repositories or authenticated sources, store credentials locally:
+
+```bash
+docjays auth add my-token --type token
+# Encrypted and stored in project config
+
+docjays add-source \
+  --name other-docs \
+  --url https://custom-api.com/docs \
+  --auth my-token
+```
+
+**Security:**
+- Encrypted with project key
+- Stored in `.docjays/config.json`
+- No master password needed
+- Auto-decrypts when needed
+
+### File Structure
+
+```
+Global (~/.docjays/)
+└── auth.json              # Your login token
+
+Project (.docjays/)
+└── config.json            # Project ID + API key + encrypted credentials
+```
+
+### Summary
+
+**Simple Flow:**
+1. `docjays login` → Connects to your account (once)
+2. `docjays init` → Auto-generates project API key
+3. `docjays serve` → Works automatically!
+
+**Benefits:**
+- ✅ Auto-generated API keys
+- ✅ Secure token storage
+- ✅ Works across all projects
+- ✅ Zero configuration needed
+
+## MCP Integration with AI Assistants
+
+Docjays exposes your documentation to AI assistants via Model Context Protocol (MCP).
+
+### Setup (Automatic)
+
+After `docjays init`, your project is automatically MCP-ready:
+
+```bash
+cd my-project
+docjays serve
+# ✓ MCP server started
+# ✓ API key validated
+# ✓ Ready for AI assistants!
+```
+
+### Configure Your AI Assistant
+
+**Claude Desktop** (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
 ```json
 {
   "mcpServers": {
-    "docjays": {
+    "my-project": {
       "command": "docjays",
-      "args": ["serve", "--stdio"]
+      "args": ["serve"],
+      "cwd": "/path/to/my-project"
     }
   }
 }
 ```
 
-Then restart Claude Desktop. Claude can now access all your documentation!
+**Cursor** (`.cursor/mcp_config.json` in project root):
+```json
+{
+  "mcpServers": {
+    "my-project": {
+      "command": "npx",
+      "args": ["-y", "docjays", "serve"]
+    }
+  }
+}
+```
+
+**Windsurf, Claude Code CLI, VS Code:** See [complete setup guide](https://docjays/help/api/mcp).
+
+**Note:** API key is automatically read from `.docjays/config.json` - no manual configuration needed!
+
+### Cloud MCP (No CLI Required)
+
+Use Docjays MCP without installing CLI:
+
+```json
+{
+  "mcpServers": {
+    "my-project": {
+      "url": "https://mcp.docjays/v1/projects/my-project",
+      "headers": {
+        "Authorization": "Bearer djkey_proj_abc123_xyz"
+      }
+    }
+  }
+}
+```
+
+Get your API key from [docjays/projects/my-project/connect](https://docjays)
 
 ## Configuration
 
-DocJays creates a `.docjays/config.json` file:
+Docjays creates a `.docjays/config.json` file:
 
 ```json
 {
@@ -261,18 +604,20 @@ DocJays creates a `.docjays/config.json` file:
 ## Folder Structure
 
 ```
-.docjays/
-├── config.json              # Configuration
-├── README.md                # Auto-generated guide
-├── sources/                 # Cloned documentation
-│   ├── company-docs/
-│   └── api-specs/
-├── features/               # Feature specifications
-│   └── my-feature.md
-├── context/                # AI context files
-│   └── architecture.md
-├── cache/                  # Cached data
-└── logs/                   # Operation logs
+project-root/
+├── skills.md                # AI agent instructions (optional, created during init)
+└── .docjays/
+    ├── config.json          # Configuration
+    ├── README.md            # Auto-generated guide
+    ├── sources/             # Cloned documentation
+    │   ├── company-docs/
+    │   └── api-specs/
+    ├── features/           # Feature specifications
+    │   └── my-feature.md
+    ├── context/            # AI context files
+    │   └── architecture.md
+    ├── cache/              # Cached data
+    └── logs/               # Operation logs
 ```
 
 ## Real-World Workflows
@@ -283,7 +628,7 @@ DocJays creates a `.docjays/config.json` file:
 # In client project directory
 cd /path/to/client-project
 
-# Initialize DocJays
+# Initialize Docjays
 docjays init
 
 # Add your company's documentation
@@ -315,11 +660,11 @@ docjays sync
 docjays watch
 ```
 
-## Why DocJays?
+## Why Docjays?
 
 **Problem**: When working on client projects, you need access to your company's documentation, coding standards, and API specs. But you can't (and shouldn't) commit these to the client's repository.
 
-**Solution**: DocJays creates a `.docjays/` folder (automatically git-ignored) that contains all your documentation sources. Claude can access this documentation via MCP without it being in the main codebase.
+**Solution**: Docjays creates a `.docjays/` folder (automatically git-ignored) that contains all your documentation sources. Claude can access this documentation via MCP without it being in the main codebase.
 
 **Benefits**:
 - Clean separation of client code and company docs
@@ -363,7 +708,7 @@ MIT
 
 ## Support
 
-- [Documentation](https://docjays.dev)
+- [Documentation](https://docjays)
 - [GitHub Issues](https://github.com/techjays/ai-summit/issues)
 - [Discussions](https://github.com/techjays/ai-summit/discussions)
 

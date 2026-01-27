@@ -4,7 +4,7 @@ import { CodeBlock } from '@/components/help/CodeBlock';
 
 export const metadata = {
   title: 'CLI Tool - Docjays Help',
-  description: 'DocJays CLI for managing documentation sources and MCP integration',
+  description: 'Docjays CLI for managing documentation sources and MCP integration',
 };
 
 export default function CLIPage() {
@@ -12,18 +12,18 @@ export default function CLIPage() {
     <div className="space-y-16">
       <div>
         <h1 className="text-5xl md:text-6xl font-light tracking-tight text-black dark:text-white mb-6">
-          DocJays CLI
+          Docjays CLI
         </h1>
         <p className="text-xl text-neutral-600 dark:text-neutral-400 font-light max-w-3xl">
           Command-line tool for managing documentation sources in your projects while keeping them separate from your main codebase.
         </p>
       </div>
 
-      {/* What is DocJays CLI */}
+      {/* What is Docjays CLI */}
       <section>
-        <h2 className="text-3xl font-light text-black dark:text-white mb-6">What is DocJays CLI?</h2>
+        <h2 className="text-3xl font-light text-black dark:text-white mb-6">What is Docjays CLI?</h2>
         <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-6">
-          DocJays CLI is a command-line tool that helps you manage documentation sources in your projects. Perfect for client projects where you want to maintain company standards, API docs, and architecture references without committing them to the client's repository.
+          Docjays CLI is a command-line tool that helps you manage documentation sources in your projects. Perfect for client projects where you want to maintain company standards, API docs, and architecture references without committing them to the client's repository.
         </p>
         <ul className="space-y-4">
           <li className="flex items-start gap-3">
@@ -63,9 +63,32 @@ export default function CLIPage() {
       <section>
         <h2 className="text-3xl font-light text-black dark:text-white mb-8">Installation</h2>
 
+        {/* npm Registry Installation */}
+        <div className="mb-8">
+          <h3 className="text-xl font-normal text-black dark:text-white mb-4">From npm (Recommended)</h3>
+          <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-4">
+            Install Docjays CLI globally via npm:
+          </p>
+          <CodeBlock
+            language="bash"
+            code={`# Install globally
+npm install -g docjays
+
+# Verify installation
+docjays --version`}
+          />
+          <p className="text-neutral-600 dark:text-neutral-400 mt-4">
+            Or use without installation:
+          </p>
+          <CodeBlock
+            language="bash"
+            code="npx docjays init"
+          />
+        </div>
+
         {/* GitHub Packages Installation */}
         <div className="mb-8">
-          <h3 className="text-xl font-normal text-black dark:text-white mb-4">From GitHub Packages (Recommended for Teams)</h3>
+          <h3 className="text-xl font-normal text-black dark:text-white mb-4">From GitHub Packages (For TechJays Team)</h3>
           <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-4">
             For internal team use, install from GitHub Packages:
           </p>
@@ -95,25 +118,6 @@ npm login --scope=@binubabu-ai --registry=https://npm.pkg.github.com`}
           </div>
         </div>
 
-        {/* npm Registry Installation */}
-        <div className="mb-8">
-          <h3 className="text-xl font-normal text-black dark:text-white mb-4">From npm (Public)</h3>
-          <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-4">
-            Install DocJays CLI globally via npm:
-          </p>
-          <CodeBlock
-            language="bash"
-            code="npm install -g docjays"
-          />
-          <p className="text-neutral-600 dark:text-neutral-400 mt-4">
-            Or use without installation:
-          </p>
-          <CodeBlock
-            language="bash"
-            code="npx docjays init"
-          />
-        </div>
-
         {/* Local Development */}
         <div>
           <h3 className="text-xl font-normal text-black dark:text-white mb-4">For Development</h3>
@@ -136,19 +140,30 @@ npm link`}
         <h2 className="text-3xl font-light text-black dark:text-white mb-8">Quick Start</h2>
         <CodeBlock
           language="bash"
-          code={`# Initialize DocJays in your project
-docjays init
+          code={`# Step 1: Login to Docjays (one-time setup)
+docjays login
+# Opens browser → Login with your docjays account
 
-# Add documentation sources
+# Step 2: Initialize project
+docjays init
+# ✓ Project created + API key auto-generated
+
+# Step 3: Add documentation sources
 docjays add-source --name company-docs --type git --url https://github.com/myorg/docs
 docjays add-source --name api-specs --type git --url https://github.com/myorg/api-specs
 
-# Sync all documentation
+# Step 4: Sync documentation
 docjays sync
 
-# Start MCP server for Claude
-docjays serve`}
+# Step 5: Start MCP server
+docjays serve
+# Your docs are now available to AI assistants!`}
         />
+        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <p className="text-sm text-blue-900 dark:text-blue-100">
+            <strong>Local-Only Mode:</strong> Don't need cloud features? Use <code className="bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded">docjays init --offline</code> to work completely offline.
+          </p>
+        </div>
       </section>
 
       {/* Commands */}
@@ -157,15 +172,44 @@ docjays serve`}
 
         <div className="space-y-8">
           <CommandCard
+            icon={<Key className="w-5 h-5" />}
+            name="login"
+            description="Login to your docjays account (one-time setup)"
+            usage="docjays login"
+            options={[]}
+            example="docjays login"
+          />
+
+          <CommandCard
+            icon={<Eye className="w-5 h-5" />}
+            name="whoami"
+            description="Show current login status"
+            usage="docjays whoami"
+            options={[]}
+            example="docjays whoami"
+          />
+
+          <CommandCard
+            icon={<Key className="w-5 h-5" />}
+            name="logout"
+            description="Remove global authentication token"
+            usage="docjays logout"
+            options={[]}
+            example="docjays logout"
+          />
+
+          <CommandCard
             icon={<Package className="w-5 h-5" />}
             name="init"
-            description="Initialize DocJays in your project"
+            description="Initialize Docjays in your project (auto-generates API key)"
             usage="docjays init [options]"
             options={[
+              { flag: '-n, --name <name>', description: 'Project name (default: folder name)' },
+              { flag: '--offline', description: 'Initialize without cloud (local-only)' },
               { flag: '-y, --yes', description: 'Skip prompts and use defaults' },
               { flag: '--no-gitignore', description: 'Skip updating .gitignore' },
             ]}
-            example="docjays init --yes"
+            example="docjays init --name my-project"
           />
 
           <CommandCard
@@ -210,7 +254,7 @@ docjays serve`}
           <CommandCard
             icon={<Terminal className="w-5 h-5" />}
             name="status"
-            description="Show DocJays status and statistics"
+            description="Show Docjays status and statistics"
             usage="docjays status [options]"
             options={[
               { flag: '--json', description: 'Output as JSON' },
@@ -246,7 +290,7 @@ docjays serve`}
           />
 
           <CommandCard
-            icon={<Eye className="w-5 h-5" />}
+            icon={<RefreshCw className="w-5 h-5" />}
             name="watch"
             description="Watch and auto-sync documentation at regular intervals"
             usage="docjays watch [options]"
@@ -256,25 +300,6 @@ docjays serve`}
             ]}
             example="docjays watch -i 1h --sync-now"
           />
-
-          <CommandCard
-            icon={<Key className="w-5 h-5" />}
-            name="auth"
-            description="Manage encrypted credentials for private repositories"
-            usage="docjays auth <action> [options]"
-            options={[
-              { flag: 'init', description: 'Initialize keystore with master password' },
-              { flag: 'add <name>', description: 'Add a new credential' },
-              { flag: 'list', description: 'List all stored credentials' },
-              { flag: 'remove <name>', description: 'Remove a credential' },
-              { flag: 'update <name>', description: 'Update a credential' },
-              { flag: 'rotate-password', description: 'Change master password' },
-              { flag: 'export [file]', description: 'Export keystore (encrypted)' },
-              { flag: 'import <file>', description: 'Import keystore' },
-              { flag: 'destroy', description: 'Delete keystore (destructive)' },
-            ]}
-            example="docjays auth add github-token"
-          />
         </div>
       </section>
 
@@ -282,7 +307,7 @@ docjays serve`}
       <section>
         <h2 className="text-3xl font-light text-black dark:text-white mb-8">MCP Integration</h2>
         <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-6">
-          To use DocJays CLI with Claude Desktop, add this to your MCP settings:
+          To use Docjays CLI with Claude Desktop, add this to your MCP settings:
         </p>
         <div className="space-y-6">
           <div>
@@ -306,34 +331,83 @@ docjays serve`}
 }`}
           />
           <p className="text-neutral-600 dark:text-neutral-400">
-            After updating the config, restart Claude Desktop. DocJays will expose your local documentation to Claude via MCP.
+            After updating the config, restart Claude Desktop. Docjays will expose your local documentation to Claude via MCP.
           </p>
         </div>
       </section>
 
-      {/* Authentication Workflow */}
+      {/* Authentication */}
       <section>
-        <h2 className="text-3xl font-light text-black dark:text-white mb-8">Working with Private Repositories</h2>
-        <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-8">
-          DocJays includes an encrypted keystore for managing credentials to private repositories:
-        </p>
-        <CodeBlock
-          language="bash"
-          code={`# Initialize keystore
-docjays auth init
+        <h2 className="text-3xl font-light text-black dark:text-white mb-8">Authentication</h2>
 
-# Add GitHub token
-docjays auth add github-token
+        <div className="space-y-8">
+          <div>
+            <h3 className="text-xl font-normal text-black dark:text-white mb-4">Global Login</h3>
+            <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-4">
+              Login once to connect your CLI to your docjays account:
+            </p>
+            <CodeBlock
+              language="bash"
+              code={`# Login with email/password
+docjays login
 
-# Add source with authentication
+# Check login status
+docjays whoami
+
+# Logout
+docjays logout`}
+            />
+            <div className="mt-4 p-4 bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg">
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                Your login token is stored securely in <code className="bg-white dark:bg-black px-2 py-1 rounded">~/.docjays/auth.json</code> and works across all your projects.
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-normal text-black dark:text-white mb-4">Project API Keys</h3>
+            <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-4">
+              Each project gets its own API key automatically when you run <code className="bg-neutral-100 dark:bg-neutral-900 px-2 py-1 rounded">docjays init</code>:
+            </p>
+            <CodeBlock
+              language="bash"
+              code={`cd my-project
+docjays init
+# ✓ Project created
+# ✓ API Key generated: djkey_proj_abc123_xyz
+# ✓ Saved to .docjays/config.json`}
+            />
+            <p className="text-neutral-600 dark:text-neutral-400 mt-4">
+              The API key is used for MCP server authentication and all operations on this project.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-normal text-black dark:text-white mb-4">Working with Private Repositories</h3>
+            <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-4">
+              For private repositories, store credentials locally:
+            </p>
+            <CodeBlock
+              language="bash"
+              code={`# Add credential (e.g., GitHub token)
+docjays auth add my-token --type token
+
+# Use credential with source
 docjays add-source --name private-docs \\
   --type git \\
   --url https://github.com/myorg/private-docs \\
-  --auth github-token
+  --auth my-token
 
-# Sync (will prompt for keystore password)
+# Sync
 docjays sync`}
-        />
+            />
+            <div className="mt-4 p-4 bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg">
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                Credentials are encrypted and stored in <code className="bg-white dark:bg-black px-2 py-1 rounded">.docjays/config.json</code>
+              </p>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Use Cases */}

@@ -4,10 +4,10 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 
 /**
- * DocJays CLI
+ * Docjays CLI
  * Main CLI application class
  */
-export class DocJaysCLI {
+export class DocjaysCLI {
   private program: Command;
 
   constructor() {
@@ -43,7 +43,9 @@ export class DocJaysCLI {
       'after',
       `
 ${chalk.bold('Examples:')}
+  ${chalk.dim('$')} docjays login
   ${chalk.dim('$')} docjays init
+  ${chalk.dim('$')} docjays create-skills
   ${chalk.dim('$')} docjays add-source --name docs --type git --url <repo-url>
   ${chalk.dim('$')} docjays sync
   ${chalk.dim('$')} docjays serve
@@ -62,6 +64,21 @@ ${chalk.bold('Report issues:')} https://github.com/techjays/ai-summit/issues
     const { InitCommand } = require('./commands/init');
     const initCommand = new InitCommand(this.program);
     initCommand.register();
+
+    // Login command
+    const { LoginCommand } = require('./commands/login');
+    const loginCommand = new LoginCommand(this.program);
+    loginCommand.register();
+
+    // Whoami command
+    const { WhoamiCommand } = require('./commands/whoami');
+    const whoamiCommand = new WhoamiCommand(this.program);
+    whoamiCommand.register();
+
+    // Logout command
+    const { LogoutCommand } = require('./commands/logout');
+    const logoutCommand = new LogoutCommand(this.program);
+    logoutCommand.register();
 
     // Auth command
     const { AuthCommand } = require('./commands/auth');
@@ -102,6 +119,11 @@ ${chalk.bold('Report issues:')} https://github.com/techjays/ai-summit/issues
     const { WatchCommand } = require('./commands/watch');
     const watchCommand = new WatchCommand(this.program);
     watchCommand.register();
+
+    // Create Skills command
+    const { CreateSkillsCommand } = require('./commands/create-skills');
+    const createSkillsCommand = new CreateSkillsCommand(this.program);
+    createSkillsCommand.register();
   }
 
   /**
