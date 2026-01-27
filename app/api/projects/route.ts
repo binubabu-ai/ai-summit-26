@@ -1,49 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
-import { z } from 'zod';
+import { createClient } from '@/lib/supabase/server';
 
-// GET /api/projects - List all projects
-export async function GET() {
+// GET /api/projects - List user's projects
+export async function GET(request: NextRequest) {
   try {
-    const projects = await prisma.project.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: {
-        _count: {
-          select: {
-            docs: true,
-            proposals: true,
-          },
-        },
-      },
-    });
+    const supabase = await createClient();
 
-    return NextResponse.json(projects);
+    // Check authentication
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Fetch user's projects
+    const { data: projects, error } = await supabase
+      .from('projects')
+      .select('id, name, description, slug, created_at, updated_at')
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching projects:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch projects' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ projects });
   } catch (error) {
-    console.error('Error fetching projects:', error);
+    console.error('Projects GET error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch projects' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
 }
 
-// POST /api/projects - Create a new project
-const createProjectSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  slug: z.string().min(1, 'Slug is required').regex(
-    /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-    'Slug must be lowercase with hyphens only'
-  ),
-});
-
+// POST /api/projects - Create new project
 export async function POST(request: NextRequest) {
   try {
-    // Require authentication
-    let user;
-    try {
-      user = await requireAuth();
-    } catch (error) {
+    const supabase = await createClient();
+
+    // Check authentication
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -51,124 +55,98 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const validation = createProjectSchema.safeParse(body);
+    const { name, description } = body;
 
-    if (!validation.success) {
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
       return NextResponse.json(
-        { error: validation.error.errors },
+        { error: 'Project name is required' },
         { status: 400 }
       );
     }
 
-    const { name, slug } = validation.data;
+    // Generate slug from name
+    const slug = name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
 
-    // Check if slug already exists
-    const existing = await prisma.project.findUnique({
-      where: { slug },
-    });
+    // Check if slug already exists for this user
+    const { data: existingProject } = await supabase
+      .from('projects')
+      .select('id')
+      .eq('user_id', session.user.id)
+      .eq('slug', slug)
+      .single();
 
-    if (existing) {
+    if (existingProject) {
       return NextResponse.json(
-        { error: 'A project with this slug already exists' },
+        { error: 'A project with this name already exists' },
         { status: 409 }
       );
     }
 
-    // Create project and default README.md in a transaction
-    const project = await prisma.project.create({
-      data: {
-        name,
+    // Create project
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
+      .insert({
+        user_id: session.user.id,
+        name: name.trim(),
+        description: description?.trim() || null,
         slug,
-        ownerId: user.id, // Set current user as owner
-        docs: {
-          create: {
-            path: 'README.md',
-            content: `# ${name}
+      })
+      .select()
+      .single();
 
-> **About this document**: This README serves as the introduction and overview for your project. Edit this file to describe what your project is about, its purpose, and any important information visitors should know.
+    if (projectError) {
+      console.error('Error creating project:', projectError);
+      return NextResponse.json(
+        { error: 'Failed to create project' },
+        { status: 500 }
+      );
+    }
 
-## What is this project?
+    // Generate API key for the project
+    const { data: apiKeyData } = await supabase
+      .rpc('generate_api_key');
 
-[Describe your project here - what it does, who it's for, and why it exists]
+    if (!apiKeyData) {
+      console.error('Failed to generate API key');
+      return NextResponse.json({
+        project,
+        apiKey: null,
+        warning: 'Project created but API key generation failed'
+      });
+    }
 
-## Key Information
+    const apiKey = apiKeyData;
 
-- **Project Name**: ${name}
-- **Project Slug**: ${slug}
-- **Created**: ${new Date().toLocaleDateString()}
+    // Store API key
+    const { error: keyError } = await supabase
+      .from('project_api_keys')
+      .insert({
+        project_id: project.id,
+        name: 'Default Key',
+        key: apiKey,
+      });
 
-## Getting Started
+    if (keyError) {
+      console.error('Error storing API key:', keyError);
+      return NextResponse.json({
+        project,
+        apiKey: null,
+        warning: 'Project created but API key storage failed'
+      });
+    }
 
-[Add instructions on how to get started with this project]
-
-## Documentation Structure
-
-Use this project to organize your documentation:
-
-- Create new documents for different topics
-- Use folders in paths (e.g., \`api/authentication.md\`)
-- Keep related docs together
-- Update this README as your project evolves
-
-## Additional Resources
-
-[Add links to related resources, external docs, or helpful references]
-
----
-
-*This README was automatically generated. Feel free to customize it to fit your project's needs.*
-`,
-            versions: {
-              create: {
-                content: `# ${name}
-
-> **About this document**: This README serves as the introduction and overview for your project. Edit this file to describe what your project is about, its purpose, and any important information visitors should know.
-
-## What is this project?
-
-[Describe your project here - what it does, who it's for, and why it exists]
-
-## Key Information
-
-- **Project Name**: ${name}
-- **Project Slug**: ${slug}
-- **Created**: ${new Date().toLocaleDateString()}
-
-## Getting Started
-
-[Add instructions on how to get started with this project]
-
-## Documentation Structure
-
-Use this project to organize your documentation:
-
-- Create new documents for different topics
-- Use folders in paths (e.g., \`api/authentication.md\`)
-- Keep related docs together
-- Update this README as your project evolves
-
-## Additional Resources
-
-[Add links to related resources, external docs, or helpful references]
-
----
-
-*This README was automatically generated. Feel free to customize it to fit your project's needs.*
-`,
-                authorId: user.id,
-                authorType: 'user',
-              },
-            },
-          },
-        },
-      },
-    });
-
-    return NextResponse.json(project, { status: 201 });
+    return NextResponse.json({
+      project,
+      apiKey,
+    }, { status: 201 });
   } catch (error) {
-    console.error('Error creating project:', error);
+    console.error('Projects POST error:', error);
     return NextResponse.json(
-      { error: 'Failed to create project' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

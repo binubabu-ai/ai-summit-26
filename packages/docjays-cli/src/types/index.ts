@@ -4,9 +4,18 @@
 
 export interface DocjaysConfig {
   version: string;
+  mode: 'local' | 'cloud';
+  cloud?: CloudConfig;
   sources: Source[];
   mcp: MCPConfig;
   sync: SyncConfig;
+}
+
+export interface CloudConfig {
+  projectId: string | null;
+  projectName: string | null;
+  apiKey: string | null;
+  lastSync?: string;
 }
 
 export interface Source {

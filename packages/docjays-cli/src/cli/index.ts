@@ -130,6 +130,16 @@ ${chalk.bold('Report issues:')} https://github.com/techjays/ai-summit/issues
     const { CreateSkillsCommand } = require('./commands/create-skills');
     const createSkillsCommand = new CreateSkillsCommand(this.program);
     createSkillsCommand.register();
+
+    // Link command
+    const { LinkCommand } = require('./commands/link');
+    const linkCommand = new LinkCommand(this.program);
+    linkCommand.register();
+
+    // Unlink command
+    const { UnlinkCommand } = require('./commands/unlink');
+    const unlinkCommand = new UnlinkCommand(this.program);
+    unlinkCommand.register();
   }
 
   /**

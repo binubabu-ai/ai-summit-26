@@ -213,6 +213,71 @@ export class ConfigManager {
   }
 
   /**
+   * Check if project is linked to cloud
+   */
+  async isCloudLinked(): Promise<boolean> {
+    const config = await this.load();
+    return config.mode === 'cloud' && !!config.cloud?.projectId;
+  }
+
+  /**
+   * Link to cloud project
+   */
+  async linkCloud(cloudConfig: { projectId: string; projectName: string; apiKey: string }): Promise<void> {
+    const config = await this.load();
+    config.mode = 'cloud';
+    config.cloud = {
+      projectId: cloudConfig.projectId,
+      projectName: cloudConfig.projectName,
+      apiKey: cloudConfig.apiKey,
+      lastSync: new Date().toISOString(),
+    };
+    await this.save(config);
+    this.logger.success(`Linked to cloud project: ${cloudConfig.projectName}`);
+  }
+
+  /**
+   * Unlink from cloud (switch to local mode)
+   */
+  async unlinkCloud(): Promise<void> {
+    const config = await this.load();
+    config.mode = 'local';
+    config.cloud = {
+      projectId: null,
+      projectName: null,
+      apiKey: null,
+    };
+    await this.save(config);
+    this.logger.success('Switched to local mode');
+  }
+
+  /**
+   * Get cloud configuration
+   */
+  async getCloudConfig(): Promise<{ projectId: string; projectName: string; apiKey: string } | null> {
+    const config = await this.load();
+    if (config.mode === 'cloud' && config.cloud?.projectId && config.cloud?.apiKey) {
+      return {
+        projectId: config.cloud.projectId,
+        projectName: config.cloud.projectName || 'Unknown',
+        apiKey: config.cloud.apiKey,
+      };
+    }
+    return null;
+  }
+
+  /**
+   * Update cloud sync timestamp
+   */
+  async updateCloudSync(): Promise<void> {
+    const config = await this.load();
+    if (config.cloud) {
+      config.cloud.lastSync = new Date().toISOString();
+      await this.save(config);
+    }
+  }
+
+  /**
    * Validate configuration against schema
    */
   private validate(config: any): void {
@@ -231,6 +296,12 @@ export class ConfigManager {
   private getDefaultConfig(): DocjaysConfig {
     return {
       version: '1.0.0',
+      mode: 'local',
+      cloud: {
+        projectId: null,
+        projectName: null,
+        apiKey: null,
+      },
       sources: [],
       mcp: {
         enabled: true,
@@ -251,9 +322,19 @@ export class ConfigManager {
   private getSchema() {
     return {
       type: 'object',
-      required: ['version', 'sources', 'mcp', 'sync'],
+      required: ['version', 'mode', 'sources', 'mcp', 'sync'],
       properties: {
         version: { type: 'string' },
+        mode: { enum: ['local', 'cloud'] },
+        cloud: {
+          type: 'object',
+          properties: {
+            projectId: { type: ['string', 'null'] },
+            projectName: { type: ['string', 'null'] },
+            apiKey: { type: ['string', 'null'] },
+            lastSync: { type: 'string' },
+          },
+        },
         sources: {
           type: 'array',
           items: {

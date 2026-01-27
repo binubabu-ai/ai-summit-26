@@ -75,6 +75,11 @@ export class InitCommand extends BaseCommand {
 
       // Show success message
       this.showSuccess(config.initializeKeystore);
+
+      // Maybe link to cloud (optional, non-intrusive)
+      if (!options.yes) {
+        await this.maybeLinkToCloud();
+      }
     } catch (error: any) {
       this.handleError(error, 'init');
     }
@@ -382,5 +387,54 @@ ${chalk.bold('Issues:')} ${chalk.underline('https://github.com/techjays/ai-summi
     console.log('');
     console.log(chalk.dim('Run "docjays --help" for full command list'));
     console.log('');
+  }
+
+  /**
+   * Maybe link to cloud (optional prompt)
+   */
+  private async maybeLinkToCloud(): Promise<void> {
+    try {
+      const { AuthManager } = require('../../core/auth/manager');
+      const authManager = new AuthManager();
+      const auth = await authManager.getAuth();
+
+      // Only prompt if user is logged in
+      if (!auth) {
+        return;
+      }
+
+      console.log('');
+      console.log(chalk.cyan.bold('☁️  Cloud Integration (Optional)'));
+      console.log(chalk.dim('Link this project to Docjays cloud for team collaboration'));
+      console.log('');
+
+      const { linkToCloud } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'linkToCloud',
+          message: 'Link to cloud now?',
+          default: false,
+        },
+      ]);
+
+      if (linkToCloud) {
+        console.log('');
+        this.logger.info('Launching cloud link...');
+        console.log('');
+
+        // Import and execute link command
+        const { LinkCommand } = require('./link');
+        const linkCommand = new LinkCommand(this.program);
+        await linkCommand.execute({});
+      } else {
+        console.log('');
+        this.logger.info(chalk.dim('Staying in local-only mode'));
+        this.logger.info(chalk.dim('You can link later with: ') + chalk.cyan('docjays link'));
+        console.log('');
+      }
+    } catch (error: any) {
+      // Fail silently - cloud linking is optional
+      this.logger.debug('Cloud link prompt error:', error.message);
+    }
   }
 }
