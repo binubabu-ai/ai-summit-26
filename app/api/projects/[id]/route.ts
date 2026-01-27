@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { prisma } from '@/lib/prisma';
 
 // GET /api/projects/:id - Get project details
 export async function GET(
@@ -19,34 +20,38 @@ export async function GET(
       );
     }
 
-    // Fetch project with API key
-    const { data: project, error } = await supabase
-      .from('projects')
-      .select(`
+    // Fetch project with API keys using Prisma
+    const project = await prisma.project.findFirst({
+      where: {
         id,
-        name,
-        description,
-        slug,
-        created_at,
-        updated_at,
-        project_api_keys (
-          key,
-          created_at,
-          last_used_at
-        )
-      `)
-      .eq('id', id)
-      .eq('user_id', session.user.id)
-      .single();
+        ownerId: session.user.id,
+      },
+      include: {
+        apiKeys: {
+          select: {
+            key: true,
+            createdAt: true,
+            lastUsedAt: true,
+          },
+        },
+      },
+    });
 
-    if (error || !project) {
+    if (!project) {
       return NextResponse.json(
         { error: 'Project not found' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ project });
+    // Rename apiKeys to project_api_keys for backward compatibility
+    const response = {
+      ...project,
+      project_api_keys: project.apiKeys,
+    };
+    delete (response as any).apiKeys;
+
+    return NextResponse.json({ project: response });
   } catch (error) {
     console.error('Project GET error:', error);
     return NextResponse.json(
@@ -75,46 +80,47 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { name, description } = body;
+    const { name } = body;
 
-    const updates: any = {};
-    if (name !== undefined) {
-      updates.name = name.trim();
-      // Update slug if name changed
-      updates.slug = name
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '');
-    }
-    if (description !== undefined) {
-      updates.description = description?.trim() || null;
-    }
-
-    if (Object.keys(updates).length === 0) {
+    if (!name || typeof name !== 'string') {
       return NextResponse.json(
-        { error: 'No updates provided' },
+        { error: 'Name is required' },
         { status: 400 }
       );
     }
 
-    // Update project
-    const { data: project, error } = await supabase
-      .from('projects')
-      .update(updates)
-      .eq('id', id)
-      .eq('user_id', session.user.id)
-      .select()
-      .single();
+    // Generate new slug from name
+    const slug = name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
 
-    if (error || !project) {
+    // Update project using Prisma
+    const project = await prisma.project.updateMany({
+      where: {
+        id,
+        ownerId: session.user.id,
+      },
+      data: {
+        name: name.trim(),
+        slug,
+      },
+    });
+
+    if (project.count === 0) {
       return NextResponse.json(
-        { error: 'Failed to update project' },
-        { status: 500 }
+        { error: 'Project not found or unauthorized' },
+        { status: 404 }
       );
     }
 
-    return NextResponse.json({ project });
+    // Fetch updated project
+    const updatedProject = await prisma.project.findUnique({
+      where: { id },
+    });
+
+    return NextResponse.json({ project: updatedProject });
   } catch (error) {
     console.error('Project PATCH error:', error);
     return NextResponse.json(
@@ -142,17 +148,18 @@ export async function DELETE(
       );
     }
 
-    // Delete project (cascade will delete API keys and sources)
-    const { error } = await supabase
-      .from('projects')
-      .delete()
-      .eq('id', id)
-      .eq('user_id', session.user.id);
+    // Delete project (cascade will delete API keys)
+    const result = await prisma.project.deleteMany({
+      where: {
+        id,
+        ownerId: session.user.id,
+      },
+    });
 
-    if (error) {
+    if (result.count === 0) {
       return NextResponse.json(
-        { error: 'Failed to delete project' },
-        { status: 500 }
+        { error: 'Project not found or unauthorized' },
+        { status: 404 }
       );
     }
 

@@ -12,9 +12,8 @@ interface LinkOptions {
 interface Project {
   id: string;
   name: string;
-  description: string | null;
   slug: string;
-  created_at: string;
+  createdAt: string;
 }
 
 /**
@@ -179,7 +178,7 @@ export class LinkCommand extends BaseCommand {
           name: 'project',
           message: 'Select a project:',
           choices: projects.map((p) => ({
-            name: `${p.name} ${p.description ? chalk.dim(`(${p.description})`) : ''}`,
+            name: p.name,
             value: p,
           })),
         },
@@ -243,11 +242,6 @@ export class LinkCommand extends BaseCommand {
           return true;
         },
       },
-      {
-        type: 'input',
-        name: 'description',
-        message: 'Description (optional):',
-      },
     ]);
 
     // Create project
@@ -262,7 +256,6 @@ export class LinkCommand extends BaseCommand {
       },
       body: JSON.stringify({
         name: answers.name,
-        description: answers.description || null,
       }),
     });
 
