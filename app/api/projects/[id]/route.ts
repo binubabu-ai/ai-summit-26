@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { prisma } from '@/lib/prisma';
 
 // GET /api/projects/:id - Get project details
 export async function GET(
@@ -20,38 +19,33 @@ export async function GET(
       );
     }
 
-    // Fetch project with API keys using Prisma
-    const project = await prisma.project.findFirst({
-      where: {
+    // Fetch project with API key
+    const { data: project, error } = await supabase
+      .from('projects')
+      .select(`
         id,
-        ownerId: session.user.id,
-      },
-      include: {
-        apiKeys: {
-          select: {
-            key: true,
-            createdAt: true,
-            lastUsedAt: true,
-          },
-        },
-      },
-    });
+        name,
+        slug,
+        created_at,
+        updated_at,
+        api_keys (
+          key,
+          created_at,
+          last_used_at
+        )
+      `)
+      .eq('id', id)
+      .eq('owner_id', session.user.id)
+      .single();
 
-    if (!project) {
+    if (error || !project) {
       return NextResponse.json(
         { error: 'Project not found' },
         { status: 404 }
       );
     }
 
-    // Rename apiKeys to project_api_keys for backward compatibility
-    const response = {
-      ...project,
-      project_api_keys: project.apiKeys,
-    };
-    delete (response as any).apiKeys;
-
-    return NextResponse.json({ project: response });
+    return NextResponse.json({ project });
   } catch (error) {
     console.error('Project GET error:', error);
     return NextResponse.json(
@@ -89,38 +83,32 @@ export async function PATCH(
       );
     }
 
-    // Generate new slug from name
-    const slug = name
+    const updates: any = {};
+    updates.name = name.trim();
+    // Update slug if name changed
+    updates.slug = name
       .toLowerCase()
       .trim()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
 
-    // Update project using Prisma
-    const project = await prisma.project.updateMany({
-      where: {
-        id,
-        ownerId: session.user.id,
-      },
-      data: {
-        name: name.trim(),
-        slug,
-      },
-    });
+    // Update project
+    const { data: project, error } = await supabase
+      .from('projects')
+      .update(updates)
+      .eq('id', id)
+      .eq('owner_id', session.user.id)
+      .select()
+      .single();
 
-    if (project.count === 0) {
+    if (error || !project) {
       return NextResponse.json(
-        { error: 'Project not found or unauthorized' },
-        { status: 404 }
+        { error: 'Failed to update project' },
+        { status: 500 }
       );
     }
 
-    // Fetch updated project
-    const updatedProject = await prisma.project.findUnique({
-      where: { id },
-    });
-
-    return NextResponse.json({ project: updatedProject });
+    return NextResponse.json({ project });
   } catch (error) {
     console.error('Project PATCH error:', error);
     return NextResponse.json(
@@ -149,17 +137,16 @@ export async function DELETE(
     }
 
     // Delete project (cascade will delete API keys)
-    const result = await prisma.project.deleteMany({
-      where: {
-        id,
-        ownerId: session.user.id,
-      },
-    });
+    const { error } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', id)
+      .eq('owner_id', session.user.id);
 
-    if (result.count === 0) {
+    if (error) {
       return NextResponse.json(
-        { error: 'Project not found or unauthorized' },
-        { status: 404 }
+        { error: 'Failed to delete project' },
+        { status: 500 }
       );
     }
 

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { prisma } from '@/lib/prisma';
 
 // GET /api/projects - List user's projects
 export async function GET(request: NextRequest) {
@@ -16,22 +15,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch user's projects using Prisma
-    const projects = await prisma.project.findMany({
-      where: {
-        ownerId: session.user.id,
-      },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    // Fetch user's projects
+    const { data: projects, error } = await supabase
+      .from('projects')
+      .select('id, name, slug, created_at, updated_at')
+      .eq('owner_id', session.user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching projects:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch projects' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ projects });
   } catch (error) {
@@ -74,10 +71,13 @@ export async function POST(request: NextRequest) {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
 
-    // Check if slug already exists
-    const existingProject = await prisma.project.findUnique({
-      where: { slug },
-    });
+    // Check if slug already exists for this user
+    const { data: existingProject } = await supabase
+      .from('projects')
+      .select('id')
+      .eq('owner_id', session.user.id)
+      .eq('slug', slug)
+      .single();
 
     if (existingProject) {
       return NextResponse.json(
@@ -86,39 +86,62 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate API key
-    const keyBytes = crypto.getRandomValues(new Uint8Array(24));
-    const keyBase64 = Buffer.from(keyBytes).toString('base64')
-      .replace(/\+/g, '')
-      .replace(/\//g, '')
-      .replace(/=/g, '');
-    const apiKey = `dj_${keyBase64}`;
+    // Create project
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
+      .insert({
+        owner_id: session.user.id,
+        name: name.trim(),
+        slug,
+      })
+      .select()
+      .single();
 
-    // Create project with API key in a transaction
-    const result = await prisma.$transaction(async (tx) => {
-      const project = await tx.project.create({
-        data: {
-          name: name.trim(),
-          slug,
-          ownerId: session.user.id,
-        },
+    if (projectError) {
+      console.error('Error creating project:', projectError);
+      return NextResponse.json(
+        { error: 'Failed to create project' },
+        { status: 500 }
+      );
+    }
+
+    // Generate API key for the project
+    const { data: apiKeyData } = await supabase
+      .rpc('generate_api_key');
+
+    if (!apiKeyData) {
+      console.error('Failed to generate API key');
+      return NextResponse.json({
+        project,
+        apiKey: null,
+        warning: 'Project created but API key generation failed'
+      });
+    }
+
+    const apiKey = apiKeyData;
+
+    // Store API key
+    const { error: keyError } = await supabase
+      .from('api_keys')
+      .insert({
+        project_id: project.id,
+        name: 'Default Key',
+        key: apiKey,
+        key_prefix: 'dj_',
       });
 
-      const apiKeyRecord = await tx.apiKey.create({
-        data: {
-          projectId: project.id,
-          name: 'Default Key',
-          key: apiKey,
-          keyPrefix: 'dj_',
-        },
+    if (keyError) {
+      console.error('Error storing API key:', keyError);
+      return NextResponse.json({
+        project,
+        apiKey: null,
+        warning: 'Project created but API key storage failed'
       });
-
-      return { project, apiKey: apiKeyRecord.key };
-    });
+    }
 
     return NextResponse.json({
-      project: result.project,
-      apiKey: result.apiKey,
+      project,
+      apiKey,
     }, { status: 201 });
   } catch (error) {
     console.error('Projects POST error:', error);
