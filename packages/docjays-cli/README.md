@@ -91,6 +91,20 @@ This will:
 - ✅ Prompt to create `skills.md` for AI agents
 - ✅ Update `.gitignore`
 
+### Step 2.5: Migrate Existing Docs (Optional)
+
+If your project already has documentation, migrate it to `.docjays`:
+
+```bash
+# Scan and interactively select docs to migrate
+docjays migrate
+
+# Or auto-migrate everything
+docjays migrate --auto
+```
+
+This discovers and copies existing docs (README, docs/, wiki/, etc.) to `.docjays/sources/local-migration/` while keeping originals in place.
+
 ### Step 3: Add Documentation Sources
 
 ```bash
@@ -125,6 +139,7 @@ docjays logout             # Remove credentials
 
 # Project Setup
 docjays init               # Initialize in current directory
+docjays migrate            # Migrate existing docs to .docjays
 docjays create-skills      # Create skills.md for AI agents
 
 # Documentation Management
@@ -305,6 +320,95 @@ docjays create-skills --print
 - Overwrite existing file
 - Merge/append to existing
 - Cancel
+
+### Migrate Existing Documentation
+
+```bash
+docjays migrate [options]
+
+Options:
+  --auto    Automatically migrate all found documentation without prompts
+  --move    Move files instead of copying (default: copy)
+  --dry     Dry run - show what would be migrated without making changes
+  -h, --help  Display help
+```
+
+Discovers and migrates existing documentation in your project to `.docjays/sources/local-migration/`. This is perfect for:
+- Onboarding existing projects with documentation
+- Consolidating scattered docs into Docjays
+- Keeping original docs while making them AI-accessible
+
+**What it scans for:**
+
+**Common documentation folders:**
+- `docs/`, `doc/`, `documentation/`
+- `wiki/`, `guides/`, `examples/`
+- `.github/` (for GitHub templates)
+
+**Common documentation files:**
+- `README.md`, `CONTRIBUTING.md`
+- `CHANGELOG.md`, `CODE_OF_CONDUCT.md`
+- `SECURITY.md`, `LICENSE.md`, `ARCHITECTURE.md`
+
+**Automatically skips:**
+- Dependencies: `node_modules`, `vendor`, `bower_components`
+- Build outputs: `dist`, `build`, `out`, `target`, `bin`
+- Caches: `.cache`, `.parcel-cache`, `coverage`
+- Version control: `.git`, `.svn`
+- IDE folders: `.vscode`, `.idea`
+- The `.docjays` folder itself
+
+**Examples:**
+
+```bash
+# Interactive migration (recommended for first time)
+docjays migrate
+
+# Example output:
+📦 Documentation Migration
+Scanning your project for existing documentation...
+
+✓ Found 3 documentation location(s)
+
+Found documentation:
+
+  📁 docs/ (12 .md files)
+  📁 .github/ (4 .md files)
+  📄 README.md (8.4 KB)
+
+? Select documentation to migrate: (Space to select, Enter to confirm)
+  ◉ docs/ (12 files)
+  ◉ .github/ (4 files)
+  ◉ README.md
+
+✓ Successfully copied 3 item(s)!
+
+Migration complete:
+  .docjays/sources/local-migration/
+
+Your documentation is now organized and ready for AI assistants.
+
+# Auto-migrate everything found
+docjays migrate --auto
+
+# Move files instead of copying
+docjays migrate --move
+
+# Preview what would be migrated
+docjays migrate --dry
+```
+
+**After migration:**
+- Original docs remain in place (unless `--move` flag used)
+- Migrated docs available at `.docjays/sources/local-migration/`
+- Automatically registered as a source in config
+- AI assistants can now access all documentation
+
+**Best practices:**
+- Use `--dry` first to preview what will be migrated
+- Default copy mode is safer (preserves originals)
+- Use `--move` only if you want to fully consolidate into `.docjays`
+- Run `docjays status` after migration to verify
 
 ### Add Documentation Source
 

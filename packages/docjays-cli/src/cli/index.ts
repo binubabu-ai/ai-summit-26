@@ -45,6 +45,7 @@ export class DocjaysCLI {
 ${chalk.bold('Examples:')}
   ${chalk.dim('$')} docjays login
   ${chalk.dim('$')} docjays init
+  ${chalk.dim('$')} docjays migrate
   ${chalk.dim('$')} docjays create-skills
   ${chalk.dim('$')} docjays add-source --name docs --type git --url <repo-url>
   ${chalk.dim('$')} docjays sync
@@ -64,6 +65,11 @@ ${chalk.bold('Report issues:')} https://github.com/techjays/ai-summit/issues
     const { InitCommand } = require('./commands/init');
     const initCommand = new InitCommand(this.program);
     initCommand.register();
+
+    // Migrate command
+    const { MigrateCommand } = require('./commands/migrate');
+    const migrateCommand = new MigrateCommand(this.program);
+    migrateCommand.register();
 
     // Login command
     const { LoginCommand } = require('./commands/login');
