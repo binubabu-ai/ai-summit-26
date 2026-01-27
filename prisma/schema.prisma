@@ -1,6 +1,6 @@
-// Docjays Database Schema
-// Virtual Version Control System for Documentation
-// Enhanced with Knowledge Governance Layer (v2.0)
+generator client {
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider  = "postgresql"
@@ -8,186 +8,59 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
-// ============================================
-// ENUMS - Document Governance
-// ============================================
-
-enum DocumentType {
-  ARCHITECTURE // ADRs, system design docs
-  API_CONTRACT // API specifications, schemas
-  DOMAIN_MODEL // Business logic, domain concepts
-  SECURITY // Security policies, compliance
-  FEATURE_SPEC // Feature specifications
-  RUNBOOK // Operational procedures
-  GENERAL // Everything else
-}
-
-enum ConstraintLevel {
-  HARD // MUST comply (blocks execution)
-  SOFT // SHOULD comply (warns only)
-  INFO // Informational (no enforcement)
-}
-
-enum ReviewSchedule {
-  NEVER // No periodic review
-  MONTHLY // Review every 30 days
-  QUARTERLY // Review every 90 days
-  BIANNUAL // Review every 180 days
-  ANNUAL // Review every 365 days
-}
-
-enum ApprovalAction {
-  APPROVED // Approved grounding
-  REJECTED // Rejected grounding
-  REQUESTED_CHANGES // Requested changes before approval
-  REVIEWED // Periodic review completed
-  DEPRECATED // Marked as deprecated
-}
-
-enum LinkType {
-  IMPLEMENTS // Feature implements this spec
-  REFERENCES // Feature references this doc
-  CONSTRAINS // Doc constrains how feature is built
-  DOCUMENTS // Doc documents the feature
-}
-
-enum SystemicType {
-  NAMING_INCONSISTENCY // Inconsistent terminology
-  VERSIONING_CONFLICT // Version mismatch
-  SCOPE_OVERLAP // Overlapping responsibilities
-  DEPENDENCY_CIRCULAR // Circular dependency
-  ARCHITECTURE_DRIFT // Deviation from architecture
-}
-
-enum ResolutionType {
-  MERGED // Conflicting parts merged
-  PRIORITIZED // One version chosen
-  SPLIT // Split into separate concerns
-  DEPRECATED // Marked old version deprecated
-  REWRITTEN // Complete rewrite
-}
-
-enum DecisionStatus {
-  PROPOSED // Proposed decision
-  ACCEPTED // Decision accepted
-  REJECTED // Decision rejected
-  DEPRECATED // Decision no longer valid
-  SUPERSEDED // Replaced by another decision
-}
-
-enum DecisionSource {
-  PR // Extracted from pull request
-  COMMIT // Extracted from commit message
-  DOCUMENT // Extracted from document
-  MEETING // Captured from meeting notes
-  MANUAL // Manually created
-}
-
-enum ConceptStatus {
-  ACTIVE // Actively used
-  DEPRECATED // No longer preferred
-  AMBIGUOUS // Multiple definitions exist
-  CLARIFICATION_NEEDED // Needs better definition
-}
-
-enum AlertType {
-  STALE_DOCUMENT // Document not reviewed in time
-  MISSING_REVIEW // Review overdue
-  HARD_CONSTRAINT_VIOLATION // HARD constraint violated
-  CONFLICT_DETECTED // New conflict found
-  ORPHANED_DOCUMENT // No feature references
-  DEPRECATED_USAGE // Using deprecated doc
-  MISSING_OWNER // Document has no owner
-  LOW_QUALITY // Quality score dropped
-}
-
-enum AlertSeverity {
-  CRITICAL // Immediate action required
-  HIGH // Address soon
-  MEDIUM // Normal priority
-  LOW // Informational
-}
-
-enum AlertStatus {
-  ACTIVE // Alert is active
-  ACKNOWLEDGED // User acknowledged
-  RESOLVED // Issue resolved
-  DISMISSED // User dismissed
-  EXPIRED // Auto-expired
-}
-
-// User model synced with Supabase Auth
 model User {
-  id        String   @id // Supabase Auth UUID
-  email     String   @unique
-  name      String?
-  avatar    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  projects       Project[] // Projects owned by user
-  members        ProjectMember[] // Projects user is a member of
-  invitedMembers ProjectMember[] @relation("InvitedBy") // Members invited by this user
-  versions       Version[] // Document versions created by user
-  revisions      Revision[] // Revisions created by user
-  auditLogs      AuditLog[] // Audit trail of user actions
-
-  // Document Governance Relations (Phase 1)
-  ownedDocuments    Document[]         @relation("DocumentOwner")
-  groundedDocuments Document[]         @relation("DocumentGrounder")
+  id                String             @id
+  email             String             @unique
+  name              String?
+  avatar            String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  auditLogs         AuditLog[]
   approvals         DocumentApproval[]
+  groundedDocuments Document[]         @relation("DocumentGrounder")
+  ownedDocuments    Document[]         @relation("DocumentOwner")
   createdLinks      FeatureDocLink[]
+  invitedMembers    ProjectMember[]    @relation("InvitedBy")
+  members           ProjectMember[]
+  projects          Project[]
+  revisions         Revision[]
+  versions          Version[]
 
   @@map("users")
 }
 
-// A documentation project (e.g., "My API Docs", "Internal Wiki")
 model Project {
-  id        String   @id @default(cuid())
+  id        String          @id @default(cuid())
   name      String
-  slug      String   @unique
-  ownerId   String // User who created the project
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  owner     User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  slug      String          @unique
+  ownerId   String
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  apiKeys   ApiKey[]
   docs      Document[]
+  members   ProjectMember[]
+  owner     User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   proposals Proposal[]
-  members   ProjectMember[] // Team members with access
-  apiKeys   ApiKey[] // Project-scoped API keys for MCP access
 
   @@index([slug])
   @@index([ownerId])
   @@map("projects")
 }
 
-// Project-scoped API keys for MCP integration
 model ApiKey {
-  id         String    @id @default(cuid())
-  projectId  String
-  name       String // User-friendly name like "Claude Desktop", "Cursor"
-  key        String    @unique // The actual API key (hashed)
-  keyPrefix  String // First 8 chars for display (e.g., "dj_proj_abc12345...")
-  lastUsedAt DateTime?
-  createdAt  DateTime  @default(now())
-  expiresAt  DateTime? // Optional expiration
-  isActive   Boolean   @default(true)
-
-  // Usage tracking
-  requestCount Int     @default(0)
-  lastUsedFrom String? // IP address or client identifier
-
-  // Permissions (future use)
-  permissions Json? // { "read": true, "write": true, "propose": true }
-
-  // Relations
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  id           String    @id @default(cuid())
+  projectId    String
+  name         String
+  key          String    @unique
+  keyPrefix    String
+  lastUsedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  expiresAt    DateTime?
+  isActive     Boolean   @default(true)
+  requestCount Int       @default(0)
+  lastUsedFrom String?
+  permissions  Json?
+  project      Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
   @@index([key])
@@ -196,22 +69,17 @@ model ApiKey {
   @@map("api_keys")
 }
 
-// Project team members with roles
 model ProjectMember {
-  id        String   @id @default(cuid())
-  projectId String
-  userId    String
-  role      String   @default("VIEWER") // OWNER, EDITOR, VIEWER
-  createdAt DateTime @default(now())
-
-  // Invitation tracking
-  invitedBy    String? // User ID who invited this member
-  lastAccessAt DateTime? // Last time member accessed the project
-
-  // Relations
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  inviter User?   @relation("InvitedBy", fields: [invitedBy], references: [id], onDelete: SetNull)
+  id           String    @id @default(cuid())
+  projectId    String
+  userId       String
+  role         String    @default("VIEWER")
+  createdAt    DateTime  @default(now())
+  invitedBy    String?
+  lastAccessAt DateTime?
+  inviter      User?     @relation("InvitedBy", fields: [invitedBy], references: [id])
+  project      Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, userId])
   @@index([projectId])
@@ -220,95 +88,72 @@ model ProjectMember {
   @@map("project_members")
 }
 
-// A document within a project (e.g., "architecture.md", "api/auth.md")
 model Document {
-  id        String @id @default(cuid())
-  path      String // e.g., "architecture.md" or "api/auth.md"
-  projectId String
-  content   String @db.Text // Current "Main" branch content (grounded truth)
-
-  // Revision System (Hybrid VVCS)
-  mainRevisionId String? @unique // Points to the current grounded revision
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Intelligence Layer Fields (AI-Native Features)
-  freshnessScore     Float     @default(1.0) // 0.0-1.0 (1.0 = fresh, 0.0 = very stale)
-  riskScore          Float     @default(0.0) // 0.0-1.0 (0.0 = low risk, 1.0 = high risk)
-  confidenceScore    Float     @default(0.5) // 0.0-1.0 (confidence in content accuracy)
-  lastVerifiedAt     DateTime? // Last manual verification by human
-  lastAnalyzedAt     DateTime? // Last AI analysis run
-  hasConflicts       Boolean   @default(false)
-  hasMissingSections Boolean   @default(false)
-  hasAmbiguity       Boolean   @default(false)
-
-  // Grounding System Fields (Document Ingestion & Knowledge Management)
-  uploadState     String    @default("ready") // "raw", "processing", "ready", "failed"
-  uploadedAt      DateTime?
-  processedAt     DateTime?
-  processingError String?   @db.Text
-
-  groundingState    String    @default("ungrounded") // "ungrounded", "grounded", "deprecated"
-  groundedAt        DateTime?
-  deprecatedAt      DateTime?
-  deprecationReason String?   @db.Text
-
-  editorialState String    @default("draft") // "draft", "review", "active", "archived"
-  publishedAt    DateTime?
-  archivedAt     DateTime?
-
-  expiresAt      DateTime?
-  ttlDays        Int?
-  lastReviewedAt DateTime?
-  nextReviewDue  DateTime?
-
-  // Document Governance Fields (Phase 1)
-  docType         DocumentType    @default(GENERAL)
-  constraintLevel ConstraintLevel @default(SOFT)
-  category        String? // "authentication", "database", "api"
-  tags            String[]        @default([])
-
-  // Grounding Metadata
-  groundedBy     String? // User ID who grounded
-  groundedReason String?        @db.Text // Why was this grounded
-  owner          String? // Primary maintainer User ID
-  reviewSchedule ReviewSchedule @default(NEVER)
-  nextReviewDate DateTime?
-
-  // Usage Tracking
-  relatedFeatures  String[]  @default([]) // Feature slugs
-  lastReferencedAt DateTime? // Last time referenced by code/AI
-  referenceCount   Int       @default(0) // How many times referenced
-
-  // Document Generation (NEW - for AI-generated specs)
-  sourceDocumentId String? // If generated from another document
-  generatedBy      String? // "ai", "manual", "template"
-  generationPrompt String?   @db.Text // Prompt used for generation
-  templateUsed     String? // Template ID used
-
-  // Relations
-  project            Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  sourceDocument     Document?           @relation("GeneratedFrom", fields: [sourceDocumentId], references: [id], onDelete: SetNull)
-  generatedDocs      Document[]          @relation("GeneratedFrom")
-  versions           Version[]
-  revisions          Revision[] // All revisions (main, draft, proposed, etc.)
-  mainRevision       Revision?           @relation("MainRevision", fields: [mainRevisionId], references: [id], onDelete: SetNull)
-  conflicts          Conflict[]
+  id                 String              @id @default(cuid())
+  path               String
+  projectId          String
+  content            String
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  confidenceScore    Float               @default(0.5)
+  freshnessScore     Float               @default(1.0)
+  hasAmbiguity       Boolean             @default(false)
+  hasConflicts       Boolean             @default(false)
+  hasMissingSections Boolean             @default(false)
+  lastAnalyzedAt     DateTime?
+  lastVerifiedAt     DateTime?
+  riskScore          Float               @default(0.0)
+  mainRevisionId     String?             @unique
+  archivedAt         DateTime?
+  deprecatedAt       DateTime?
+  deprecationReason  String?
+  editorialState     String              @default("draft")
+  expiresAt          DateTime?
+  groundedAt         DateTime?
+  groundingState     String              @default("ungrounded")
+  lastReviewedAt     DateTime?
+  nextReviewDue      DateTime?
+  processedAt        DateTime?
+  processingError    String?
+  publishedAt        DateTime?
+  ttlDays            Int?
+  uploadState        String              @default("ready")
+  uploadedAt         DateTime?
+  category           String?
+  constraintLevel    ConstraintLevel     @default(SOFT)
+  docType            DocumentType        @default(GENERAL)
+  groundedBy         String?
+  groundedReason     String?
+  lastReferencedAt   DateTime?
+  nextReviewDate     DateTime?
+  owner              String?
+  referenceCount     Int                 @default(0)
+  relatedFeatures    String[]            @default([])
+  reviewSchedule     ReviewSchedule      @default(NEVER)
+  tags               String[]            @default([])
+  generatedBy        String?
+  generationPrompt   String?
+  sourceDocumentId   String?
+  templateUsed       String?
+  alerts             Alert[]
   analyses           Analysis[]
-  embeddings         Embedding[]
   chatMessages       ChatMessage[]
+  conflicts          Conflict[]
+  decisionRecords    DecisionRecord[]
+  approvals          DocumentApproval[]
+  modules            DocumentModule[]
+  grounderUser       User?               @relation("DocumentGrounder", fields: [groundedBy], references: [id])
+  mainRevision       Revision?           @relation("MainRevision", fields: [mainRevisionId], references: [id])
+  ownerUser          User?               @relation("DocumentOwner", fields: [owner], references: [id])
+  project            Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sourceDocument     Document?           @relation("GeneratedFrom", fields: [sourceDocumentId], references: [id])
+  generatedDocs      Document[]          @relation("GeneratedFrom")
+  embeddings         Embedding[]
+  featureLinks       FeatureDocLink[]
+  groundingSnapshots GroundingSnapshot[]
+  revisions          Revision[]
   suggestions        Suggestion[]
-  modules            DocumentModule[] // Decomposed knowledge modules
-  groundingSnapshots GroundingSnapshot[] // Historical grounding contexts
-
-  // Document Governance Relations (Phase 1)
-  ownerUser       User?              @relation("DocumentOwner", fields: [owner], references: [id], onDelete: SetNull)
-  grounderUser    User?              @relation("DocumentGrounder", fields: [groundedBy], references: [id], onDelete: SetNull)
-  approvals       DocumentApproval[]
-  featureLinks    FeatureDocLink[]
-  alerts          Alert[]
-  decisionRecords DecisionRecord[]
+  versions           Version[]
 
   @@unique([projectId, path])
   @@index([projectId])
@@ -322,7 +167,6 @@ model Document {
   @@index([editorialState])
   @@index([expiresAt])
   @@index([nextReviewDue])
-  // Phase 1 indexes
   @@index([docType])
   @@index([constraintLevel])
   @@index([category])
@@ -330,34 +174,28 @@ model Document {
   @@index([reviewSchedule])
   @@index([lastReferencedAt])
   @@index([nextReviewDate])
-  // Document generation indexes
   @@index([sourceDocumentId])
   @@index([generatedBy])
   @@index([templateUsed])
   @@map("documents")
 }
 
-// A proposal for changes (like a "branch" in git)
 model Proposal {
-  id          String   @id @default(cuid())
-  title       String
-  description String?  @db.Text
-  branchName  String   @unique
-  status      String   @default("OPEN") // OPEN, MERGED, REJECTED, ARCHIVED
-  projectId   String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Intelligence Fields (AI-Native Features)
-  changeRationale String  @default("") @db.Text // Required for all proposals
-  aiGenerated     Boolean @default(false)
-  riskAssessment  Json? // AI-generated risk analysis
-  conflictCheck   Json? // Pre-merge conflict detection results
-  reviewComments  Json? // Structured review feedback
-
-  // Relations
-  project Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  changes Version[]
+  id              String    @id @default(cuid())
+  title           String
+  description     String?
+  branchName      String    @unique
+  status          String    @default("OPEN")
+  projectId       String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  aiGenerated     Boolean   @default(false)
+  changeRationale String    @default("")
+  conflictCheck   Json?
+  reviewComments  Json?
+  riskAssessment  Json?
+  project         Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  changes         Version[]
 
   @@index([projectId])
   @@index([status])
@@ -365,28 +203,23 @@ model Proposal {
   @@map("proposals")
 }
 
-// Version history for documents (like commits)
 model Version {
-  id         String   @id @default(cuid())
-  content    String   @db.Text
-  docId      String
-  proposalId String? // null for main branch versions
-  authorId   String? // User ID or null for system/AI
-  authorType String   @default("user") // "user", "ai", "system"
-  createdAt  DateTime @default(now())
-
-  // Change Metadata (Intelligence Layer)
-  changeRationale String?   @db.Text // Why was this change made?
-  changeType      String? // "create", "update", "delete", "merge"
+  id              String    @id @default(cuid())
+  content         String
+  docId           String
+  proposalId      String?
+  authorId        String?
+  authorType      String    @default("user")
+  createdAt       DateTime  @default(now())
   aiGenerated     Boolean   @default(false)
-  reviewRequired  Boolean   @default(true)
-  approvedBy      String?
   approvedAt      DateTime?
-
-  // Relations
-  document Document  @relation(fields: [docId], references: [id], onDelete: Cascade)
-  proposal Proposal? @relation(fields: [proposalId], references: [id], onDelete: SetNull)
-  author   User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  approvedBy      String?
+  changeRationale String?
+  changeType      String?
+  reviewRequired  Boolean   @default(true)
+  author          User?     @relation(fields: [authorId], references: [id])
+  document        Document  @relation(fields: [docId], references: [id], onDelete: Cascade)
+  proposal        Proposal? @relation(fields: [proposalId], references: [id])
 
   @@index([docId])
   @@index([proposalId])
@@ -395,45 +228,32 @@ model Version {
   @@map("versions")
 }
 
-// Hybrid Revision System (VVCS with Grounding)
 model Revision {
-  id          String  @id @default(cuid())
-  documentId  String
-  content     String  @db.Text
-  title       String // Short description of changes
-  description String? @db.Text // Detailed rationale
-
-  // Revision Status (State Machine)
-  status String  @default("draft") // "draft", "proposed", "approved", "rejected", "conflicted"
-  isMain Boolean @default(false) // Grounding flag: is this the source of truth?
-
-  // Provenance Tracking
-  basedOn            String? // Revision ID this was based on
-  replacedRevisionId String? // If this is a rebase, which revision did it replace?
-  authorId           String? // User ID or null for AI
-  authorType         String  @default("ai") // "user", "ai", "system"
-
-  // MCP Integration
-  sourceClient    String? // "claude-desktop", "cursor", "windsurf", "web-ui"
-  sourceSessionId String? // Client session identifier for tracking
-
-  // Timestamps
-  createdAt  DateTime  @default(now())
-  proposedAt DateTime? // When status changed to "proposed"
-  approvedAt DateTime? // When status changed to "approved"
-  approvedBy String? // User ID who approved
-  rejectedAt DateTime? // When status changed to "rejected"
-  rejectedBy String? // User ID who rejected
-
-  // Conflict Detection
-  hasConflicts   Boolean @default(false)
-  conflictReason String? @db.Text
-
-  // Relations
-  document Document       @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  author   User?          @relation(fields: [authorId], references: [id], onDelete: SetNull)
-  mainFor  Document?      @relation("MainRevision") // If this is the main revision
-  diffs    RevisionDiff[] // Line-by-line diffs from base
+  id                 String         @id @default(cuid())
+  documentId         String
+  content            String
+  title              String
+  description        String?
+  status             String         @default("draft")
+  isMain             Boolean        @default(false)
+  basedOn            String?
+  replacedRevisionId String?
+  authorId           String?
+  authorType         String         @default("ai")
+  sourceClient       String?
+  sourceSessionId    String?
+  createdAt          DateTime       @default(now())
+  proposedAt         DateTime?
+  approvedAt         DateTime?
+  approvedBy         String?
+  rejectedAt         DateTime?
+  rejectedBy         String?
+  hasConflicts       Boolean        @default(false)
+  conflictReason     String?
+  mainFor            Document?      @relation("MainRevision")
+  diffs              RevisionDiff[]
+  author             User?          @relation(fields: [authorId], references: [id])
+  document           Document       @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@index([documentId])
   @@index([status])
@@ -445,45 +265,36 @@ model Revision {
   @@map("revisions")
 }
 
-// Stores computed diffs for quick comparison
 model RevisionDiff {
   id         String   @id @default(cuid())
   revisionId String
-  diffType   String // "line", "word", "character"
-  diffData   Json // Structured diff output from diff engine
-  stats      Json // { linesAdded, linesRemoved, linesChanged }
+  diffType   String
+  diffData   Json
+  stats      Json
   createdAt  DateTime @default(now())
-
-  // Relations
-  revision Revision @relation(fields: [revisionId], references: [id], onDelete: Cascade)
+  revision   Revision @relation(fields: [revisionId], references: [id], onDelete: Cascade)
 
   @@unique([revisionId, diffType])
   @@index([revisionId])
   @@map("revision_diffs")
 }
 
-// Intelligence Layer Models
-// Add these to the end of schema.prisma
-
-// Detected conflicts between documents or within a document
 model Conflict {
   id                  String    @id @default(cuid())
   documentId          String
-  conflictType        String // "contradiction", "duplicate", "inconsistency", "ambiguity"
-  severity            String // "critical", "high", "medium", "low"
-  description         String    @db.Text
-  location            Json // { line: number, column: number, text: string }
-  conflictingDocId    String? // If conflict is with another doc
-  conflictingLocation Json? // Location in conflicting doc
-  status              String    @default("open") // "open", "acknowledged", "resolved", "ignored"
-  detectedBy          String // "ai", "rule", "user"
+  conflictType        String
+  severity            String
+  description         String
+  location            Json
+  conflictingDocId    String?
+  conflictingLocation Json?
+  status              String    @default("open")
+  detectedBy          String
   detectedAt          DateTime  @default(now())
   resolvedAt          DateTime?
   resolvedBy          String?
-  resolvedComment     String?   @db.Text
-
-  // Relations
-  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  resolvedComment     String?
+  document            Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@index([documentId])
   @@index([status])
@@ -493,21 +304,18 @@ model Conflict {
   @@map("conflicts")
 }
 
-// AI analysis results for documents
 model Analysis {
   id              String   @id @default(cuid())
   documentId      String
-  analysisType    String // "freshness", "completeness", "ambiguity", "risk", "semantic"
-  result          Json // Detailed analysis results
-  score           Float // 0.0-1.0 score for this analysis type
-  recommendations Json? // Suggested improvements
+  analysisType    String
+  result          Json
+  score           Float
+  recommendations Json?
   analyzedAt      DateTime @default(now())
-  llmModel        String // "claude-3-opus-20240229", "gpt-4-turbo"
-  llmCost         Float? // Cost in USD for this analysis
-  tokenCount      Int? // Total tokens used
-
-  // Relations
-  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  llmModel        String
+  llmCost         Float?
+  tokenCount      Int?
+  document        Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@index([documentId])
   @@index([analysisType])
@@ -516,42 +324,33 @@ model Analysis {
   @@map("analyses")
 }
 
-// Vector embeddings for semantic search
 model Embedding {
   id         String   @id @default(cuid())
   documentId String
-  chunkIndex Int // Which chunk of the document (0, 1, 2, ...)
-  chunkText  String   @db.Text
-  embedding  String   @db.Text // Stored as JSON array for now
-  // TODO: Use pgvector extension for production: Unsupported("vector(1536)")
+  chunkIndex Int
+  chunkText  String
+  embedding  String
   createdAt  DateTime @default(now())
-
-  // Metadata
-  model      String @default("text-embedding-3-small") // Embedding model used
-  dimensions Int    @default(1536)
-
-  // Relations
-  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  model      String   @default("text-embedding-3-small")
+  dimensions Int      @default(1536)
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@unique([documentId, chunkIndex])
   @@index([documentId])
   @@map("embeddings")
 }
 
-// Comprehensive audit log for all actions
 model AuditLog {
   id         String   @id @default(cuid())
-  entityType String // "document", "proposal", "project", "user"
+  entityType String
   entityId   String
-  action     String // "create", "update", "delete", "approve", "reject", "analyze"
-  actorId    String? // User ID or null for system/AI
-  actorType  String // "user", "ai", "system"
-  changes    Json // What changed (before/after)
-  metadata   Json? // Additional context (IP, user agent, etc.)
+  action     String
+  actorId    String?
+  actorType  String
+  changes    Json
+  metadata   Json?
   createdAt  DateTime @default(now())
-
-  // Relations
-  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actor      User?    @relation(fields: [actorId], references: [id])
 
   @@index([entityType, entityId])
   @@index([actorId])
@@ -560,44 +359,36 @@ model AuditLog {
   @@map("audit_logs")
 }
 
-// AI Chat System
-
-// Chat messages between user and AI about a document
 model ChatMessage {
   id          String   @id @default(cuid())
   documentId  String
-  role        String // "user" | "assistant"
-  content     String   @db.Text
-  suggestions Json? // Array of suggestion IDs if AI generated suggestions
+  role        String
+  content     String
+  suggestions Json?
   createdAt   DateTime @default(now())
-
-  // Relations
-  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@index([documentId])
   @@index([createdAt])
   @@map("chat_messages")
 }
 
-// AI-generated suggestions for document improvements
 model Suggestion {
   id            String    @id @default(cuid())
   documentId    String
-  chatMessageId String? // Optional: which chat message generated this
-  type          String // "rewrite", "addition", "deletion", "style", "clarity"
+  chatMessageId String?
+  type          String
   title         String
-  description   String    @db.Text
-  originalText  String    @db.Text
-  suggestedText String    @db.Text
-  reasoning     String    @db.Text // Why AI suggests this change
-  confidence    Float     @default(0.8) // 0.0-1.0
-  status        String    @default("pending") // "pending", "applied", "rejected", "dismissed"
+  description   String
+  originalText  String
+  suggestedText String
+  reasoning     String
+  confidence    Float     @default(0.8)
+  status        String    @default("pending")
   appliedAt     DateTime?
   rejectedAt    DateTime?
   createdAt     DateTime  @default(now())
-
-  // Relations
-  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  document      Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@index([documentId])
   @@index([status])
@@ -605,20 +396,19 @@ model Suggestion {
   @@map("suggestions")
 }
 
-// Track AI usage and costs
 model AiUsage {
   id           String   @id @default(cuid())
   userId       String?
   projectId    String?
   documentId   String?
-  operation    String // "chat", "suggestion", "audit", "conflict_detection"
-  model        String // "claude-opus-4-5", "claude-haiku", "claude-sonnet"
+  operation    String
+  model        String
   inputTokens  Int
   outputTokens Int
-  cost         Float // USD
-  latency      Int? // milliseconds
+  cost         Float
+  latency      Int?
   success      Boolean  @default(true)
-  errorMessage String?  @db.Text
+  errorMessage String?
   createdAt    DateTime @default(now())
 
   @@index([userId])
@@ -629,30 +419,20 @@ model AiUsage {
   @@map("ai_usage")
 }
 
-// Audit System - AI-powered quality analysis at multiple levels
 model Audit {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-
-  // Polymorphic - can be dashboard, project, or document
-  auditType String // 'dashboard' | 'project' | 'document'
-  targetId  String? // null for dashboard, project/document ID otherwise
-
-  userId String
-
-  // Scores (0-100)
+  id               String   @id @default(cuid())
+  createdAt        DateTime @default(now())
+  auditType        String
+  targetId         String?
+  userId           String
   healthScore      Int
   consistencyScore Int?
   freshnessScore   Int?
   qualityScore     Int?
-
-  // Findings (JSON array of AuditFinding objects)
-  findings Json // Array of detailed findings with severity, category, etc.
-
-  // Metadata
-  duration Int // milliseconds
-  aiModel  String // e.g., "gemini-2.5-pro"
-  cost     Float // USD
+  findings         Json
+  duration         Int
+  aiModel          String
+  cost             Float
 
   @@index([auditType])
   @@index([targetId])
@@ -661,61 +441,35 @@ model Audit {
   @@map("audits")
 }
 
-// ============================================
-// GROUNDING SYSTEM MODELS
-// Document Ingestion & Knowledge Management
-// ============================================
-
-// Logical modules/sections within a document
 model DocumentModule {
-  id         String @id @default(cuid())
-  documentId String
-
-  // Module Identity
-  moduleKey   String // Unique identifier within document (e.g., "installation", "api-reference")
-  title       String
-  description String? @db.Text
-  order       Int     @default(0) // Display order within document
-
-  // Content
-  content     String @db.Text
-  contentHash String // Hash for change detection
-
-  // Module Location
-  startLine    Int? // Line number where module starts
-  endLine      Int? // Line number where module ends
-  headingLevel Int? // If derived from heading (1-6)
-
-  // Grounding Status (Module-Level)
-  isGrounded      Boolean   @default(false)
-  groundedAt      DateTime?
-  groundingSource String? // "manual", "ai", "import"
-  confidenceScore Float     @default(0.5) // 0.0-1.0
-
-  // Module Metadata
-  moduleType String @default("section") // "section", "code-block", "table", "definition"
-  tags       Json? // ["api", "getting-started"]
-
-  // Dependencies
-  dependsOn String[] @default([]) // Array of moduleKeys this depends on
-
-  // Phase 1 Enhancements
-  category     String? // "api", "security", "business-logic"
-  moduleTags   String[] @default([]) // Array of tags (migrating from Json)
-  entities     String[] @default([]) // Extracted entities
-  concepts     String[] @default([]) // Domain concepts
-  dependencies String[] @default([]) // External dependencies
-
-  // Quality Metrics
-  qualityScore Float @default(0.5) // 0.0-1.0
-  clarityScore Float @default(0.5) // 0.0-1.0
-
-  // Timestamps
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  lastGroundedAt DateTime?
-
-  // Relations
+  id               String                   @id @default(cuid())
+  documentId       String
+  moduleKey        String
+  title            String
+  description      String?
+  order            Int                      @default(0)
+  content          String
+  contentHash      String
+  startLine        Int?
+  endLine          Int?
+  headingLevel     Int?
+  isGrounded       Boolean                  @default(false)
+  groundedAt       DateTime?
+  groundingSource  String?
+  confidenceScore  Float                    @default(0.5)
+  moduleType       String                   @default("section")
+  tags             Json?
+  dependsOn        String[]                 @default([])
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+  lastGroundedAt   DateTime?
+  category         String?
+  clarityScore     Float                    @default(0.5)
+  concepts         String[]                 @default([])
+  dependencies     String[]                 @default([])
+  entities         String[]                 @default([])
+  moduleTags       String[]                 @default([])
+  qualityScore     Float                    @default(0.5)
   document         Document                 @relation(fields: [documentId], references: [id], onDelete: Cascade)
   conflicts        ModuleConflict[]
   groundingHistory ModuleGroundingHistory[]
@@ -729,37 +483,26 @@ model DocumentModule {
   @@map("document_modules")
 }
 
-// Module-specific conflicts (extends Conflict model)
 model ModuleConflict {
-  id       String @id @default(cuid())
-  moduleId String
-
-  // Conflict Details
-  conflictType String // "content", "scope", "version", "dependency"
-  severity     String // "critical", "high", "medium", "low"
-  description  String @db.Text
-
-  // Conflicting Entity
-  conflictingModuleId String? // If conflict with another module
-  conflictingDocId    String? // If conflict with whole document
-  conflictingLocation Json? // Precise location info
-
-  // Resolution
-  status         String    @default("open") // "open", "acknowledged", "resolved", "ignored"
-  detectedBy     String // "ai", "rule", "user"
-  detectedAt     DateTime  @default(now())
-  resolvedAt     DateTime?
-  resolvedBy     String? // User ID
-  resolutionNote String?   @db.Text
-
-  // Phase 1 Enhancements
-  affectedFeatures String[]        @default([]) // Feature slugs
-  systemicType     SystemicType? // If this is a pattern
-  resolutionType   ResolutionType?
-  resolutionDiff   Json? // What changed to resolve
-
-  // Relations
-  module DocumentModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  id                  String          @id @default(cuid())
+  moduleId            String
+  conflictType        String
+  severity            String
+  description         String
+  conflictingModuleId String?
+  conflictingDocId    String?
+  conflictingLocation Json?
+  status              String          @default("open")
+  detectedBy          String
+  detectedAt          DateTime        @default(now())
+  resolvedAt          DateTime?
+  resolvedBy          String?
+  resolutionNote      String?
+  affectedFeatures    String[]        @default([])
+  resolutionDiff      Json?
+  resolutionType      ResolutionType?
+  systemicType        SystemicType?
+  module              DocumentModule  @relation(fields: [moduleId], references: [id], onDelete: Cascade)
 
   @@index([moduleId])
   @@index([status])
@@ -770,44 +513,24 @@ model ModuleConflict {
   @@map("module_conflicts")
 }
 
-// Project-scoped grounding context that MCP agents query
 model GroundingSnapshot {
-  id         String  @id @default(cuid())
-  projectId  String
-  documentId String? // Optional: can be project-wide or doc-specific
-
-  // Snapshot Identity
-  snapshotName String // e.g., "v1.0-release", "2026-01-stable"
-  description  String? @db.Text
-
-  // Grounding Data
-  groundingContext Json // Complete grounded state at this point in time
-  // Structure: {
-  //   documents: [{ path, content, modules, metadata }],
-  //   relationships: [{ from, to, type }],
-  //   metadata: { createdBy, reason, tags }
-  // }
-
-  // Scope
-  scope           String  @default("project") // "project", "document", "module"
-  scopeIdentifier String? // ID of scope entity
-
-  // Versioning
-  version  String // Semantic version or timestamp-based
-  isActive Boolean @default(true) // Current active snapshot
-
-  // Metadata
-  createdAt DateTime  @default(now())
-  createdBy String? // User ID
-  expiresAt DateTime? // When snapshot becomes invalid
-
-  // Statistics
-  documentCount Int @default(0)
-  moduleCount   Int @default(0)
-  totalSize     Int @default(0) // Bytes
-
-  // Relations
-  document Document? @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  id               String    @id @default(cuid())
+  projectId        String
+  documentId       String?
+  snapshotName     String
+  description      String?
+  groundingContext Json
+  scope            String    @default("project")
+  scopeIdentifier  String?
+  version          String
+  isActive         Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  createdBy        String?
+  expiresAt        DateTime?
+  documentCount    Int       @default(0)
+  moduleCount      Int       @default(0)
+  totalSize        Int       @default(0)
+  document         Document? @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
   @@index([documentId])
@@ -817,35 +540,22 @@ model GroundingSnapshot {
   @@map("grounding_snapshots")
 }
 
-// Track when and why modules were grounded/ungrounded
 model ModuleGroundingHistory {
-  id       String @id @default(cuid())
-  moduleId String
-
-  // Grounding Event
-  action        String // "grounded", "ungrounded", "updated", "verified"
-  previousState String? // Previous grounding state
-  newState      String // New grounding state
-
-  // Context
-  reason      String  @db.Text // Why this change happened
-  source      String // "manual", "ai-analysis", "code-sync", "expiry"
-  triggeredBy String? // User ID or system component
-
-  // Content Snapshot
-  contentBefore String? @db.Text
-  contentAfter  String  @db.Text
-  diffSummary   Json? // { linesAdded, linesRemoved, linesChanged }
-
-  // Metadata
-  confidenceScore Float? // Confidence at time of grounding
-  metadata        Json? // Additional context
-
-  // Timestamp
-  occurredAt DateTime @default(now())
-
-  // Relations
-  module DocumentModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  id              String         @id @default(cuid())
+  moduleId        String
+  action          String
+  previousState   String?
+  newState        String
+  reason          String
+  source          String
+  triggeredBy     String?
+  contentBefore   String?
+  contentAfter    String
+  diffSummary     Json?
+  confidenceScore Float?
+  metadata        Json?
+  occurredAt      DateTime       @default(now())
+  module          DocumentModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
 
   @@index([moduleId])
   @@index([action])
@@ -853,30 +563,21 @@ model ModuleGroundingHistory {
   @@map("module_grounding_history")
 }
 
-// Queue for processing uploaded documents
 model DocumentProcessingJob {
-  id         String @id @default(cuid())
-  documentId String
-
-  // Job Details
-  jobType  String // "parse", "decompose", "analyze", "ground"
-  priority Int    @default(5) // 1-10, higher = more urgent
-  status   String @default("pending") // "pending", "processing", "completed", "failed"
-
-  // Processing
+  id             String    @id @default(cuid())
+  documentId     String
+  jobType        String
+  priority       Int       @default(5)
+  status         String    @default("pending")
   startedAt      DateTime?
   completedAt    DateTime?
-  processingTime Int? // Milliseconds
-
-  // Results
-  result     Json? // Processing results
-  error      String? @db.Text
-  retryCount Int     @default(0)
-  maxRetries Int     @default(3)
-
-  // Metadata
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  processingTime Int?
+  result         Json?
+  error          String?
+  retryCount     Int       @default(0)
+  maxRetries     Int       @default(3)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@index([documentId])
   @@index([status])
@@ -885,27 +586,16 @@ model DocumentProcessingJob {
   @@map("document_processing_jobs")
 }
 
-// ============================================
-// PHASE 1: DOCUMENT GOVERNANCE MODELS
-// ============================================
-
-// Document approval workflow tracking
 model DocumentApproval {
-  id         String @id @default(cuid())
-  documentId String
-
-  // Approval Details
-  approver String // User ID
-  action   ApprovalAction
-  comment  String?        @db.Text
-  metadata Json? // { reason, tags, etc. }
-
-  // Timestamps
-  createdAt DateTime @default(now())
-
-  // Relations
-  document     Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  approverUser User     @relation(fields: [approver], references: [id], onDelete: Cascade)
+  id           String         @id @default(cuid())
+  documentId   String
+  approver     String
+  action       ApprovalAction
+  comment      String?
+  metadata     Json?
+  createdAt    DateTime       @default(now())
+  approverUser User           @relation(fields: [approver], references: [id], onDelete: Cascade)
+  document     Document       @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@index([documentId])
   @@index([approver])
@@ -914,25 +604,18 @@ model DocumentApproval {
   @@map("document_approvals")
 }
 
-// Bidirectional feature-document relationships
 model FeatureDocLink {
-  id        String @id @default(cuid())
-  projectId String
-
-  // Link Details
-  featureSlug String // e.g., "user-export"
-  documentId  String
-  linkType    LinkType
-
-  // Metadata
-  reason         String?   @db.Text
-  createdBy      String? // User ID
+  id             String    @id @default(cuid())
+  projectId      String
+  featureSlug    String
+  documentId     String
+  linkType       LinkType
+  reason         String?
+  createdBy      String?
   createdAt      DateTime  @default(now())
   lastVerifiedAt DateTime?
-
-  // Relations
-  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  creator  User?    @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  creator        User?     @relation(fields: [createdBy], references: [id])
+  document       Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@unique([featureSlug, documentId, linkType])
   @@index([featureSlug])
@@ -942,46 +625,31 @@ model FeatureDocLink {
   @@map("feature_doc_links")
 }
 
-// Architectural and technical decision registry
 model DecisionRecord {
-  id        String @id @default(cuid())
-  projectId String
-
-  // Decision Details
-  title        String
-  description  String @db.Text
-  context      String @db.Text // Why this decision was needed
-  decision     String @db.Text // What was decided
-  consequences String @db.Text // Expected impact
-
-  // Classification
-  decisionType String // "architectural", "technical", "process"
-  status       DecisionStatus @default(PROPOSED)
-  source       DecisionSource
-
-  // Provenance
-  sourceUrl     String? // PR URL, commit SHA, doc path
-  extractedFrom String? // "PR #123", "commit abc123", "doc: arch.md"
-  extractedAt   DateTime @default(now())
-  extractedBy   String? // "ai", "manual", User ID
-
-  // Grounding
-  documentId       String? // If grounded to a document
-  suggestedDocPath String? // AI suggestion for where to ground
-
-  // Relationships
-  supersedes       String[] @default([]) // Decision IDs
-  supersededBy     String? // Decision ID
-  relatedDecisions String[] @default([]) // Decision IDs
-
-  // Metadata
-  tags               String[] @default([])
-  affectedComponents String[] @default([])
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-
-  // Relations
-  document Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  id                 String         @id @default(cuid())
+  projectId          String
+  title              String
+  description        String
+  context            String
+  decision           String
+  consequences       String
+  decisionType       String
+  status             DecisionStatus @default(PROPOSED)
+  source             DecisionSource
+  sourceUrl          String?
+  extractedFrom      String?
+  extractedAt        DateTime       @default(now())
+  extractedBy        String?
+  documentId         String?
+  suggestedDocPath   String?
+  supersedes         String[]       @default([])
+  supersededBy       String?
+  relatedDecisions   String[]       @default([])
+  tags               String[]       @default([])
+  affectedComponents String[]       @default([])
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  document           Document?      @relation(fields: [documentId], references: [id])
 
   @@index([projectId])
   @@index([status])
@@ -991,38 +659,25 @@ model DecisionRecord {
   @@map("decision_records")
 }
 
-// Domain concept registry
 model ConceptRegistry {
-  id        String @id @default(cuid())
-  projectId String
-
-  // Concept Details
-  term       String // "API Key", "Grounding", "Revision"
-  definition String   @db.Text
-  aliases    String[] @default([]) // Alternative terms
-
-  // Classification
-  category String? // "technical", "business", "domain"
-  domain   String? // "authentication", "versioning"
-
-  // Provenance
-  firstSeenIn      String? // Document path or module ID
-  definitionSource String? // Where definition came from
-  extractedAt      DateTime @default(now())
-
-  // Status
-  status     ConceptStatus @default(ACTIVE)
-  confidence Float         @default(0.8) // AI confidence
-
-  // Relationships
-  relatedConcepts String[] @default([]) // Concept IDs
-  usedInDocuments String[] @default([]) // Document IDs
-
-  // Metadata
-  examples   Json? // Usage examples
-  references Json? // External references
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id               String        @id @default(cuid())
+  projectId        String
+  term             String
+  definition       String
+  aliases          String[]      @default([])
+  category         String?
+  domain           String?
+  firstSeenIn      String?
+  definitionSource String?
+  extractedAt      DateTime      @default(now())
+  status           ConceptStatus @default(ACTIVE)
+  confidence       Float         @default(0.8)
+  relatedConcepts  String[]      @default([])
+  usedInDocuments  String[]      @default([])
+  examples         Json?
+  references       Json?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   @@unique([projectId, term])
   @@index([projectId])
@@ -1032,37 +687,26 @@ model ConceptRegistry {
   @@map("concept_registry")
 }
 
-// Knowledge governance alerts
 model Alert {
-  id        String @id @default(cuid())
-  projectId String
-
-  // Alert Target
-  documentId String? // If doc-specific
-  moduleId   String? // If module-specific
-
-  // Alert Details
-  type     AlertType
-  severity AlertSeverity
-  title    String
-  message  String        @db.Text
-  metadata Json? // Additional context
-
-  // Status
-  status         AlertStatus @default(ACTIVE)
-  acknowledgedBy String? // User ID
+  id             String        @id @default(cuid())
+  projectId      String
+  documentId     String?
+  moduleId       String?
+  type           AlertType
+  severity       AlertSeverity
+  title          String
+  message        String
+  metadata       Json?
+  status         AlertStatus   @default(ACTIVE)
+  acknowledgedBy String?
   acknowledgedAt DateTime?
-  resolvedBy     String? // User ID
+  resolvedBy     String?
   resolvedAt     DateTime?
-  resolutionNote String?     @db.Text
-
-  // Timestamps
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  expiresAt DateTime? // Auto-resolve after this
-
-  // Relations
-  document Document? @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  resolutionNote String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  expiresAt      DateTime?
+  document       Document?     @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
   @@index([documentId])
@@ -1071,4 +715,108 @@ model Alert {
   @@index([status])
   @@index([createdAt])
   @@map("alerts")
+}
+
+enum DocumentType {
+  ARCHITECTURE
+  API_CONTRACT
+  DOMAIN_MODEL
+  SECURITY
+  FEATURE_SPEC
+  RUNBOOK
+  GENERAL
+}
+
+enum ConstraintLevel {
+  HARD
+  SOFT
+  INFO
+}
+
+enum ReviewSchedule {
+  NEVER
+  MONTHLY
+  QUARTERLY
+  BIANNUAL
+  ANNUAL
+}
+
+enum ApprovalAction {
+  APPROVED
+  REJECTED
+  REQUESTED_CHANGES
+  REVIEWED
+  DEPRECATED
+}
+
+enum LinkType {
+  IMPLEMENTS
+  REFERENCES
+  CONSTRAINS
+  DOCUMENTS
+}
+
+enum SystemicType {
+  NAMING_INCONSISTENCY
+  VERSIONING_CONFLICT
+  SCOPE_OVERLAP
+  DEPENDENCY_CIRCULAR
+  ARCHITECTURE_DRIFT
+}
+
+enum ResolutionType {
+  MERGED
+  PRIORITIZED
+  SPLIT
+  DEPRECATED
+  REWRITTEN
+}
+
+enum DecisionStatus {
+  PROPOSED
+  ACCEPTED
+  REJECTED
+  DEPRECATED
+  SUPERSEDED
+}
+
+enum DecisionSource {
+  PR
+  COMMIT
+  DOCUMENT
+  MEETING
+  MANUAL
+}
+
+enum ConceptStatus {
+  ACTIVE
+  DEPRECATED
+  AMBIGUOUS
+  CLARIFICATION_NEEDED
+}
+
+enum AlertType {
+  STALE_DOCUMENT
+  MISSING_REVIEW
+  HARD_CONSTRAINT_VIOLATION
+  CONFLICT_DETECTED
+  ORPHANED_DOCUMENT
+  DEPRECATED_USAGE
+  MISSING_OWNER
+  LOW_QUALITY
+}
+
+enum AlertSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum AlertStatus {
+  ACTIVE
+  ACKNOWLEDGED
+  RESOLVED
+  DISMISSED
+  EXPIRED
 }
