@@ -352,7 +352,7 @@ docjays watch -i 1h     # Keep synced during work
 
 2. Initialize their environment:
    ```bash
-   # Login to Docjays (TechJays org only)
+   # Login to Docjays (Techjays org only)
    docjays login
 
    # Initialize project
@@ -481,4 +481,4 @@ Questions? Check docs/ai/docjays-workflow.md"
 
 **Implementation Status:** ✅ Ready to use
 **Last Updated:** 2026-01-27
-**Maintained by:** TechJays
+**Maintained by:** Techjays

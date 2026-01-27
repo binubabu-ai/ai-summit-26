@@ -12,7 +12,7 @@
 2. Read from `.docjays` when needed
 3. Understand the folder structure
 4. Ground all upstream docs by default
-5. Follow TechJays documentation workflows
+5. Follow Techjays documentation workflows
 
 ---
 

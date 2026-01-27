@@ -21,7 +21,7 @@ Completed comprehensive authentication cleanup, documentation updates, and desig
 - ✅ Removed `docjays connect` command documentation
 - ✅ Updated all "docjays.dev" to "docjays"
 - ✅ Changed "Keystore status" to "Authentication status"
-- ✅ Added TechJays organization note
+- ✅ Added Techjays organization note
 - ✅ Streamlined authentication flow documentation
 
 **Web Help Pages** ([app/help/cli/page.tsx](app/help/cli/page.tsx)):
@@ -37,15 +37,15 @@ Completed comprehensive authentication cleanup, documentation updates, and desig
 
 **Signup Page** ([app/auth/signup/page.tsx](app/auth/signup/page.tsx)):
 - ✅ Added @techjays.com email validation
-- ✅ Updated heading: "For TechJays organization members only"
-- ✅ Changed email label to "TechJays Email"
+- ✅ Updated heading: "For Techjays organization members only"
+- ✅ Changed email label to "Techjays Email"
 - ✅ Updated placeholder: "you@techjays.com"
 - ✅ Added helper text: "Must be a @techjays.com email address"
-- ✅ Error message for non-TechJays emails
+- ✅ Error message for non-Techjays emails
 
 **Login Page** ([app/auth/login/page.tsx](app/auth/login/page.tsx)):
-- ✅ Updated subheading: "TechJays organization members"
-- ✅ Changed email label to "TechJays Email"
+- ✅ Updated subheading: "Techjays organization members"
+- ✅ Changed email label to "Techjays Email"
 - ✅ Updated placeholder: "you@techjays.com"
 
 ### 3. Build Verification ✅
@@ -138,7 +138,7 @@ Completed comprehensive authentication cleanup, documentation updates, and desig
 - Simpler user experience
 - Clearer security model
 - Easier to maintain
-- TechJays-only access control
+- Techjays-only access control
 
 ### Skills Workflow
 

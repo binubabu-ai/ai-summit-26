@@ -97,7 +97,7 @@ docjays --version`}
 
 {/* GitHub Packages Installation */}
 <div className="mb-8">
-  <h3 className="text-xl font-normal text-black dark:text-white mb-4">From GitHub Packages (For TechJays Team)</h3>
+  <h3 className="text-xl font-normal text-black dark:text-white mb-4">From GitHub Packages (For Techjays Team)</h3>
   {/* Keep existing GitHub Packages content */}
 </div>
 ```
@@ -362,7 +362,7 @@ docjays sync
         npx docjays init
       </code>
 
-      <p className="mb-2 font-medium text-black dark:text-white">For TechJays Team (GitHub Packages):</p>
+      <p className="mb-2 font-medium text-black dark:text-white">For Techjays Team (GitHub Packages):</p>
       <code className="block bg-neutral-100 dark:bg-neutral-900 p-3 rounded text-sm mb-2">
         echo "@binubabu-ai:registry=https://npm.pkg.github.com" &gt;&gt; ~/.npmrc
       </code>

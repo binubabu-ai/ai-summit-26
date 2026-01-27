@@ -1,6 +1,6 @@
 # Team Setup Guide - Docjays CLI
 
-Quick setup guide for TechJays team members to install and use Docjays CLI from GitHub Packages.
+Quick setup guide for Techjays team members to install and use Docjays CLI from GitHub Packages.
 
 ## For Team Members: Installing Docjays CLI
 

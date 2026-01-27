@@ -20,9 +20,9 @@ export default function SignupPage() {
     setError('');
     setLoading(true);
 
-    // Validate TechJays email domain
+    // Validate Techjays email domain
     if (!email.endsWith('@techjays.com')) {
-      setError('Access restricted to TechJays organization members. Please use your @techjays.com email address.');
+      setError('Access restricted to Techjays organization members. Please use your @techjays.com email address.');
       setLoading(false);
       return;
     }
@@ -78,7 +78,7 @@ export default function SignupPage() {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-light tracking-tight text-black dark:text-white mb-2">Create Your Account</h1>
           <p className="text-neutral-600 dark:text-neutral-400">
-            For TechJays organization members only
+            For Techjays organization members only
           </p>
         </div>
 
@@ -108,7 +108,7 @@ export default function SignupPage() {
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-black dark:text-white mb-2">
-                TechJays Email
+                Techjays Email
               </label>
               <input
                 id="email"

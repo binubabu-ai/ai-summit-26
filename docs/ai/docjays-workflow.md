@@ -176,7 +176,7 @@ Docjays facilitates:
 - Third-party specs
 
 **Example sources:**
-- `company-standards/` - TechJays standards
+- `company-standards/` - Techjays standards
 - `api-specs/` - External API docs
 - `design-system/` - UI component specs
 
@@ -1240,4 +1240,4 @@ Priority   Folder                        Purpose
 
 **Last Updated:** 2026-01-27
 **Version:** 1.0.0
-**Maintained by:** TechJays
+**Maintained by:** Techjays

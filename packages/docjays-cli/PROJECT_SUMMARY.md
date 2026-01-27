@@ -497,7 +497,7 @@ MIT License - See LICENSE file for details
 
 ## 👥 Credits
 
-- **Developed by:** TechJays Team
+- **Developed by:** Techjays Team
 - **AI Assistant:** Claude Sonnet 4.5
 - **Built on:** 2026-01-27
 - **Version:** 0.1.0

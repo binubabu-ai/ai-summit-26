@@ -54,7 +54,7 @@ function LoginForm() {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-light tracking-tight text-black dark:text-white mb-2">Welcome back</h1>
           <p className="text-neutral-600 dark:text-neutral-400">
-            TechJays organization members
+            Techjays organization members
           </p>
         </div>
 
@@ -68,7 +68,7 @@ function LoginForm() {
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-black dark:text-white mb-2">
-                TechJays Email
+                Techjays Email
               </label>
               <input
                 id="email"

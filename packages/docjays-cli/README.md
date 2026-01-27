@@ -10,7 +10,7 @@ Before installing Docjays CLI, you need:
 
 1. **Node.js 18+** - [Download from nodejs.org](https://nodejs.org/)
 2. **A Docjays Account** - Visit [docjays.vercel.app](https://docjays.vercel.app) to sign up
-   - Currently available exclusively for TechJays organization members
+   - Currently available exclusively for Techjays organization members
    - Requires a @techjays.com email address
 
 ## Features
@@ -46,7 +46,7 @@ npx docjays login
 npx docjays init
 ```
 
-### GitHub Packages (For TechJays Team)
+### GitHub Packages (For Techjays Team)
 
 For internal team use with GitHub Packages:
 
@@ -818,4 +818,4 @@ MIT
 
 ---
 
-Made with ❤️ by TechJays
+Made with ❤️ by Techjays

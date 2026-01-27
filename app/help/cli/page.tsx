@@ -88,7 +88,7 @@ docjays --version`}
 
         {/* GitHub Packages Installation */}
         <div className="mb-8">
-          <h3 className="text-xl font-normal text-black dark:text-white mb-4">From GitHub Packages (For TechJays Team)</h3>
+          <h3 className="text-xl font-normal text-black dark:text-white mb-4">From GitHub Packages (For Techjays Team)</h3>
           <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-4">
             For internal team use, install from GitHub Packages:
           </p>

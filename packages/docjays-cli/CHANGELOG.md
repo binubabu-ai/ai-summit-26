@@ -134,7 +134,7 @@ For major version upgrades, check the release notes for breaking changes.
 
 ## Contributors
 
-- TechJays Team
+- Techjays Team
 - Claude Sonnet 4.5 (AI Assistant)
 
 ---

@@ -2,7 +2,7 @@
 
 **Status**: Planning
 **Feature Branch**: `feature/docjays-cli-monorepo`
-**Owner**: TechJays Team
+**Owner**: Techjays Team
 **Created**: 2026-01-27
 **Last Updated**: 2026-01-27
 
