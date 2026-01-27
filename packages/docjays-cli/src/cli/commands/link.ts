@@ -200,6 +200,16 @@ export class LinkCommand extends BaseCommand {
       return;
     }
 
+    // Register user as project member (auto-join via CLI)
+    const linkSpinner = ora('Registering project membership...').start();
+    try {
+      await this.registerProjectMembership(token, selectedProject.id);
+      linkSpinner.succeed('Registered as project member');
+    } catch (error: any) {
+      linkSpinner.warn('Could not register membership (you may need to be invited)');
+      // Continue anyway - user has API key and can use CLI
+    }
+
     // Link to cloud
     const configManager = new ConfigManager();
     await configManager.linkCloud({
@@ -217,6 +227,7 @@ export class LinkCommand extends BaseCommand {
     console.log(`  API Key: ${chalk.dim(projectDetails.apiKey.substring(0, 12) + '...')}`);
     console.log('');
     console.log(chalk.dim('Your local .docjays is now connected to the cloud.'));
+    console.log(chalk.dim('You can now access this project in the web UI at https://docjays.vercel.app'));
     console.log('');
   }
 
@@ -313,13 +324,41 @@ export class LinkCommand extends BaseCommand {
 
     const data: any = await response.json();
 
-    // Extract API key from nested structure
-    const apiKey = data.project?.project_api_keys?.[0]?.key || null;
+    // Extract API key from response (apiKeys array from Prisma)
+    const apiKey = data.apiKeys?.[0]?.key || null;
 
     return {
-      ...data.project,
+      ...data,
       apiKey,
     };
+  }
+
+  /**
+   * Register user as project member via CLI link endpoint
+   */
+  private async registerProjectMembership(token: string, projectId: string): Promise<void> {
+    const webUrl = process.env.DOCJAYS_WEB_URL || 'https://docjays.vercel.app';
+
+    const response = await fetch(`${webUrl}/api/cli/projects/${projectId}/link`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const error: any = await response.json();
+      throw new Error(error.error || 'Failed to register membership');
+    }
+
+    const data: any = await response.json();
+
+    if (!data.alreadyMember) {
+      // User was just added as a new member
+      console.log('');
+      console.log(chalk.green('✓ Added as project member with VIEWER role'));
+    }
   }
 
   /**

@@ -126,6 +126,24 @@ export async function POST(
       },
     });
 
+    // Create audit log for API key creation
+    await prisma.auditLog.create({
+      data: {
+        entityType: 'project',
+        entityId: project.id,
+        action: 'api_key_created',
+        actorId: user.id,
+        actorType: 'user',
+        changes: {
+          projectSlug: project.slug,
+          keyName: name,
+          keyPrefix,
+          keyId: apiKey.id,
+          expiresAt: expiresAt || null,
+        },
+      },
+    });
+
     // Return the key ONLY ONCE - user must copy it now!
     return NextResponse.json({
       ...apiKey,

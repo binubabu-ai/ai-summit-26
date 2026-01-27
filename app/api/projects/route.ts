@@ -208,6 +208,23 @@ Use this project to organize your documentation:
       },
     });
 
+    // Create audit log for project creation and API key generation
+    await prisma.auditLog.create({
+      data: {
+        entityType: 'project',
+        entityId: project.id,
+        action: 'project_created',
+        actorId: user.id,
+        actorType: 'user',
+        changes: {
+          projectName: name,
+          projectSlug: slug,
+          defaultAPIKeyCreated: true,
+          defaultDocumentCreated: true,
+        },
+      },
+    });
+
     // Return project with apiKey property (apiKey only shown once!)
     return NextResponse.json(
       {

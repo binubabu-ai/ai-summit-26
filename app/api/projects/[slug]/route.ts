@@ -32,6 +32,18 @@ export async function GET(request: NextRequest, { params }: Params) {
     const project = await prisma.project.findUnique({
       where: { slug },
       include: {
+        apiKeys: {
+          where: { isActive: true },
+          select: {
+            id: true,
+            name: true,
+            key: true,
+            keyPrefix: true,
+            createdAt: true,
+            lastUsedAt: true,
+          },
+          take: 1, // Only return first active key for CLI compatibility
+        },
         docs: {
           orderBy: { path: 'asc' },
           select: {
