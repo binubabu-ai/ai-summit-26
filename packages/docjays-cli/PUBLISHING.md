@@ -42,7 +42,7 @@ If you need to publish manually:
 
 1. **Authenticate with GitHub Packages:**
    ```bash
-   npm login --scope=@techjays --registry=https://npm.pkg.github.com
+   npm login --scope=@binubabu-ai --registry=https://npm.pkg.github.com
    # Username: your-github-username
    # Password: your-github-personal-access-token (with write:packages scope)
    # Email: your-email@example.com
@@ -73,15 +73,15 @@ If you need to publish manually:
 1. **Create or edit `~/.npmrc`:**
    ```bash
    # On macOS/Linux
-   echo "@techjays:registry=https://npm.pkg.github.com" >> ~/.npmrc
+   echo "@binubabu-ai:registry=https://npm.pkg.github.com" >> ~/.npmrc
 
    # On Windows PowerShell
-   Add-Content -Path "$env:USERPROFILE\.npmrc" -Value "@techjays:registry=https://npm.pkg.github.com"
+   Add-Content -Path "$env:USERPROFILE\.npmrc" -Value "@binubabu-ai:registry=https://npm.pkg.github.com"
    ```
 
 2. **Authenticate with GitHub Packages:**
    ```bash
-   npm login --scope=@techjays --registry=https://npm.pkg.github.com
+   npm login --scope=@binubabu-ai --registry=https://npm.pkg.github.com
    # Username: your-github-username
    # Password: your-github-personal-access-token (with read:packages scope)
    # Email: your-email@example.com
@@ -91,7 +91,7 @@ If you need to publish manually:
 
 ```bash
 # Install globally
-npm install -g @techjays/docjays
+npm install -g @binubabu-ai/docjays
 
 # Verify installation
 docjays --version
@@ -103,13 +103,13 @@ docjays --help
 ### Update to Latest Version
 
 ```bash
-npm update -g @techjays/docjays
+npm update -g @binubabu-ai/docjays
 ```
 
 ### Uninstall
 
 ```bash
-npm uninstall -g @techjays/docjays
+npm uninstall -g @binubabu-ai/docjays
 ```
 
 ## Alternative: Install from GitHub URL (No Registry Setup)
@@ -135,7 +135,7 @@ npm link
 
 **Solution:**
 1. Create a new PAT with `read:packages` (and `write:packages` for publishing)
-2. Re-run `npm login --scope=@techjays --registry=https://npm.pkg.github.com`
+2. Re-run `npm login --scope=@binubabu-ai --registry=https://npm.pkg.github.com`
 3. Enter your new PAT when prompted for password
 
 ### Error: 404 Package not found
@@ -153,7 +153,7 @@ cat ~/.npmrc  # macOS/Linux
 type %USERPROFILE%\.npmrc  # Windows
 
 # Should contain:
-# @techjays:registry=https://npm.pkg.github.com
+# @binubabu-ai:registry=https://npm.pkg.github.com
 ```
 
 ### Error: Permission denied
@@ -188,10 +188,10 @@ Use the built-in `GITHUB_TOKEN` (no manual PAT needed):
   with:
     node-version: '18'
     registry-url: 'https://npm.pkg.github.com'
-    scope: '@techjays'
+    scope: '@binubabu-ai'
 
 - name: Install DocJays CLI
-  run: npm install -g @techjays/docjays
+  run: npm install -g @binubabu-ai/docjays
   env:
     NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -203,9 +203,9 @@ Add your GitHub PAT as a secret and configure `.npmrc`:
 ```yaml
 - name: Install DocJays CLI
   run: |
-    echo "@techjays:registry=https://npm.pkg.github.com" >> ~/.npmrc
+    echo "@binubabu-ai:registry=https://npm.pkg.github.com" >> ~/.npmrc
     echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_PAT }}" >> ~/.npmrc
-    npm install -g @techjays/docjays
+    npm install -g @binubabu-ai/docjays
 ```
 
 ## Version Management
@@ -225,7 +225,7 @@ npm version patch  # or minor, or major
 
 ## Package Information
 
-- **Package Name:** `@techjays/docjays`
+- **Package Name:** `@binubabu-ai/docjays`
 - **Registry:** GitHub Packages
 - **Package URL:** https://github.com/techjays/ai-summit/packages
 - **Repository:** https://github.com/techjays/ai-summit
@@ -247,7 +247,7 @@ Before publishing:
 After publishing:
 
 - [ ] Verify package on GitHub: https://github.com/techjays/ai-summit/packages
-- [ ] Test installation: `npm install -g @techjays/docjays@latest`
+- [ ] Test installation: `npm install -g @binubabu-ai/docjays@latest`
 - [ ] Test CLI works: `docjays --version`
 - [ ] GitHub release created
 - [ ] Update any dependent projects

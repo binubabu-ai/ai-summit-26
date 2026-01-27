@@ -19,13 +19,13 @@ DocJays is a CLI tool that helps you manage documentation sources in your projec
 
 ```bash
 # One-time setup: Configure npm to use GitHub Packages
-echo "@techjays:registry=https://npm.pkg.github.com" >> ~/.npmrc
+echo "@binubabu-ai:registry=https://npm.pkg.github.com" >> ~/.npmrc
 
 # Authenticate (requires GitHub Personal Access Token with read:packages scope)
-npm login --scope=@techjays --registry=https://npm.pkg.github.com
+npm login --scope=@binubabu-ai --registry=https://npm.pkg.github.com
 
 # Install
-npm install -g @techjays/docjays
+npm install -g @binubabu-ai/docjays
 ```
 
 **Need a Personal Access Token?** Create one at [GitHub Settings → Personal access tokens](https://github.com/settings/tokens) with `read:packages` scope.

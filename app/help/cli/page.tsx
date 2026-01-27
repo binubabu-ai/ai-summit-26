@@ -73,17 +73,17 @@ export default function CLIPage() {
           <p className="text-sm font-medium text-black dark:text-white mb-2">Step 1: One-time setup</p>
           <CodeBlock
             language="bash"
-            code={`# Configure npm to use GitHub Packages for @techjays scope
-echo "@techjays:registry=https://npm.pkg.github.com" >> ~/.npmrc
+            code={`# Configure npm to use GitHub Packages for @binubabu-ai scope
+echo "@binubabu-ai:registry=https://npm.pkg.github.com" >> ~/.npmrc
 
 # Authenticate (requires GitHub Personal Access Token with read:packages scope)
-npm login --scope=@techjays --registry=https://npm.pkg.github.com`}
+npm login --scope=@binubabu-ai --registry=https://npm.pkg.github.com`}
           />
 
           <p className="text-sm font-medium text-black dark:text-white mb-2 mt-4">Step 2: Install</p>
           <CodeBlock
             language="bash"
-            code="npm install -g @techjays/docjays"
+            code="npm install -g @binubabu-ai/docjays"
           />
 
           <div className="mt-4 p-4 bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg">

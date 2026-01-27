@@ -17,16 +17,16 @@ Quick setup guide for TechJays team members to install and use DocJays CLI from 
 
 ```bash
 # On macOS/Linux
-echo "@techjays:registry=https://npm.pkg.github.com" >> ~/.npmrc
+echo "@binubabu-ai:registry=https://npm.pkg.github.com" >> ~/.npmrc
 
 # On Windows PowerShell
-Add-Content -Path "$env:USERPROFILE\.npmrc" -Value "@techjays:registry=https://npm.pkg.github.com"
+Add-Content -Path "$env:USERPROFILE\.npmrc" -Value "@binubabu-ai:registry=https://npm.pkg.github.com"
 ```
 
 ### Step 3: Authenticate
 
 ```bash
-npm login --scope=@techjays --registry=https://npm.pkg.github.com
+npm login --scope=@binubabu-ai --registry=https://npm.pkg.github.com
 ```
 
 When prompted:
@@ -37,7 +37,7 @@ When prompted:
 ### Step 4: Install DocJays CLI
 
 ```bash
-npm install -g @techjays/docjays
+npm install -g @binubabu-ai/docjays
 ```
 
 ### Step 5: Verify Installation
@@ -83,7 +83,7 @@ GitHub Actions will automatically build and publish to GitHub Packages.
 
 2. **Authenticate:**
    ```bash
-   npm login --scope=@techjays --registry=https://npm.pkg.github.com
+   npm login --scope=@binubabu-ai --registry=https://npm.pkg.github.com
    ```
 
 3. **Build and publish:**
@@ -106,7 +106,7 @@ Check your `~/.npmrc`:
 cat ~/.npmrc  # macOS/Linux
 type %USERPROFILE%\.npmrc  # Windows
 ```
-Should contain: `@techjays:registry=https://npm.pkg.github.com`
+Should contain: `@binubabu-ai:registry=https://npm.pkg.github.com`
 
 ### npm login doesn't work
 Manually add to `~/.npmrc`:
@@ -118,7 +118,7 @@ Manually add to `~/.npmrc`:
 
 ## Quick Reference
 
-- **Package Name:** `@techjays/docjays`
+- **Package Name:** `@binubabu-ai/docjays`
 - **Registry:** GitHub Packages
 - **Repository:** https://github.com/techjays/ai-summit
 - **Package URL:** https://github.com/techjays/ai-summit/packages
@@ -132,7 +132,7 @@ Manually add to `~/.npmrc`:
 For GitHub Actions:
 ```yaml
 - name: Install DocJays CLI
-  run: npm install -g @techjays/docjays
+  run: npm install -g @binubabu-ai/docjays
   env:
     NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -140,9 +140,9 @@ For GitHub Actions:
 For other CI/CD:
 ```yaml
 - run: |
-    echo "@techjays:registry=https://npm.pkg.github.com" >> ~/.npmrc
+    echo "@binubabu-ai:registry=https://npm.pkg.github.com" >> ~/.npmrc
     echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_PAT }}" >> ~/.npmrc
-    npm install -g @techjays/docjays
+    npm install -g @binubabu-ai/docjays
 ```
 
 ---
