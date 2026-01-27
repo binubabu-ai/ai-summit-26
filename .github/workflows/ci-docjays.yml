@@ -1,0 +1,92 @@
+name: DocJays CLI - CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'packages/docjays-cli/**'
+      - '.github/workflows/ci-docjays.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'packages/docjays-cli/**'
+      - '.github/workflows/ci-docjays.yml'
+
+jobs:
+  test:
+    name: Test on Node ${{ matrix.node-version }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 21.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm install
+          cd packages/docjays-cli
+          npm install
+
+      - name: Lint
+        run: |
+          cd packages/docjays-cli
+          npm run lint || echo "Linting issues found, but continuing"
+
+      - name: Run tests
+        run: |
+          cd packages/docjays-cli
+          npm test
+
+      - name: Build
+        run: |
+          cd packages/docjays-cli
+          npm run build
+
+      - name: Test CLI binary
+        run: |
+          cd packages/docjays-cli
+          node bin/docjays.js --version
+          node bin/docjays.js --help
+
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm install
+          cd packages/docjays-cli
+          npm install
+
+      - name: Run tests with coverage
+        run: |
+          cd packages/docjays-cli
+          npm run test:coverage || echo "Coverage check completed with warnings"
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./packages/docjays-cli/coverage/lcov.info
+          flags: docjays-cli
+          name: docjays-cli-coverage
+          fail_ci_if_error: false

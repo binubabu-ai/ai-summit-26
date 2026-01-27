@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "sources": [],
+  "mcp": {
+    "enabled": true,
+    "transport": "stdio",
+    "resources": ["sources", "features", "context"]
+  },
+  "sync": {
+    "auto": false,
+    "interval": "1h",
+    "onStart": false
+  }
+}

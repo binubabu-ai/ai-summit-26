@@ -1,0 +1,3 @@
+# DocJays - Auto-generated
+# This folder contains cloned documentation and should not be committed
+.docjays
