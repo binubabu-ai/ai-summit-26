@@ -1,130 +1,119 @@
 import Link from 'next/link';
-import { BookOpen, Code, Zap, MessageCircle, ArrowRight } from 'lucide-react';
+import { BookOpen, Code, MessageCircle, Terminal, ArrowRight } from 'lucide-react';
 
 export default function HelpPage() {
   return (
-    <div className="space-y-12">
+    <div className="space-y-16">
       {/* Hero Section */}
       <div>
-        <h1 className="text-4xl font-bold tracking-tight mb-4">
-          AI Summit Documentation
+        <h1 className="text-5xl md:text-6xl font-light tracking-tight text-black dark:text-white mb-6">
+          Documentation
         </h1>
-        <p className="text-xl text-muted-foreground">
+        <p className="text-xl text-neutral-600 dark:text-neutral-400 font-light max-w-3xl">
           Everything you need to know about managing documentation with AI-powered tools.
         </p>
       </div>
 
       {/* Quick Start Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <HelpCard
           icon={<BookOpen className="w-6 h-6" />}
           title="Getting Started"
-          description="Learn the basics and create your first project in minutes"
+          description="Learn the basics and create your first project"
           href="/help/getting-started"
         />
         <HelpCard
-          icon={<Zap className="w-6 h-6" />}
-          title="Feature Guides"
-          description="Detailed guides for all features and workflows"
-          href="/help/guides/projects"
+          icon={<Terminal className="w-6 h-6" />}
+          title="CLI Tool"
+          description="Command-line tool for documentation management"
+          href="/help/cli"
         />
         <HelpCard
           icon={<Code className="w-6 h-6" />}
-          title="API & Integration"
-          description="REST API and MCP integration documentation"
-          href="/help/api"
+          title="MCP Integration"
+          description="Connect AI assistants to your documentation"
+          href="/help/api/mcp"
         />
         <HelpCard
           icon={<MessageCircle className="w-6 h-6" />}
-          title="FAQ & Support"
+          title="FAQ"
           description="Frequently asked questions and troubleshooting"
           href="/help/faq"
         />
       </div>
 
+      {/* What's New */}
+      <section className="border border-neutral-200 dark:border-neutral-800 rounded-lg p-8 bg-white dark:bg-black">
+        <h2 className="text-2xl font-normal text-black dark:text-white mb-6">What's New</h2>
+        <ul className="space-y-4">
+          <li className="flex items-start gap-3">
+            <span className="text-green-600 mt-1 flex-shrink-0">●</span>
+            <div>
+              <strong className="text-black dark:text-white">MCP Integration:</strong>
+              <span className="text-neutral-600 dark:text-neutral-400"> Connect Claude Desktop to access your documentation directly</span>
+            </div>
+          </li>
+          <li className="flex items-start gap-3">
+            <span className="text-green-600 mt-1 flex-shrink-0">●</span>
+            <div>
+              <strong className="text-black dark:text-white">AI-Powered Audits:</strong>
+              <span className="text-neutral-600 dark:text-neutral-400"> Automatically check document quality and consistency</span>
+            </div>
+          </li>
+          <li className="flex items-start gap-3">
+            <span className="text-green-600 mt-1 flex-shrink-0">●</span>
+            <div>
+              <strong className="text-black dark:text-white">Revision System:</strong>
+              <span className="text-neutral-600 dark:text-neutral-400"> Propose, review, and approve changes with version control</span>
+            </div>
+          </li>
+        </ul>
+      </section>
+
       {/* Popular Topics */}
       <section>
-        <h2 className="text-2xl font-bold mb-4">Popular Topics</h2>
+        <h2 className="text-2xl font-normal text-black dark:text-white mb-6">Popular Topics</h2>
         <div className="space-y-3">
           <TopicLink
             href="/help/getting-started"
             title="How to create and manage projects"
           />
           <TopicLink
-            href="/help/guides/documents"
-            title="Document management and editing"
+            href="/help/cli"
+            title="Using the DocJays CLI tool"
           />
           <TopicLink
             href="/help/api/mcp"
-            title="Integrating with Claude Desktop via MCP"
+            title="Integrating with AI assistants via MCP"
           />
           <TopicLink
-            href="/help/guides/revisions"
-            title="Understanding version control and revisions"
-          />
-          <TopicLink
-            href="/help/guides/ai-features"
-            title="Using AI assistant features effectively"
-          />
-          <TopicLink
-            href="/help/guides/audit"
-            title="Running document audits and compliance checks"
+            href="/help/faq"
+            title="Frequently asked questions"
           />
         </div>
       </section>
 
-      {/* What's New */}
-      <section className="border rounded-lg p-6 bg-accent/50">
-        <h2 className="text-xl font-bold mb-3">What's New</h2>
-        <ul className="space-y-2 text-sm">
-          <li className="flex items-start gap-2">
-            <span className="text-green-600 mt-0.5">●</span>
-            <span>
-              <strong>MCP Integration:</strong> Connect Claude Desktop to access your documentation directly
-            </span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-green-600 mt-0.5">●</span>
-            <span>
-              <strong>AI-Powered Audits:</strong> Automatically check document quality and consistency
-            </span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-green-600 mt-0.5">●</span>
-            <span>
-              <strong>Revision System:</strong> Propose, review, and approve changes with version control
-            </span>
-          </li>
-        </ul>
-      </section>
-
       {/* Need More Help */}
-      <section className="border-t pt-8">
-        <h2 className="text-xl font-semibold mb-4">Need More Help?</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+      <section className="border-t border-neutral-200 dark:border-neutral-800 pt-12">
+        <h2 className="text-2xl font-normal text-black dark:text-white mb-8">Need More Help?</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
-            <h3 className="font-medium mb-2">Can't find what you're looking for?</h3>
-            <p className="text-muted-foreground mb-3">
-              Check our FAQ or search through all documentation.
+            <h3 className="font-medium text-black dark:text-white mb-2">Can't find what you're looking for?</h3>
+            <p className="text-neutral-600 dark:text-neutral-400 mb-4">
+              Check our FAQ for answers to common questions.
             </p>
             <Link
               href="/help/faq"
-              className="text-primary hover:underline inline-flex items-center gap-1"
+              className="text-black dark:text-white hover:opacity-70 transition-opacity inline-flex items-center gap-2"
             >
               Visit FAQ <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
           <div>
-            <h3 className="font-medium mb-2">Still have questions?</h3>
-            <p className="text-muted-foreground mb-3">
-              Our support team is here to help.
+            <h3 className="font-medium text-black dark:text-white mb-2">Still have questions?</h3>
+            <p className="text-neutral-600 dark:text-neutral-400 mb-4">
+              Reach out through our documentation or project settings.
             </p>
-            <Link
-              href="/help/support"
-              className="text-primary hover:underline inline-flex items-center gap-1"
-            >
-              Contact Support <ArrowRight className="w-4 h-4" />
-            </Link>
           </div>
         </div>
       </section>
@@ -146,17 +135,17 @@ function HelpCard({
   return (
     <Link
       href={href}
-      className="group block p-6 border rounded-lg hover:shadow-lg hover:border-primary/50 transition-all"
+      className="group block p-6 border border-neutral-200 dark:border-neutral-800 rounded-lg hover:border-neutral-300 dark:hover:border-neutral-700 transition-all bg-white dark:bg-black"
     >
       <div className="flex items-center gap-3 mb-3">
-        <div className="text-primary group-hover:scale-110 transition-transform">
+        <div className="text-black dark:text-white">
           {icon}
         </div>
-        <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">
+        <h3 className="text-lg font-normal text-black dark:text-white">
           {title}
         </h3>
       </div>
-      <p className="text-muted-foreground text-sm">{description}</p>
+      <p className="text-neutral-600 dark:text-neutral-400 text-sm">{description}</p>
     </Link>
   );
 }
@@ -165,9 +154,9 @@ function TopicLink({ href, title }: { href: string; title: string }) {
   return (
     <Link
       href={href}
-      className="flex items-center gap-2 text-primary hover:underline group"
+      className="flex items-center gap-3 text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white transition-colors group"
     >
-      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform flex-shrink-0" />
       <span>{title}</span>
     </Link>
   );

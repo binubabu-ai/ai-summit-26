@@ -26,10 +26,10 @@ export function HelpBreadcrumb() {
   });
 
   return (
-    <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-6">
+    <nav className="flex items-center space-x-2 text-sm text-neutral-500 dark:text-neutral-500 mb-8">
       <Link
         href="/help"
-        className="hover:text-foreground transition-colors"
+        className="hover:text-black dark:hover:text-white transition-colors"
       >
         Help
       </Link>
@@ -41,11 +41,11 @@ export function HelpBreadcrumb() {
           <div key={crumb.href} className="flex items-center space-x-2">
             <ChevronRight className="w-4 h-4" />
             {isLast ? (
-              <span className="text-foreground font-medium">{crumb.label}</span>
+              <span className="text-black dark:text-white font-medium">{crumb.label}</span>
             ) : (
               <Link
                 href={crumb.href}
-                className="hover:text-foreground transition-colors"
+                className="hover:text-black dark:hover:text-white transition-colors"
               >
                 {crumb.label}
               </Link>

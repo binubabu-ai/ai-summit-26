@@ -1,11 +1,15 @@
 {
-  "name": "docjays",
+  "name": "@techjays/docjays",
   "version": "0.1.0",
   "description": "Documentation management for AI-assisted development",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
     "docjays": "./bin/docjays.js"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/",
+    "access": "public"
   },
   "files": [
     "bin",

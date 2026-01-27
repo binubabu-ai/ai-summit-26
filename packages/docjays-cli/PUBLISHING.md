@@ -1,367 +1,266 @@
-# Publishing DocJays CLI to npm
+# Publishing DocJays CLI to GitHub Packages
 
-This guide explains how to publish DocJays CLI to the npm registry.
+This guide covers how to publish and install the DocJays CLI using GitHub Packages (Option C - recommended for internal team use).
 
 ## Prerequisites
 
-1. **npm Account**
-   - Create an account at [npmjs.com](https://www.npmjs.com/)
-   - Verify your email address
-   - Enable 2FA (two-factor authentication) for publishing
+- GitHub account with access to the `techjays/ai-summit` repository
+- Personal Access Token (PAT) with `write:packages` and `read:packages` permissions
 
-2. **npm Authentication**
+## Publishing (Maintainers Only)
+
+### Option 1: Automated Publishing via GitHub Actions (Recommended)
+
+The CLI is automatically published to GitHub Packages when you create a new release:
+
+1. **Update version in package.json:**
    ```bash
-   npm login
-   # Or for CI/CD
-   npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
+   cd packages/docjays-cli
+   npm version patch  # or minor, or major
    ```
 
-3. **Package Name**
-   - Verify `docjays` is available on npm
-   - If not, update `name` in package.json
+2. **Commit and push:**
+   ```bash
+   git add packages/docjays-cli/package.json
+   git commit -m "chore: bump docjays-cli version to X.Y.Z"
+   git push
+   ```
 
-4. **GitHub Repository Access**
-   - Push access to the repository
-   - Ability to create releases and tags
+3. **Create a GitHub release:**
+   ```bash
+   # Using GitHub CLI
+   gh release create v0.1.0 --title "DocJays CLI v0.1.0" --notes "Release notes here"
 
-## Publishing Methods
+   # Or via GitHub web UI: https://github.com/techjays/ai-summit/releases/new
+   ```
 
-### Method 1: Manual Publishing (Recommended for First Release)
+4. **GitHub Actions will automatically build and publish** the package to GitHub Packages.
 
-#### Step 1: Prepare the Release
+### Option 2: Manual Publishing
+
+If you need to publish manually:
+
+1. **Authenticate with GitHub Packages:**
+   ```bash
+   npm login --scope=@techjays --registry=https://npm.pkg.github.com
+   # Username: your-github-username
+   # Password: your-github-personal-access-token (with write:packages scope)
+   # Email: your-email@example.com
+   ```
+
+2. **Build and publish:**
+   ```bash
+   cd packages/docjays-cli
+   npm run build
+   npm publish
+   ```
+
+## Creating a Personal Access Token (PAT)
+
+1. Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
+2. Click "Generate new token (classic)"
+3. Give it a descriptive name: "DocJays CLI - GitHub Packages"
+4. Select scopes:
+   - ✓ `write:packages` (to publish packages)
+   - ✓ `read:packages` (to download packages)
+   - ✓ `repo` (if repo is private)
+5. Click "Generate token" and **save it securely** (you won't see it again)
+
+## Installing (Team Members)
+
+### One-Time Setup
+
+1. **Create or edit `~/.npmrc`:**
+   ```bash
+   # On macOS/Linux
+   echo "@techjays:registry=https://npm.pkg.github.com" >> ~/.npmrc
+
+   # On Windows PowerShell
+   Add-Content -Path "$env:USERPROFILE\.npmrc" -Value "@techjays:registry=https://npm.pkg.github.com"
+   ```
+
+2. **Authenticate with GitHub Packages:**
+   ```bash
+   npm login --scope=@techjays --registry=https://npm.pkg.github.com
+   # Username: your-github-username
+   # Password: your-github-personal-access-token (with read:packages scope)
+   # Email: your-email@example.com
+   ```
+
+### Install DocJays CLI
+
+```bash
+# Install globally
+npm install -g @techjays/docjays
+
+# Verify installation
+docjays --version
+
+# Test it works
+docjays --help
+```
+
+### Update to Latest Version
+
+```bash
+npm update -g @techjays/docjays
+```
+
+### Uninstall
+
+```bash
+npm uninstall -g @techjays/docjays
+```
+
+## Alternative: Install from GitHub URL (No Registry Setup)
+
+For quick testing or CI/CD environments without registry configuration:
+
+```bash
+# Clone the repo and install locally
+git clone https://github.com/techjays/ai-summit.git
+cd ai-summit/packages/docjays-cli
+npm install
+npm run build
+npm link
+
+# Now `docjays` command is available globally
+```
+
+## Troubleshooting
+
+### Error: 401 Unauthorized
+
+**Cause:** Your Personal Access Token may be expired or missing permissions.
+
+**Solution:**
+1. Create a new PAT with `read:packages` (and `write:packages` for publishing)
+2. Re-run `npm login --scope=@techjays --registry=https://npm.pkg.github.com`
+3. Enter your new PAT when prompted for password
+
+### Error: 404 Package not found
+
+**Possible causes:**
+1. The package hasn't been published yet
+2. Your `~/.npmrc` is not configured correctly
+3. You're not authenticated
+4. You don't have access to the `techjays/ai-summit` repository
+
+**Solution:**
+```bash
+# Check your .npmrc configuration
+cat ~/.npmrc  # macOS/Linux
+type %USERPROFILE%\.npmrc  # Windows
+
+# Should contain:
+# @techjays:registry=https://npm.pkg.github.com
+```
+
+### Error: Permission denied
+
+**Cause:** PAT missing required scopes.
+
+**Solution:** Ensure your PAT has:
+- `read:packages` for installing
+- `write:packages` for publishing
+- `repo` if the repository is private
+
+### npm login fails
+
+If `npm login` doesn't work, manually add authentication to `~/.npmrc`:
+
+```bash
+# Add this line to ~/.npmrc
+//npm.pkg.github.com/:_authToken=YOUR_GITHUB_PAT
+```
+
+Replace `YOUR_GITHUB_PAT` with your actual Personal Access Token.
+
+## CI/CD Integration
+
+### GitHub Actions
+
+Use the built-in `GITHUB_TOKEN` (no manual PAT needed):
+
+```yaml
+- name: Setup Node.js
+  uses: actions/setup-node@v4
+  with:
+    node-version: '18'
+    registry-url: 'https://npm.pkg.github.com'
+    scope: '@techjays'
+
+- name: Install DocJays CLI
+  run: npm install -g @techjays/docjays
+  env:
+    NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+### Other CI/CD Platforms (GitLab, Jenkins, etc.)
+
+Add your GitHub PAT as a secret and configure `.npmrc`:
+
+```yaml
+- name: Install DocJays CLI
+  run: |
+    echo "@techjays:registry=https://npm.pkg.github.com" >> ~/.npmrc
+    echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_PAT }}" >> ~/.npmrc
+    npm install -g @techjays/docjays
+```
+
+## Version Management
+
+We follow [Semantic Versioning](https://semver.org/):
+
+- **Patch** (0.1.0 → 0.1.1): Bug fixes, minor changes
+- **Minor** (0.1.0 → 0.2.0): New features, backward compatible
+- **Major** (0.1.0 → 1.0.0): Breaking changes
+
+Update version with:
 
 ```bash
 cd packages/docjays-cli
-
-# Run the preparation script
-./scripts/prepare-release.sh
-
-# Or manually:
-npm run clean
-npm install
-npm run lint
-npm test
-npm run build
+npm version patch  # or minor, or major
 ```
 
-#### Step 2: Update Version
+## Package Information
 
-```bash
-# For patch release (0.1.0 -> 0.1.1)
-npm version patch
-
-# For minor release (0.1.0 -> 0.2.0)
-npm version minor
-
-# For major release (0.1.0 -> 1.0.0)
-npm version major
-
-# Or specify exact version
-npm version 0.2.0
-```
-
-This will:
-- Update `package.json` version
-- Create a git commit
-- Create a git tag
-
-#### Step 3: Update CHANGELOG
-
-Edit `CHANGELOG.md` to document changes in the new version:
-
-```markdown
-## [0.2.0] - 2026-02-01
-
-### Added
-- New feature description
-
-### Changed
-- Changed feature description
-
-### Fixed
-- Bug fix description
-```
-
-#### Step 4: Commit and Tag
-
-```bash
-# If you used npm version, skip this (already done)
-git add CHANGELOG.md package.json
-git commit -m "chore: release v0.2.0"
-git tag docjays-v0.2.0
-```
-
-#### Step 5: Publish to npm
-
-```bash
-# Dry run first to check what will be published
-npm publish --dry-run
-
-# Publish for real
-npm publish --access public
-
-# View the published package
-npm view docjays
-```
-
-#### Step 6: Push to GitHub
-
-```bash
-git push origin main
-git push --tags
-```
-
-#### Step 7: Create GitHub Release
-
-1. Go to: https://github.com/techjays/ai-summit/releases/new
-2. Choose tag: `docjays-v0.2.0`
-3. Release title: `DocJays CLI v0.2.0`
-4. Description: Copy from CHANGELOG.md
-5. Click "Publish release"
-
----
-
-### Method 2: GitHub Actions (Automated)
-
-#### Option A: Triggered by GitHub Release
-
-1. **Prepare the release locally**
-   ```bash
-   cd packages/docjays-cli
-   ./scripts/prepare-release.sh
-   ```
-
-2. **Update CHANGELOG.md** with release notes
-
-3. **Commit and push**
-   ```bash
-   git add .
-   git commit -m "chore: prepare release v0.2.0"
-   git push origin main
-   ```
-
-4. **Create GitHub Release**
-   - Go to: https://github.com/techjays/ai-summit/releases/new
-   - Create new tag: `docjays-v0.2.0`
-   - Release title: `DocJays CLI v0.2.0`
-   - Description: Copy from CHANGELOG
-   - Click "Publish release"
-
-5. **GitHub Actions will automatically:**
-   - Run tests
-   - Build the package
-   - Publish to npm
-   - Tag is already created by GitHub release
-
-#### Option B: Manual Workflow Trigger
-
-1. **Prepare the release**
-   ```bash
-   cd packages/docjays-cli
-   ./scripts/prepare-release.sh
-   ```
-
-2. **Push to GitHub**
-   ```bash
-   git push origin main
-   ```
-
-3. **Trigger workflow manually**
-   - Go to: https://github.com/techjays/ai-summit/actions
-   - Select "Publish DocJays CLI to npm"
-   - Click "Run workflow"
-   - Enter version: `0.2.0`
-   - Click "Run workflow"
-
-4. **GitHub Actions will:**
-   - Run tests
-   - Build the package
-   - Update version in package.json
-   - Publish to npm
-   - Create GitHub release automatically
-
----
-
-## GitHub Secrets Configuration
-
-For GitHub Actions to work, you need to configure secrets:
-
-1. **NPM_TOKEN**
-   - Go to: https://www.npmjs.com/settings/YOUR_USERNAME/tokens
-   - Click "Generate New Token"
-   - Select "Automation" type
-   - Copy the token
-   - Go to: https://github.com/techjays/ai-summit/settings/secrets/actions
-   - Click "New repository secret"
-   - Name: `NPM_TOKEN`
-   - Value: paste your npm token
-   - Click "Add secret"
-
-2. **GITHUB_TOKEN**
-   - Automatically provided by GitHub Actions
-   - No manual configuration needed
-
----
+- **Package Name:** `@techjays/docjays`
+- **Registry:** GitHub Packages
+- **Package URL:** https://github.com/techjays/ai-summit/packages
+- **Repository:** https://github.com/techjays/ai-summit
+- **Documentation:** https://docjays.dev/help/cli
 
 ## Pre-Publishing Checklist
 
-Before publishing, ensure:
+Before publishing:
 
 - [ ] All tests pass (`npm test`)
 - [ ] Build succeeds (`npm run build`)
 - [ ] Linter passes (`npm run lint`)
 - [ ] Version number updated in `package.json`
-- [ ] CHANGELOG.md updated with release notes
-- [ ] README.md is up to date
 - [ ] No uncommitted changes
-- [ ] All changes pushed to main branch
 - [ ] CLI binary works (`node bin/docjays.js --version`)
-- [ ] Package size is reasonable (`npm pack --dry-run`)
-
----
 
 ## Post-Publishing Checklist
 
 After publishing:
 
-- [ ] Verify package on npm: https://www.npmjs.com/package/docjays
-- [ ] Test installation: `npm install -g docjays@latest`
+- [ ] Verify package on GitHub: https://github.com/techjays/ai-summit/packages
+- [ ] Test installation: `npm install -g @techjays/docjays@latest`
 - [ ] Test CLI works: `docjays --version`
 - [ ] GitHub release created
 - [ ] Update any dependent projects
-- [ ] Announce release (social media, blog, etc.)
-- [ ] Update documentation website (if applicable)
-
----
-
-## Troubleshooting
-
-### "You must be logged in to publish packages"
-
-Solution:
-```bash
-npm login
-# Enter username, password, email, and 2FA code
-```
-
-### "Package name already taken"
-
-Solution:
-- Choose a different package name
-- Or request transfer if you own the name
-- Update `name` in `package.json`
-
-### "Version already exists"
-
-Solution:
-```bash
-# Increment version
-npm version patch  # or minor, or major
-```
-
-### "403 Forbidden"
-
-Possible causes:
-- Not logged in: `npm login`
-- No publish permission: Check npm package access
-- 2FA required: Enable 2FA on npm account
-
-### "Package size too large"
-
-Solution:
-```bash
-# Check what's being included
-npm pack --dry-run
-
-# Update .npmignore to exclude unnecessary files
-```
-
-### GitHub Actions fails
-
-Solution:
-- Check NPM_TOKEN secret is set
-- Verify token has publish permissions
-- Check token hasn't expired
-- Review workflow logs for specific error
-
----
-
-## Version Strategy
-
-We follow [Semantic Versioning](https://semver.org/):
-
-- **MAJOR** (1.0.0): Breaking changes
-- **MINOR** (0.1.0): New features (backward compatible)
-- **PATCH** (0.0.1): Bug fixes (backward compatible)
-
-### Pre-releases
-
-For beta/alpha releases:
-
-```bash
-npm version 0.2.0-beta.1
-npm publish --tag beta
-```
-
-Install with:
-```bash
-npm install -g docjays@beta
-```
-
-### Deprecating Versions
-
-If a version has critical bugs:
-
-```bash
-npm deprecate docjays@0.1.0 "Critical bug, please upgrade to 0.1.1"
-```
-
----
-
-## Rollback
-
-If something goes wrong after publishing:
-
-### Option 1: Deprecate and Publish Fix
-
-```bash
-# Deprecate bad version
-npm deprecate docjays@0.2.0 "Broken release, use 0.2.1 instead"
-
-# Fix issues and publish new version
-npm version patch
-npm publish
-```
-
-### Option 2: Unpublish (within 72 hours)
-
-```bash
-# WARNING: Only works within 72 hours of publishing
-npm unpublish docjays@0.2.0
-```
-
-**Note:** Unpublishing is discouraged by npm and should only be used in extreme cases.
-
----
+- [ ] Notify team members
 
 ## Support
 
 If you encounter issues:
 
-1. Check [npm documentation](https://docs.npmjs.com/)
+1. Check [GitHub Packages documentation](https://docs.github.com/en/packages)
 2. Review GitHub Actions logs
 3. Open an issue: https://github.com/techjays/ai-summit/issues
-4. Contact npm support: support@npmjs.com
-
----
-
-## References
-
-- [npm publish documentation](https://docs.npmjs.com/cli/v10/commands/npm-publish)
-- [npm version documentation](https://docs.npmjs.com/cli/v10/commands/npm-version)
-- [Semantic Versioning](https://semver.org/)
-- [GitHub Actions documentation](https://docs.github.com/en/actions)
-- [Keep a Changelog](https://keepachangelog.com/)
+4. Check package page: https://github.com/techjays/ai-summit/packages
 
 ---
 

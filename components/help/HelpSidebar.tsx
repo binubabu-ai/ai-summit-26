@@ -8,35 +8,20 @@ const HELP_SECTIONS = [
   {
     title: 'Getting Started',
     items: [
-      { href: '/help/getting-started', label: 'Quick Start' },
-      { href: '/help/getting-started/first-project', label: 'Create Your First Project' },
+      { href: '/help/getting-started', label: 'Quick Start Guide' },
     ],
   },
   {
-    title: 'Guides',
+    title: 'Tools & Integration',
     items: [
-      { href: '/help/guides/projects', label: 'Project Management' },
-      { href: '/help/guides/documents', label: 'Document Management' },
-      { href: '/help/guides/revisions', label: 'Version Control & Revisions' },
-      { href: '/help/guides/ai-features', label: 'AI Assistant Features' },
-      { href: '/help/guides/audit', label: 'Audit & Compliance' },
-    ],
-  },
-  {
-    title: 'API & Integration',
-    items: [
-      { href: '/help/api', label: 'API Overview' },
+      { href: '/help/cli', label: 'CLI Tool' },
       { href: '/help/api/mcp', label: 'MCP Integration' },
-      { href: '/help/api/rest', label: 'REST API Reference' },
-      { href: '/help/cli', label: 'CLI Tools' },
     ],
   },
   {
     title: 'Resources',
     items: [
-      { href: '/help/faq', label: 'Frequently Asked Questions' },
-      { href: '/help/troubleshooting', label: 'Troubleshooting' },
-      { href: '/help/support', label: 'Get Support' },
+      { href: '/help/faq', label: 'FAQ' },
     ],
   },
 ];
@@ -49,7 +34,7 @@ export function HelpSidebar() {
       <div>
         <Link
           href="/help"
-          className="flex items-center gap-2 text-lg font-semibold hover:text-primary transition-colors"
+          className="flex items-center gap-2 text-lg font-normal text-black dark:text-white hover:opacity-70 transition-opacity"
         >
           <svg
             className="w-5 h-5"
@@ -70,7 +55,7 @@ export function HelpSidebar() {
 
       {HELP_SECTIONS.map((section) => (
         <div key={section.title}>
-          <h3 className="font-semibold text-sm text-foreground mb-3">
+          <h3 className="font-medium text-sm text-black dark:text-white mb-3">
             {section.title}
           </h3>
           <ul className="space-y-1">
@@ -84,8 +69,8 @@ export function HelpSidebar() {
                     className={cn(
                       'block px-3 py-2 text-sm rounded-md transition-colors',
                       isActive
-                        ? 'bg-primary text-primary-foreground font-medium'
-                        : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                        ? 'bg-black dark:bg-white text-white dark:text-black font-medium'
+                        : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-900 hover:text-black dark:hover:text-white'
                     )}
                   >
                     {item.label}
