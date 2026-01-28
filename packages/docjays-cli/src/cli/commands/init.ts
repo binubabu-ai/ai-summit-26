@@ -130,8 +130,8 @@ export class InitCommand extends BaseCommand {
       {
         type: 'confirm',
         name: 'initializeKeystore',
-        message: 'Initialize secure keystore for authentication?',
-        default: true,
+        message: 'Initialize secure keystore for private repo authentication?',
+        default: false,
       },
     ]);
 
@@ -146,7 +146,7 @@ export class InitCommand extends BaseCommand {
       enableMCP: true,
       autoSync: false,
       syncInterval: '1h',
-      initializeKeystore: true,
+      initializeKeystore: false,
     };
   }
 
