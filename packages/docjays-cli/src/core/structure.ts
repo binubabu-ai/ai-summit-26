@@ -80,12 +80,8 @@ export class StructureManager {
       await fs.copy(readmeSrc, readmeDest);
     }
 
-    // Copy config.json
-    const configSrc = path.join(templatesDir, 'config.json');
-    const configDest = path.join(this.docjaysPath, 'config.json');
-    if (await fs.pathExists(configSrc)) {
-      await fs.copy(configSrc, configDest);
-    }
+    // NOTE: config.json is NOT copied from templates
+    // It's created by ConfigManager.initialize() with user preferences
 
     // Copy feature template
     const featureTemplateSrc = path.join(templatesDir, 'feature-template.md');

@@ -31,6 +31,7 @@ export class InitCommand extends BaseCommand {
     try {
       // Check if already initialized
       const configManager = new ConfigManager();
+      let isReinit = false;
       if (await configManager.isInitialized()) {
         this.logger.warn('.docjays already exists');
         const overwrite = await this.confirm(
@@ -42,6 +43,7 @@ export class InitCommand extends BaseCommand {
           this.logger.info('Initialization cancelled');
           return;
         }
+        isReinit = true;
       }
 
       // Welcome message
@@ -55,8 +57,8 @@ export class InitCommand extends BaseCommand {
       // Create folder structure
       await this.createStructure();
 
-      // Initialize configuration
-      await this.initializeConfig(config);
+      // Initialize configuration (force=true if re-initializing)
+      await this.initializeConfig(config, isReinit);
 
       // Maybe create skills.md
       if (!options.yes) {
@@ -167,7 +169,7 @@ export class InitCommand extends BaseCommand {
   /**
    * Initialize configuration
    */
-  private async initializeConfig(userConfig: any): Promise<void> {
+  private async initializeConfig(userConfig: any, force: boolean = false): Promise<void> {
     const spinner = ora('Generating configuration...').start();
 
     try {
@@ -186,7 +188,7 @@ export class InitCommand extends BaseCommand {
         },
       };
 
-      await configManager.initialize(config);
+      await configManager.initialize(config, force);
       spinner.succeed('Generated configuration file');
     } catch (error: any) {
       spinner.fail('Failed to generate configuration');

@@ -69,20 +69,7 @@ export default function FAQPage() {
             question="How do I install the CLI?"
             answer={
               <div>
-                <p className="mb-3 font-medium text-black dark:text-white">For Team Members (GitHub Packages):</p>
-                <p className="mb-2 text-sm">One-time setup:</p>
-                <code className="block bg-neutral-100 dark:bg-neutral-900 p-3 rounded text-sm mb-2">
-                  echo "@binubabu-ai:registry=https://npm.pkg.github.com" &gt;&gt; ~/.npmrc
-                </code>
-                <code className="block bg-neutral-100 dark:bg-neutral-900 p-3 rounded text-sm mb-3">
-                  npm login --scope=@binubabu-ai --registry=https://npm.pkg.github.com
-                </code>
-                <p className="mb-2 text-sm">Then install:</p>
-                <code className="block bg-neutral-100 dark:bg-neutral-900 p-3 rounded text-sm mb-4">
-                  npm install -g @binubabu-ai/docjays
-                </code>
-
-                <p className="mb-2 font-medium text-black dark:text-white">From npm (Public):</p>
+                <p className="mb-2 font-medium text-black dark:text-white">Install from npm:</p>
                 <code className="block bg-neutral-100 dark:bg-neutral-900 p-3 rounded text-sm mb-2">
                   npm install -g docjays
                 </code>

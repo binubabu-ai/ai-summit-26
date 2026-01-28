@@ -86,38 +86,6 @@ docjays --version`}
           />
         </div>
 
-        {/* GitHub Packages Installation */}
-        <div className="mb-8">
-          <h3 className="text-xl font-normal text-black dark:text-white mb-4">From GitHub Packages (For Techjays Team)</h3>
-          <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-4">
-            For internal team use, install from GitHub Packages:
-          </p>
-
-          <p className="text-sm font-medium text-black dark:text-white mb-2">Step 1: One-time setup</p>
-          <CodeBlock
-            language="bash"
-            code={`# Configure npm to use GitHub Packages for @binubabu-ai scope
-echo "@binubabu-ai:registry=https://npm.pkg.github.com" >> ~/.npmrc
-
-# Authenticate (requires GitHub Personal Access Token with read:packages scope)
-npm login --scope=@binubabu-ai --registry=https://npm.pkg.github.com`}
-          />
-
-          <p className="text-sm font-medium text-black dark:text-white mb-2 mt-4">Step 2: Install</p>
-          <CodeBlock
-            language="bash"
-            code="npm install -g @binubabu-ai/docjays"
-          />
-
-          <div className="mt-4 p-4 bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg">
-            <p className="text-sm text-neutral-600 dark:text-neutral-400">
-              <strong className="text-black dark:text-white">Need a Personal Access Token?</strong><br />
-              Create one at GitHub Settings → Developer settings → Personal access tokens<br />
-              Required scopes: <code className="text-xs bg-white dark:bg-black px-2 py-1 rounded">read:packages</code>
-            </p>
-          </div>
-        </div>
-
         {/* Local Development */}
         <div>
           <h3 className="text-xl font-normal text-black dark:text-white mb-4">For Development</h3>

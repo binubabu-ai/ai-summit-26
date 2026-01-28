@@ -46,21 +46,6 @@ npx docjays login
 npx docjays init
 ```
 
-### GitHub Packages (For Techjays Team)
-
-For internal team use with GitHub Packages:
-
-```bash
-# Configure npm
-echo "@binubabu-ai:registry=https://npm.pkg.github.com" >> ~/.npmrc
-
-# Authenticate (requires GitHub PAT with read:packages scope)
-npm login --scope=@binubabu-ai --registry=https://npm.pkg.github.com
-
-# Install
-npm install -g @binubabu-ai/docjays
-```
-
 ## Getting Started in Your Repository
 
 ### Step 1: Install and Login

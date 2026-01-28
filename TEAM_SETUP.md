@@ -1,46 +1,22 @@
 # Team Setup Guide - Docjays CLI
 
-Quick setup guide for Techjays team members to install and use Docjays CLI from GitHub Packages.
+Quick setup guide for team members to install and use Docjays CLI.
 
-## For Team Members: Installing Docjays CLI
+## Installing Docjays CLI
 
-### Step 1: Create GitHub Personal Access Token
-
-1. Go to [GitHub Settings → Personal access tokens](https://github.com/settings/tokens)
-2. Click "Generate new token (classic)"
-3. Name it: "Docjays CLI"
-4. Select scope: `read:packages`
-5. Click "Generate token"
-6. **Copy and save the token** (you won't see it again!)
-
-### Step 2: Configure npm
+### Option 1: Install Globally (Recommended)
 
 ```bash
-# On macOS/Linux
-echo "@binubabu-ai:registry=https://npm.pkg.github.com" >> ~/.npmrc
-
-# On Windows PowerShell
-Add-Content -Path "$env:USERPROFILE\.npmrc" -Value "@binubabu-ai:registry=https://npm.pkg.github.com"
+npm install -g docjays
 ```
 
-### Step 3: Authenticate
+### Option 2: Use Without Installing
 
 ```bash
-npm login --scope=@binubabu-ai --registry=https://npm.pkg.github.com
+npx docjays --help
 ```
 
-When prompted:
-- **Username:** your-github-username
-- **Password:** paste-your-personal-access-token
-- **Email:** your-email@example.com
-
-### Step 4: Install Docjays CLI
-
-```bash
-npm install -g @binubabu-ai/docjays
-```
-
-### Step 5: Verify Installation
+### Verify Installation
 
 ```bash
 docjays --version
@@ -48,6 +24,31 @@ docjays --help
 ```
 
 That's it! You're ready to use Docjays CLI.
+
+---
+
+## Quick Start
+
+```bash
+# 1. Login to Docjays (one-time)
+docjays login
+
+# 2. Initialize in your project
+cd your-project
+docjays init
+
+# 3. Link to cloud project
+docjays link
+
+# 4. Add documentation sources
+docjays add-source --name docs --type git --url https://github.com/org/docs
+
+# 5. Sync documentation
+docjays sync
+
+# 6. Start MCP server
+docjays serve
+```
 
 ---
 
@@ -70,23 +71,19 @@ That's it! You're ready to use Docjays CLI.
 
 3. **Create GitHub release:**
    ```bash
-   gh release create vX.Y.Z --title "Docjays CLI vX.Y.Z" --notes "Release notes"
+   gh release create docjays-cli-vX.Y.Z --title "Docjays CLI vX.Y.Z" --notes "Release notes"
    ```
 
-GitHub Actions will automatically build and publish to GitHub Packages.
+GitHub Actions will automatically build and publish to npm.
 
 ### Manual Publishing
 
-1. **Create PAT with `write:packages` scope**
-   - Go to [GitHub Settings → Personal access tokens](https://github.com/settings/tokens)
-   - Select `write:packages` and `read:packages`
-
-2. **Authenticate:**
+1. **Login to npm:**
    ```bash
-   npm login --scope=@binubabu-ai --registry=https://npm.pkg.github.com
+   npm login
    ```
 
-3. **Build and publish:**
+2. **Build and publish:**
    ```bash
    cd packages/docjays-cli
    npm run build
@@ -95,33 +92,11 @@ GitHub Actions will automatically build and publish to GitHub Packages.
 
 ---
 
-## Troubleshooting
-
-### "401 Unauthorized"
-Your PAT is expired or missing permissions. Create a new one with `read:packages` scope.
-
-### "404 Package not found"
-Check your `~/.npmrc`:
-```bash
-cat ~/.npmrc  # macOS/Linux
-type %USERPROFILE%\.npmrc  # Windows
-```
-Should contain: `@binubabu-ai:registry=https://npm.pkg.github.com`
-
-### npm login doesn't work
-Manually add to `~/.npmrc`:
-```
-//npm.pkg.github.com/:_authToken=YOUR_GITHUB_PAT
-```
-
----
-
 ## Quick Reference
 
-- **Package Name:** `@binubabu-ai/docjays`
-- **Registry:** GitHub Packages
+- **Package Name:** `docjays`
+- **Registry:** npm (https://www.npmjs.com/package/docjays)
 - **Repository:** https://github.com/techjays/ai-summit
-- **Package URL:** https://github.com/techjays/ai-summit/packages
 - **Documentation:** https://docjays.dev/help/cli
 - **Publishing Guide:** `packages/docjays-cli/PUBLISHING.md`
 
@@ -129,20 +104,9 @@ Manually add to `~/.npmrc`:
 
 ## CI/CD Integration
 
-For GitHub Actions:
 ```yaml
 - name: Install Docjays CLI
-  run: npm install -g @binubabu-ai/docjays
-  env:
-    NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-```
-
-For other CI/CD:
-```yaml
-- run: |
-    echo "@binubabu-ai:registry=https://npm.pkg.github.com" >> ~/.npmrc
-    echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_PAT }}" >> ~/.npmrc
-    npm install -g @binubabu-ai/docjays
+  run: npm install -g docjays
 ```
 
 ---

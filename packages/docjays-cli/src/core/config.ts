@@ -32,8 +32,8 @@ export class ConfigManager {
   /**
    * Initialize configuration with defaults
    */
-  async initialize(options: Partial<DocjaysConfig> = {}): Promise<void> {
-    if (await this.isInitialized()) {
+  async initialize(options: Partial<DocjaysConfig> = {}, force: boolean = false): Promise<void> {
+    if (await this.isInitialized() && !force) {
       throw new Error('Docjays already initialized');
     }
 
@@ -59,11 +59,77 @@ export class ConfigManager {
     }
 
     const content = await fs.readFile(this.configPath, 'utf-8');
-    const config = JSON.parse(content);
+    let config = JSON.parse(content);
+
+    // Migrate old configs missing required fields
+    const migrated = this.migrateConfig(config);
+    if (migrated) {
+      config = migrated;
+      await this.save(config);
+      this.logger.info('Config migrated to latest version');
+    }
 
     this.validate(config);
     this.config = config;
     return config;
+  }
+
+  /**
+   * Migrate old config formats to current schema
+   * Returns updated config if migration needed, null otherwise
+   */
+  private migrateConfig(config: any): DocjaysConfig | null {
+    let needsMigration = false;
+
+    // Add mode if missing (pre-cloud configs)
+    if (!config.mode) {
+      config.mode = 'local';
+      needsMigration = true;
+    }
+
+    // Add cloud object if missing
+    if (!config.cloud) {
+      config.cloud = {
+        projectId: null,
+        projectName: null,
+        apiKey: null,
+      };
+      needsMigration = true;
+    }
+
+    // Ensure sources array exists
+    if (!config.sources) {
+      config.sources = [];
+      needsMigration = true;
+    }
+
+    // Ensure mcp object exists with required fields
+    if (!config.mcp) {
+      config.mcp = {
+        enabled: true,
+        transport: 'stdio',
+        resources: ['sources', 'features', 'context'],
+      };
+      needsMigration = true;
+    }
+
+    // Ensure sync object exists with required fields
+    if (!config.sync) {
+      config.sync = {
+        auto: false,
+        interval: '1h',
+        onStart: false,
+      };
+      needsMigration = true;
+    }
+
+    // Ensure version exists
+    if (!config.version) {
+      config.version = '1.0.0';
+      needsMigration = true;
+    }
+
+    return needsMigration ? config : null;
   }
 
   /**
