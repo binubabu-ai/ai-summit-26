@@ -140,6 +140,11 @@ ${chalk.bold('Report issues:')} https://github.com/techjays/ai-summit/issues
     const { UnlinkCommand } = require('./commands/unlink');
     const unlinkCommand = new UnlinkCommand(this.program);
     unlinkCommand.register();
+
+    // Push command
+    const { PushCommand } = require('./commands/push');
+    const pushCommand = new PushCommand(this.program);
+    pushCommand.register();
   }
 
   /**

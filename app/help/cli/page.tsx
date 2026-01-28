@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Terminal, Package, GitBranch, RefreshCw, Server, ListTree, Trash2, Eye, Key, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Terminal, Package, GitBranch, RefreshCw, Server, ListTree, Trash2, Eye, Key, CheckCircle2, ArrowRight, Link2, Unlink, FolderInput, FileText, Users, KeyRound, Upload, Clock } from 'lucide-react';
 import { CodeBlock } from '@/components/help/CodeBlock';
 
 export const metadata = {
@@ -148,14 +148,18 @@ docjays login
 docjays init
 # ✓ Project created + API key auto-generated
 
-# Step 3: Add documentation sources
+# Step 3: Link to cloud project (optional but recommended)
+docjays link
+# ✓ Select existing project or create new one
+
+# Step 4: Add documentation sources
 docjays add-source --name company-docs --type git --url https://github.com/myorg/docs
 docjays add-source --name api-specs --type git --url https://github.com/myorg/api-specs
 
-# Step 4: Sync documentation
+# Step 5: Sync documentation
 docjays sync
 
-# Step 5: Start MCP server
+# Step 6: Start MCP server
 docjays serve
 # Your docs are now available to AI assistants!`}
         />
@@ -210,6 +214,55 @@ docjays serve
               { flag: '--no-gitignore', description: 'Skip updating .gitignore' },
             ]}
             example="docjays init --name my-project"
+          />
+
+          <CommandCard
+            icon={<Link2 className="w-5 h-5" />}
+            name="link"
+            description="Link local .docjays to a cloud project (or create new)"
+            usage="docjays link [options]"
+            options={[
+              { flag: '-p, --project <id>', description: 'Project ID to link to directly' },
+            ]}
+            example="docjays link"
+          />
+
+          <CommandCard
+            icon={<Unlink className="w-5 h-5" />}
+            name="unlink"
+            description="Disconnect from cloud project (switch to local-only mode)"
+            usage="docjays unlink [options]"
+            options={[
+              { flag: '-f, --force', description: 'Skip confirmation prompt' },
+            ]}
+            example="docjays unlink"
+          />
+
+          <CommandCard
+            icon={<FolderInput className="w-5 h-5" />}
+            name="migrate"
+            description="Discover and migrate existing documentation to .docjays"
+            usage="docjays migrate [options]"
+            options={[
+              { flag: '--auto', description: 'Automatically migrate all found docs without prompts' },
+              { flag: '--move', description: 'Move files instead of copying (default: copy)' },
+              { flag: '--dry', description: 'Dry run - show what would be migrated' },
+            ]}
+            example="docjays migrate --dry"
+          />
+
+          <CommandCard
+            icon={<FileText className="w-5 h-5" />}
+            name="create-skills"
+            description="Create skills.md file for AI agent instructions"
+            usage="docjays create-skills [options]"
+            options={[
+              { flag: '-o, --output <file>', description: 'Output to specific file (default: skills.md)' },
+              { flag: '-f, --force', description: 'Overwrite if exists' },
+              { flag: '-m, --merge', description: 'Append to existing file' },
+              { flag: '-p, --print', description: 'Print template without creating file' },
+            ]}
+            example="docjays create-skills"
           />
 
           <CommandCard
@@ -300,6 +353,70 @@ docjays serve
             ]}
             example="docjays watch -i 1h --sync-now"
           />
+
+          <CommandCard
+            icon={<Upload className="w-5 h-5" />}
+            name="push"
+            description="Push local documentation to cloud project"
+            usage="docjays push [options]"
+            options={[
+              { flag: '-n, --dry-run', description: 'Preview what would be pushed without making changes' },
+              { flag: '-f, --force', description: 'Push all files even if unchanged' },
+            ]}
+            example="docjays push --dry-run"
+          />
+        </div>
+      </section>
+
+      {/* Coming Soon */}
+      <section>
+        <h2 className="text-3xl font-light text-black dark:text-white mb-8">Coming Soon</h2>
+        <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-6">
+          The following commands are planned for upcoming releases:
+        </p>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="border border-dashed border-neutral-300 dark:border-neutral-700 rounded-lg p-6 bg-neutral-50 dark:bg-neutral-950">
+            <div className="flex items-center gap-3 mb-4">
+              <ListTree className="w-5 h-5 text-neutral-500" />
+              <h3 className="font-mono font-medium text-black dark:text-white">projects</h3>
+              <span className="text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded">planned</span>
+            </div>
+            <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-3">
+              Manage cloud projects from CLI
+            </p>
+            <CodeBlock language="bash" code={`docjays projects list
+docjays projects info
+docjays projects switch <id>`} />
+          </div>
+
+          <div className="border border-dashed border-neutral-300 dark:border-neutral-700 rounded-lg p-6 bg-neutral-50 dark:bg-neutral-950">
+            <div className="flex items-center gap-3 mb-4">
+              <KeyRound className="w-5 h-5 text-neutral-500" />
+              <h3 className="font-mono font-medium text-black dark:text-white">api-keys</h3>
+              <span className="text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded">planned</span>
+            </div>
+            <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-3">
+              Manage API keys for your projects
+            </p>
+            <CodeBlock language="bash" code={`docjays api-keys list
+docjays api-keys create "CI/CD"
+docjays api-keys revoke <id>`} />
+          </div>
+
+          <div className="border border-dashed border-neutral-300 dark:border-neutral-700 rounded-lg p-6 bg-neutral-50 dark:bg-neutral-950">
+            <div className="flex items-center gap-3 mb-4">
+              <Users className="w-5 h-5 text-neutral-500" />
+              <h3 className="font-mono font-medium text-black dark:text-white">team</h3>
+              <span className="text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded">planned</span>
+            </div>
+            <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-3">
+              View team members for your project
+            </p>
+            <CodeBlock language="bash" code={`docjays team list
+docjays team list --json`} />
+          </div>
+
         </div>
       </section>
 

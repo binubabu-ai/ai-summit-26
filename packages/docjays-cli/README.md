@@ -139,12 +139,15 @@ docjays logout             # Remove credentials
 
 # Project Setup
 docjays init               # Initialize in current directory
+docjays link               # Link to existing cloud project (or create new)
+docjays unlink             # Disconnect from cloud project
 docjays migrate            # Migrate existing docs to .docjays
 docjays create-skills      # Create skills.md for AI agents
 
 # Documentation Management
 docjays add-source [opts]  # Add a documentation source
 docjays sync               # Sync all documentation
+docjays push               # Push local docs to cloud
 docjays status             # Show sync status
 docjays list-sources       # List all sources
 
@@ -320,6 +323,157 @@ docjays create-skills --print
 - Overwrite existing file
 - Merge/append to existing
 - Cancel
+
+### Link to Cloud Project
+
+```bash
+docjays link [options]
+
+Options:
+  -p, --project <id>  Project ID to link to directly
+  -h, --help          Display help
+```
+
+Links your local `.docjays` folder to a cloud project. This enables:
+- Syncing documentation to the cloud
+- Team collaboration
+- Web dashboard access
+- API key management
+
+**Examples:**
+
+```bash
+# Interactive mode - shows your projects and lets you choose
+docjays link
+
+# Example output:
+📡 Cloud Project Linking
+Fetching your projects...
+
+? Select a project to link:
+  ❯ ai-summit (owner)
+    my-other-project (editor)
+    ── Create new project ──
+
+✓ Linked to project: ai-summit
+  Project ID: clx123...
+  API Key: dj_proj_abc123...
+
+# Link directly to a specific project
+docjays link --project clx123abc
+
+# Create a new project and link
+docjays link
+# Then select "Create new project"
+```
+
+**What happens when you link:**
+- Fetches your available projects from cloud
+- Creates new project if needed
+- Saves project ID and API key to `.docjays/config.json`
+- Auto-joins you as a member if not already
+
+### Unlink from Cloud
+
+```bash
+docjays unlink [options]
+
+Options:
+  -f, --force    Skip confirmation prompt
+  -h, --help     Display help
+```
+
+Disconnects your local `.docjays` from the cloud project and switches to local-only mode.
+
+**Examples:**
+
+```bash
+# Interactive mode
+docjays unlink
+
+# Example output:
+Currently linked to: ai-summit (clx123...)
+
+? Are you sure you want to unlink? This will:
+  - Remove cloud connection
+  - Switch to local-only mode
+  - Keep local files intact
+
+(y/N) y
+
+✓ Unlinked from cloud project
+  Mode: local-only
+  Your local documentation is preserved.
+
+# Skip confirmation
+docjays unlink --force
+```
+
+**Notes:**
+- Local files are preserved
+- Cloud project is not deleted
+- You can re-link anytime with `docjays link`
+
+### Push to Cloud
+
+```bash
+docjays push [options]
+
+Options:
+  -n, --dry-run  Preview what would be pushed without making changes
+  -f, --force    Push all files even if unchanged
+  -h, --help     Display help
+```
+
+Pushes all documentation from `.docjays/sources/` to your linked cloud project. This backs up your local docs and makes them available in the web UI.
+
+**Supported file types:**
+- `.md`, `.mdx` (Markdown)
+- `.txt` (Plain text)
+- `.rst` (reStructuredText)
+- `.adoc` (AsciiDoc)
+
+**Examples:**
+
+```bash
+# Preview what would be pushed
+docjays push --dry-run
+
+# Example output:
+📤 Push to Cloud
+Project: ai-summit
+Logged in as: user@techjays.com
+
+Documents to push:
+
+  • company-docs/README.md (2.4 KB)
+  • company-docs/api/endpoints.md (8.1 KB)
+  • api-specs/openapi.md (12.3 KB)
+
+Total: 3 files (22.8 KB)
+
+🔍 Dry run mode - no changes will be made
+
+# Actually push documents
+docjays push
+
+# Example output:
+✓ Push completed!
+
+Summary:
+  Created: 2
+  Updated: 1
+  Unchanged: 0
+
+View your documents at https://docjays.vercel.app/projects/ai-summit
+```
+
+**What happens when you push:**
+- Scans `.docjays/sources/` for documentation files
+- Creates new documents in cloud if they don't exist
+- Updates existing documents if content has changed
+- Skips documents that haven't changed
+- Creates version history for each update
 
 ### Migrate Existing Documentation
 
@@ -810,9 +964,51 @@ Contributions welcome! Please read our [Contributing Guide](../../CONTRIBUTING.m
 
 MIT
 
+## Roadmap
+
+The following features are planned for upcoming releases:
+
+### Project Management Commands (Coming Soon)
+
+```bash
+# List all your projects
+docjays projects list
+docjays projects ls
+
+# Show current project details
+docjays projects info
+docjays projects info --json
+
+# Switch to a different project
+docjays projects switch <project-id-or-slug>
+```
+
+### API Key Management (Coming Soon)
+
+```bash
+# List API keys for current project
+docjays api-keys list
+
+# Create a new API key
+docjays api-keys create "CI/CD Pipeline"
+
+# Revoke an API key
+docjays api-keys revoke <key-id>
+```
+
+### Team Visibility (Coming Soon)
+
+```bash
+# List team members
+docjays team list
+docjays team list --json
+```
+
+See [Feature Spec](../../docs/features/cli-project-management.md) for full details.
+
 ## Support
 
-- [Documentation](https://docjays)
+- [Documentation](https://docjays.vercel.app)
 - [GitHub Issues](https://github.com/techjays/ai-summit/issues)
 - [Discussions](https://github.com/techjays/ai-summit/discussions)
 
