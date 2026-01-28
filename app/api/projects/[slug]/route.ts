@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
 import { z } from 'zod';
 
 type Params = {
@@ -10,16 +10,15 @@ type Params = {
 };
 
 /**
- * GET /api/projects/[slug] - Get a single project by slug
+ * GET /api/projects/[slug] - Get a single project by slug or ID
+ * Supports both cookie auth (web) and Bearer token auth (CLI)
  */
 export async function GET(request: NextRequest, { params }: Params) {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
+    let user;
+    try {
+      user = await requireAuth();
+    } catch {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -29,8 +28,14 @@ export async function GET(request: NextRequest, { params }: Params) {
     const { searchParams } = new URL(request.url);
     const includeGrounding = searchParams.get('includeGrounding') === 'true';
 
-    const project = await prisma.project.findUnique({
-      where: { slug },
+    // Support both slug and ID lookups (CLI may pass ID)
+    const project = await prisma.project.findFirst({
+      where: {
+        OR: [
+          { slug },
+          { id: slug }
+        ]
+      },
       include: {
         apiKeys: {
           where: { isActive: true },
@@ -120,12 +125,10 @@ const updateProjectSchema = z.object({
 
 export async function PATCH(request: NextRequest, { params }: Params) {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
+    let user;
+    try {
+      user = await requireAuth();
+    } catch {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -140,9 +143,9 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       );
     }
 
-    // Get project and verify ownership
-    const project = await prisma.project.findUnique({
-      where: { slug },
+    // Get project and verify ownership (support both slug and ID)
+    const project = await prisma.project.findFirst({
+      where: { OR: [{ slug }, { id: slug }] },
       select: { id: true, ownerId: true },
     });
 
@@ -177,20 +180,18 @@ export async function PATCH(request: NextRequest, { params }: Params) {
  */
 export async function DELETE(request: NextRequest, { params }: Params) {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
+    let user;
+    try {
+      user = await requireAuth();
+    } catch {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { slug } = await params;
 
-    // Get project and verify ownership
-    const project = await prisma.project.findUnique({
-      where: { slug },
+    // Get project and verify ownership (support both slug and ID)
+    const project = await prisma.project.findFirst({
+      where: { OR: [{ slug }, { id: slug }] },
       select: { id: true, ownerId: true, name: true },
     });
 

@@ -67,19 +67,18 @@ function CLIAuthContent() {
 
   async function sendTokenToCLI(sessionId: string, supabaseSession: any) {
     try {
-      // Calculate expiry (60 days from now)
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 60);
-
+      // Send both access and refresh tokens
+      // Access token expires in ~1hr, refresh token lasts much longer
       const response = await fetch('/api/cli/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           session: sessionId,
           token: supabaseSession.access_token,
+          refreshToken: supabaseSession.refresh_token,
           email: supabaseSession.user.email,
           userId: supabaseSession.user.id,
-          expiresAt: expiresAt.toISOString()
+          expiresAt: new Date(supabaseSession.expires_at * 1000).toISOString()
         })
       });
 

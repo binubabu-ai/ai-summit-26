@@ -4,7 +4,7 @@ import { sessions } from './shared-storage';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { session, token, email, userId, expiresAt } = body;
+    const { session, token, refreshToken, email, userId, expiresAt } = body;
 
     if (!session || !token) {
       return NextResponse.json(
@@ -13,10 +13,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Store session data
+    // Store session data (including refresh token for long-lived CLI sessions)
     sessions.set(session, {
       status: 'success',
       token,
+      refreshToken,
       email,
       userId,
       expiresAt,

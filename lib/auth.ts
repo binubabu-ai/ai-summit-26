@@ -37,11 +37,15 @@ export async function getUserFromBearerToken() {
     const headersList = await headers();
     const authHeader = headersList.get('authorization');
 
+    console.log('[Auth] Checking Bearer token, header present:', !!authHeader);
+
     if (!authHeader?.startsWith('Bearer ')) {
+      console.log('[Auth] No Bearer token found');
       return null;
     }
 
     const token = authHeader.substring(7);
+    console.log('[Auth] Token length:', token.length);
 
     // Create a Supabase client and verify the JWT token
     const supabase = createSupabaseClient(
@@ -51,7 +55,14 @@ export async function getUserFromBearerToken() {
 
     const { data: { user }, error } = await supabase.auth.getUser(token);
 
+    console.log('[Auth] Supabase getUser result:', {
+      hasUser: !!user,
+      userId: user?.id,
+      error: error?.message
+    });
+
     if (error || !user) {
+      console.log('[Auth] Token validation failed:', error?.message);
       return null;
     }
 
@@ -60,9 +71,11 @@ export async function getUserFromBearerToken() {
       where: { id: user.id }
     });
 
+    console.log('[Auth] DB user found:', !!dbUser);
+
     return dbUser;
   } catch (error) {
-    console.error('Error getting user from bearer token:', error);
+    console.error('[Auth] Error getting user from bearer token:', error);
     return null;
   }
 }

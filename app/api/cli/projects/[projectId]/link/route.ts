@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
 
 type Params = {
   params: Promise<{
@@ -11,16 +11,14 @@ type Params = {
 /**
  * POST /api/cli/projects/[projectId]/link
  * Link CLI user to project by adding them as a VIEWER member
- * Requires valid authentication
+ * Supports both cookie auth (web) and Bearer token auth (CLI)
  */
 export async function POST(_request: NextRequest, { params }: Params) {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
+    let user;
+    try {
+      user = await requireAuth();
+    } catch {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

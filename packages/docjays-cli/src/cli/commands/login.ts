@@ -39,6 +39,7 @@ interface PollResult {
   error?: string;
   data?: {
     token: string;
+    refreshToken?: string;
     email: string;
     userId: string;
     expiresAt: string;
@@ -218,6 +219,7 @@ export class LoginCommand extends BaseCommand {
               success: true,
               data: {
                 token: data.token,
+                refreshToken: data.refreshToken,
                 email: data.email,
                 userId: data.userId,
                 expiresAt: data.expiresAt,

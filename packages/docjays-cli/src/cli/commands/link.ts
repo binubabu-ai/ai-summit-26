@@ -285,11 +285,11 @@ export class LinkCommand extends BaseCommand {
       return;
     }
 
-    // Link to cloud
+    // Link to cloud (API returns project fields directly, not nested under 'project')
     const configManager = new ConfigManager();
     await configManager.linkCloud({
-      projectId: data.project.id,
-      projectName: data.project.name,
+      projectId: data.id,
+      projectName: data.name,
       apiKey: data.apiKey,
     });
 
@@ -297,8 +297,8 @@ export class LinkCommand extends BaseCommand {
     this.logger.success('Successfully linked to cloud project!');
     console.log('');
     console.log(chalk.bold('Project Details:'));
-    console.log(`  Name: ${chalk.cyan(data.project.name)}`);
-    console.log(`  ID: ${chalk.dim(data.project.id)}`);
+    console.log(`  Name: ${chalk.cyan(data.name)}`);
+    console.log(`  ID: ${chalk.dim(data.id)}`);
     console.log(`  API Key: ${chalk.dim(data.apiKey.substring(0, 12) + '...')}`);
     console.log('');
     console.log(chalk.dim('Your local .docjays is now connected to the cloud.'));

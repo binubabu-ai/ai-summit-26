@@ -4,6 +4,7 @@ import * as os from 'os';
 
 export interface AuthData {
   token: string;
+  refreshToken?: string;
   email: string;
   userId: string;
   expiresAt: string;
@@ -11,7 +12,7 @@ export interface AuthData {
 
 /**
  * AuthManager
- * Manages global authentication credentials
+ * Manages global authentication credentials with auto-refresh support
  */
 export class AuthManager {
   private authDir: string;
@@ -24,16 +25,23 @@ export class AuthManager {
 
   /**
    * Get current authentication data
-   * Returns null if not authenticated or expired
+   * Auto-refreshes token if expired and refresh token is available
    */
   async getAuth(): Promise<AuthData | null> {
     try {
       const data = await fs.readFile(this.authFile, 'utf-8');
       const auth: AuthData = JSON.parse(data);
 
-      // Check if expired
+      // Check if access token is expired
       if (new Date(auth.expiresAt) < new Date()) {
-        // Token expired, remove it
+        // Try to refresh if we have a refresh token
+        if (auth.refreshToken) {
+          const refreshed = await this.refreshAccessToken(auth);
+          if (refreshed) {
+            return refreshed;
+          }
+        }
+        // Token expired and no refresh available
         await this.removeAuth();
         return null;
       }
@@ -41,6 +49,53 @@ export class AuthManager {
       return auth;
     } catch (error) {
       // File doesn't exist or is invalid
+      return null;
+    }
+  }
+
+  /**
+   * Get valid access token, refreshing if necessary
+   */
+  async getValidToken(): Promise<string | null> {
+    const auth = await this.getAuth();
+    return auth?.token || null;
+  }
+
+  /**
+   * Refresh the access token using refresh token
+   */
+  private async refreshAccessToken(auth: AuthData): Promise<AuthData | null> {
+    try {
+      const webUrl = process.env.DOCJAYS_WEB_URL || 'https://docjays.vercel.app';
+
+      const response = await fetch(`${webUrl}/api/cli/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: auth.refreshToken })
+      });
+
+      if (!response.ok) {
+        console.error('Token refresh failed:', response.status);
+        return null;
+      }
+
+      const data = await response.json() as { token?: string; refreshToken?: string; expiresAt?: string };
+
+      if (data.token) {
+        const newAuth: AuthData = {
+          ...auth,
+          token: data.token,
+          refreshToken: data.refreshToken || auth.refreshToken,
+          expiresAt: data.expiresAt || auth.expiresAt
+        };
+
+        await this.saveAuth(newAuth);
+        return newAuth;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Token refresh error:', error);
       return null;
     }
   }
